@@ -4,10 +4,13 @@ A Model Context Protocol (MCP) server that provides semantic memory capabilities
 
 ## Features
 
-- **Semantic Ingestion**: Convert natural language statements into RDF triples.
-- **Inference Engine**: Automatically deduce new facts based on defined rules.
-- **Verification Loop**: Request user verification for uncertain inferences.
-- **Persistence**: Save and load the knowledge graph to/from a Turtle (`.ttl`) file.
+- **Semantic Ingestion**: Convert natural language statements into RDF triples
+- **Hybrid Inference Engine**: Two-level reasoning (OWL-RL ontologies + SPARQL CONSTRUCT rules)
+- **Smart Ontology Caching**: HTTP conditional GET for FOAF, Schema.org, SKOS, RDFS
+- **Verification Loop**: Request user verification for uncertain inferences
+- **Custom Rules**: Load user-defined SPARQL inference rules at runtime
+- **Provenance Tracking**: Track origin and confidence of all facts
+- **Persistence**: Multiple backends (Turtle, SQLite, Oxigraph)
 
 ## Installation
 
@@ -24,65 +27,87 @@ A Model Context Protocol (MCP) server that provides semantic memory capabilities
     ```
 4.  **Install dependencies**:
     ```bash
-    pip install -r requirements.txt
-    # OR if using pyproject.toml
-    pip install .
+    # For production use
+    pip install -e .
+
+    # For development (includes pytest, mypy, black, ruff)
+    pip install -e .[dev]
     ```
 
 ## Usage
 
 ### Running the Server
 
-To start the server (currently runs as a background service):
+The MCP server is designed to be launched by MCP-compatible clients (Claude Desktop, IDEs, etc.):
 
 ```bash
-python src/server.py
+python -m semantic_memory.server
 ```
 
-> **Important**: Ensure you are running this from the project root and using the virtual environment where dependencies are installed.
->
-> If you encounter `ModuleNotFoundError: No module named 'src'`, use the virtual environment python directly:
-> ```bash
-> venv/bin/python src/server.py
-> ```
-> Or ensure your `PYTHONPATH` includes the project root:
-> ```bash
-> PYTHONPATH=. python src/server.py
-> ```
+### MCP Tools
 
-### CLI Tools
+The server exposes 8 tools for AI agents:
 
-You can interact with the knowledge graph using the provided CLI tools.
+| Tool | Description |
+|------|-------------|
+| **add_memory** | Add natural language statement or RDF triple to knowledge graph |
+| **query_memory** | Execute SPARQL query against the graph |
+| **search_entity** | Full-text search for entities by name/label |
+| **verify_inference** | Confirm or reject uncertain inferences |
+| **load_custom_rule** | Load user-defined SPARQL CONSTRUCT rule |
+| **list_rules** | List all active inference rules (default + custom) |
+| **get_graph_stats** | Get statistics (triple count, provenance breakdown) |
 
-**Add a Fact**:
-```bash
-python src/cli/add_fact.py "Subject" "Predicate" "Object"
-```
-Example:
-```bash
-python src/cli/add_fact.py ":User" ":likes" ":Coding"
-```
+### Quick Examples
 
-**Get Pending Verifications**:
-```bash
-python src/cli/get_pending_verifications.py
+**Add a memory from natural language:**
+```json
+{
+  "tool": "add_memory",
+  "input": "Alice works at Google and knows Bob"
+}
 ```
 
-## Gemini Configuration
+**Query the graph:**
+```json
+{
+  "tool": "query_memory",
+  "query": "SELECT ?person WHERE { ?person schema:worksFor ?company }"
+}
+```
 
-To use this MCP server with Gemini (or other MCP clients), you need to configure it in your MCP settings file (e.g., `~/.gemini/mcp_config.json` or project-specific config).
+**Search for an entity:**
+```json
+{
+  "tool": "search_entity",
+  "search_term": "Alice"
+}
+```
 
-Add the following entry to the `mcpServers` object:
+## MCP Client Configuration
 
+To use this MCP server with Claude Desktop or other MCP clients, add to your MCP settings file:
+
+**Claude Desktop** (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
 ```json
 {
   "mcpServers": {
     "semantic-memory": {
       "command": "/absolute/path/to/SmartMemory/venv/bin/python",
-      "args": ["/absolute/path/to/SmartMemory/src/server.py"],
-      "env": {
-        "PYTHONPATH": "/absolute/path/to/SmartMemory"
-      }
+      "args": ["-m", "semantic_memory.server"]
+    }
+  }
+}
+```
+
+**Other MCP Clients:**
+```json
+{
+  "mcpServers": {
+    "semantic-memory": {
+      "command": "python",
+      "args": ["-m", "semantic_memory.server"],
+      "cwd": "/absolute/path/to/SmartMemory"
     }
   }
 }
@@ -90,146 +115,170 @@ Add the following entry to the `mcpServers` object:
 
 *Note: Replace `/absolute/path/to/SmartMemory` with the actual path to your project directory.*
 
-## How It Works: Inference & Verification Workflow
+## How It Works: Hybrid Inference Architecture
 
-SmartMemory uses an intelligent workflow to automatically deduce new facts from user input while maintaining accuracy through verification.
+SmartMemory uses a two-level inference approach to automatically deduce new facts while maintaining accuracy.
 
-### The Complete Flow
+### Two-Level Inference
 
 ```
-User Input → add_fact → Storage → Inference Engine → Confidence Check → User Verification (if needed)
+User Input → add_memory → Storage → Level 1 (OWL-RL) → Level 2 (SPARQL) → Confidence Check → Verification (if needed)
 ```
 
-#### Step-by-Step Example
+**Level 1: Ontological Inference (OWL-RL)**
+- Automatic reasoning using FOAF, Schema.org, SKOS, RDFS ontologies
+- Handles: rdfs:subClassOf, rdfs:domain, rdfs:range, owl:TransitiveProperty, owl:SymmetricProperty
+- High confidence (automatically accepted)
 
-**1. User adds a fact in conversation**
+**Level 2: Custom SPARQL Rules**
+- 5 default rules: spatial transitivity, social symmetry, coworkers, interests, event locations
+- User-defined rules loaded via `load_custom_rule` tool
+- Variable confidence (may require verification)
 
-When you interact with an AI agent using SmartMemory, you might say:
-> "Alice knows Bob"
+### Example Inference Flow
 
-**2. The `add_fact` tool is called**
+**1. User adds a memory:**
+> "Alice works at Google. Bob works at Google."
 
-The MCP server receives the fact and stores it as an RDF triple:
+**2. System stores RDF triples:**
 ```turtle
-:Alice :knows :Bob .
+:Alice schema:worksFor :Google .
+:Bob schema:worksFor :Google .
 ```
 
-**3. Inference engine runs in the background**
+**3. Level 1 (OWL-RL)**: No immediate inferences
 
-SmartMemory has pre-loaded ontologies (FOAF, SKOS, Schema.org) and inference rules. For example, FOAF defines that `:knows` is a symmetric property.
-
-The inference engine executes SPARQL CONSTRUCT queries:
+**4. Level 2 (SPARQL)**: Coworkers rule fires
 ```sparql
-CONSTRUCT { ?y :knows ?x }
-WHERE { ?x :knows ?y }
+# coworkers_inference.rq
+CONSTRUCT { ?person1 schema:colleague ?person2 }
+WHERE {
+  ?person1 schema:worksFor ?org .
+  ?person2 schema:worksFor ?org .
+  FILTER(?person1 != ?person2)
+}
 ```
 
-**4. New facts are deduced**
-
-The system infers:
+**5. System infers:**
 ```turtle
-:Bob :knows :Alice .  # Symmetric relationship
+:Alice schema:colleague :Bob .
+:Bob schema:colleague :Alice .
 ```
 
-**5. Confidence-based verification**
-
-Each inferred fact has a confidence score:
-
-- **High confidence (>0.8)**: Automatically added to the knowledge graph
-  - Example: Symmetric properties from well-known ontologies
-  
-- **Medium/Low confidence (<0.8)**: **User verification requested**
-  - The system asks in the conversation: 
-    > "I noticed that Alice knows Bob. Should I also record that Bob knows Alice?"
-  
-- **User confirms or rejects**: 
-  - ✅ Confirmed → Fact added to knowledge graph
-  - ❌ Rejected → Fact discarded, system learns from feedback
-
-**6. Knowledge graph grows intelligently**
-
-Over time, the graph accumulates both:
-- **Stated facts** (directly from user)
-- **Inferred facts** (deduced by rules, verified by user)
-
-### Real-World Example
-
-```
-User: "Alice works at Google"
-  ↓
-System stores: :Alice :worksAt :Google
-  ↓
-Inference rule: "If X works at Y, and Y is a Company, then X is an Employee"
-  ↓
-System infers: :Alice :isA :Employee (confidence: 0.6)
-  ↓
-System asks: "Based on Alice working at Google, should I record that Alice is an Employee?"
-  ↓
-User confirms: "Yes"
-  ↓
-System stores: :Alice :isA :Employee
+**6. Confidence check:**
+- Default rule confidence: 0.85 (auto-accept threshold: 0.80)
+- Triples automatically added with provenance:
+```turtle
+:Alice schema:colleague :Bob .
+  sem:source "sparql-rule" ;
+  sem:sourceRule <file:///src/rules/defaults/coworkers_inference.rq> ;
+  sem:confidence 0.85 ;
+  sem:timestamp "2025-11-23T10:30:00Z" .
 ```
 
-### Benefits of This Approach
+### Default Inference Rules
 
-✅ **Trust but Verify**: System is proactive but not presumptuous  
-✅ **Learning**: User feedback improves future confidence scores  
-✅ **Transparency**: User always knows what's being inferred  
-✅ **Accuracy**: Prevents false assumptions from polluting the knowledge graph
+| Rule | Description | Example |
+|------|-------------|---------|
+| **spatial_transitivity.rq** | If A in B and B in C, then A in C | Room → Building → City |
+| **social_symmetry.rq** | If A knows B, then B knows A | foaf:knows symmetry |
+| **coworkers_inference.rq** | Same workplace → colleagues | Both at Google → coworkers |
+| **interest_discovery.rq** | Created/attended topic → interest | Created AI article → interested in AI |
+| **event_location_inheritance.rq** | Sub-event inherits parent location | Workshop at Conference venue |
 
-## Examples
+### Verification for Uncertain Inferences
 
-### 1. Storing a User Preference
+When confidence < 0.80, the system asks for verification:
 
-You can tell the system about a user's preference, and it will store it in the knowledge graph.
+```json
+{
+  "tool": "verify_inference",
+  "verification_id": "inf_12345",
+  "confirmed": true,
+  "feedback": "Yes, they are colleagues"
+}
+```
 
-**Input**: "I like Python."  
-**Action**: Call `add_fact` (or use the CLI).  
-**Result**: Triple `(:User, :likes, :Python)` is added.
+### Benefits
 
-### 2. Checking Pending Verifications
+✅ **Automatic**: High-confidence inferences happen without user intervention
+✅ **Transparent**: All inferences tracked with provenance metadata
+✅ **Extensible**: Users can add custom SPARQL rules at runtime
+✅ **Accurate**: Low-confidence inferences require verification
 
-If the system has inferred facts that need verification, you can check them:
+## Development
+
+### Running Tests
 
 ```bash
-python src/cli/get_pending_verifications.py
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=src/semantic_memory --cov-report=html
+
+# Run specific test file
+pytest tests/unit/test_inference_engine.py
 ```
 
-And the system might ask: "Is it true that User is a Developer?"
+### Code Quality
 
-## Advanced Configuration
+```bash
+# Type checking
+mypy src/
 
-### Adding Inference Rules
+# Code formatting
+black src/ tests/
 
-Advanced users can define custom inference rules to extend the system's reasoning capabilities. Rules are currently defined programmatically in `src/server.py`.
+# Linting
+ruff check src/ tests/
+```
 
-1.  **Open `src/server.py`**.
-2.  **Import `InferenceRule` and `Triple`**:
-    ```python
-    from src.models.inference_rule import InferenceRule
-    from src.models.triple import Triple
-    ```
-3.  **Define your rules** before initializing the `InferenceEngine`.
-    A rule consists of a name, a list of conditions (Triples with variables), and a conclusion (Triple with variables). Variables are strings starting with `?`.
+### Adding Custom Inference Rules
 
-    Example: "If X likes Science Fiction, then X is a SciFi Fan."
+Create a SPARQL CONSTRUCT query in `user_rules/`:
 
-    ```python
-    rule_scifi_fan = InferenceRule(
-        name="scifi_fan_rule",
-        conditions=[
-            Triple(subject="?x", predicate=":likes", object=":ScienceFiction")
-        ],
-        conclusion=Triple(subject="?x", predicate=":isA", object=":SciFiFan")
-    )
-    ```
+**Example: `user_rules/mentor_relationship.rq`**
+```sparql
+# Infers mentorship from teaching relationship
+PREFIX schema: <https://schema.org/>
 
-4.  **Pass the rules to the `InferenceEngine`**:
-    ```python
-    self.inference_engine = InferenceEngine(
-        rules=[rule_scifi_fan], 
-        verification_service=self.verification_service
-    )
-    ```
+CONSTRUCT {
+    ?teacher schema:mentor ?student .
+}
+WHERE {
+    ?course schema:instructor ?teacher .
+    ?course schema:attendee ?student .
+    FILTER NOT EXISTS { ?teacher schema:mentor ?student }
+}
+```
 
-5.  **Restart the server** for changes to take effect.
+Load at runtime via MCP tool:
+```json
+{
+  "tool": "load_custom_rule",
+  "rule_name": "mentor_relationship",
+  "sparql_construct": "...",
+  "confidence": 0.75
+}
+```
+
+## Documentation
+
+Comprehensive documentation is available in `specs/003-semantic-memory-server/`:
+
+- **spec.md**: Feature specification with 5 user stories
+- **plan.md**: Technical architecture and implementation approach
+- **research.md**: Technical decisions and rationale
+- **data-model.md**: RDF schema and ontology mappings
+- **contracts/mcp-tools.yaml**: Complete MCP tool API reference
+- **quickstart.md**: Test scenarios and usage examples
+- **tasks.md**: 96-task implementation plan
+
+## License
+
+[Specify your license here]
+
+## Contributing
+
+[Specify contribution guidelines here]
