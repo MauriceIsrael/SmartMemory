@@ -1,0 +1,12 @@
+# Infers colleague relationships from shared workplace
+PREFIX schema: <https://schema.org/>
+
+CONSTRUCT {
+    ?person1 schema:colleague ?person2 .
+}
+WHERE {
+    ?person1 schema:worksFor ?org .
+    ?person2 schema:worksFor ?org .
+    FILTER(?person1 != ?person2)
+    FILTER NOT EXISTS { ?person1 schema:colleague ?person2 }
+}

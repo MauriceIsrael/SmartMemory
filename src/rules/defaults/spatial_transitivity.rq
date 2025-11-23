@@ -1,0 +1,11 @@
+# Infers transitive containment relationships (if A in B and B in C, then A in C)
+PREFIX schema: <https://schema.org/>
+
+CONSTRUCT {
+    ?inner schema:containedInPlace ?outer .
+}
+WHERE {
+    ?inner schema:containedInPlace ?middle .
+    ?middle schema:containedInPlace ?outer .
+    FILTER NOT EXISTS { ?inner schema:containedInPlace ?outer }
+}

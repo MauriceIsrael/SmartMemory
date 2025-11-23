@@ -1,0 +1,11 @@
+# Inherits location from parent event for sub-events
+PREFIX schema: <https://schema.org/>
+
+CONSTRUCT {
+    ?subEvent schema:location ?location .
+}
+WHERE {
+    ?subEvent schema:superEvent ?parentEvent .
+    ?parentEvent schema:location ?location .
+    FILTER NOT EXISTS { ?subEvent schema:location ?existingLocation }
+}

@@ -90,11 +90,11 @@
 
 ### Default SPARQL Rules Creation
 
-- [ ] T032 [P] [US2] Create spatial_transitivity.rq in src/rules/defaults/ (transitive containment: if A in B and B in C then A in C)
-- [ ] T033 [P] [US2] Create social_symmetry.rq in src/rules/defaults/ (make foaf:knows symmetric)
-- [ ] T034 [P] [US2] Create coworkers_inference.rq in src/rules/defaults/ (infer schema:colleague from shared schema:worksFor)
-- [ ] T035 [P] [US2] Create interest_discovery.rq in src/rules/defaults/ (infer schema:interestOf from schema:creator/attendee patterns)
-- [ ] T036 [P] [US2] Create event_location_inheritance.rq in src/rules/defaults/ (inherit location from parent event via schema:superEvent)
+- [X] T032 [P] [US2] Create spatial_transitivity.rq in src/rules/defaults/ (transitive containment: if A in B and B in C then A in C)
+- [X] T033 [P] [US2] Create social_symmetry.rq in src/rules/defaults/ (make foaf:knows symmetric)
+- [X] T034 [P] [US2] Create coworkers_inference.rq in src/rules/defaults/ (infer schema:colleague from shared schema:worksFor)
+- [X] T035 [P] [US2] Create interest_discovery.rq in src/rules/defaults/ (infer schema:interestOf from schema:creator/attendee patterns)
+- [X] T036 [P] [US2] Create event_location_inheritance.rq in src/rules/defaults/ (inherit location from parent event via schema:superEvent)
 
 ### Rule Engine Implementation
 
