@@ -1,0 +1,14 @@
+{
+    "mcpServers": {
+        "semantic-memory": {
+            "command": "/home/momo/Antigravity/SmartMemory/venv/bin/python",
+            "args": [
+                "/home/momo/Antigravity/SmartMemory/src/server.py"
+            ],
+            "env": {
+                "PYTHONPATH": "/home/momo/Antigravity/SmartMemory",
+                "LOG_FILE": "/home/momo/Antigravity/SmartMemory/mcp_server.log"
+            }
+        }
+    }
+}

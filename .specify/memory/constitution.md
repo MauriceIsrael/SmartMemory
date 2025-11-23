@@ -1,50 +1,36 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report:
+- Version change: 0.0.0 -> 1.0.0
+- List of modified principles: Complete overhaul of principles.
+- Added sections: Core Philosophy, Technical Constraints, Coding Standards, Interaction Model
+- Removed sections: All previous sections replaced.
+- Templates requiring updates:
+    - .specify/templates/plan-template.md (⚠ pending)
+    - .specify/templates/spec-template.md (⚠ pending)
+    - .specify/templates/tasks-template.md (⚠ pending)
+- Follow-up TODOs: None
+-->
+# Project Constitution: Smart Semantic Memory MCP
 
-## Core Principles
+## 1. Core Philosophy
+- **No "Flat" Data:** We do not store data as simple JSON blobs. All knowledge must be structured as triples (Subject-Predicate-Object) or quads.
+- **Active, Not Passive:** The memory server is not just a database. It is an agent that infers new knowledge upon insertion.
+- **Trust but Verify:** Inferences are probabilistic or logical. The system must inherently support an "Elicitation Loop" to ask the user for confirmation on ambiguous deductions.
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+## 2. Technical Constraints
+- **Language:** Python 3.11+ (Preferred for RDFLib ecosystem) OR TypeScript (only if using N3.js/Graphy). *Decision: Python is default for this spec.*
+- **Standards:** STRICT adherence to W3C standards (RDF, RDFS, OWL, SHACL).
+- **Protocol:** Must implement the Model Context Protocol (MCP) strictly.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+## 3. Coding Standards
+- **Type Safety:** All code must be fully typed (mypy strict or TypeScript strict).
+- **Ontology First:** No ad-hoc predicates. Use standard ontologies (FOAF, Schema.org, SKOS) where possible, or define a strict local ontology.
+- **Immutability:** Inferred facts are distinct from stated facts.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
-
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
-
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
-
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
-
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
-
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
-
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+## 4. Interaction Model
+- The system acts as a "Gardener" of knowledge, constantly pruning and checking consistency, not just a "Warehouse".
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
+This constitution supersedes all other practices. Amendments require documentation, approval, and a migration plan. All PRs and reviews must verify compliance with this constitution.
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
-
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2025-11-22 | **Last Amended**: 2025-11-22

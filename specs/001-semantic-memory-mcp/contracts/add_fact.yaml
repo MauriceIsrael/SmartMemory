@@ -1,0 +1,24 @@
+openapi: 3.0.0
+info:
+  title: add_fact
+  version: 1.0.0
+paths:
+  /add_fact:
+    post:
+      summary: Adds a new fact to the knowledge graph.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                subject:
+                  type: string
+                predicate:
+                  type: string
+                object:
+                  type: string
+      responses:
+        '200':
+          description: Fact added successfully.

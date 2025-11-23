@@ -1,0 +1,36 @@
+openapi: 3.0.0
+info:
+  title: get_pending_verifications
+  version: 1.0.0
+paths:
+  /get_pending_verifications:
+    get:
+      summary: Retrieves a list of pending verifications.
+      responses:
+        '200':
+          description: A list of pending verification requests.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VerificationRequest'
+components:
+  schemas:
+    VerificationRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        triple:
+          type: object
+          properties:
+            subject:
+              type: string
+            predicate:
+              type: string
+            object:
+              type: string
+        certainty_score:
+          type: number
+          format: float

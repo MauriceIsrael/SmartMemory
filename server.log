@@ -1,0 +1,26 @@
+2025-11-22 17:35:23,026 - __main__ - INFO - 🚀 Starting Semantic Memory MCP Server...
+2025-11-22 17:35:23,026 - __main__ - INFO - 📚 Loading standard ontologies (FOAF, SKOS, Schema.org)...
+2025-11-22 17:35:23,027 - src.ontology.cache - INFO - Loaded cache manifest with 2 entries
+2025-11-22 17:35:23,028 - src.ontology.loader - INFO - Loading 3 ontologies...
+2025-11-22 17:35:23,028 - src.ontology.loader - INFO - Loading ontology: foaf (Friend of a Friend (FOAF) - vocabulary for people and relationships)
+2025-11-22 17:35:23,028 - src.ontology.loader - INFO - foaf: No cache found, downloading
+2025-11-22 17:35:23,028 - src.ontology.fetcher - INFO - Downloading ontology from http://xmlns.com/foaf/0.1/
+2025-11-22 17:35:53,077 - src.ontology.loader - ERROR - foaf: Download failed: Failed to download from http://xmlns.com/foaf/0.1/: HTTPConnectionPool(host='xmlns.com', port=80): Max retries exceeded with url: /foaf/0.1/ (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x79ed00ea9130>, 'Connection to xmlns.com timed out. (connect timeout=30)'))
+2025-11-22 17:35:53,077 - src.ontology.loader - INFO - Loading ontology: skos (Simple Knowledge Organization System (SKOS) - for concept schemes)
+2025-11-22 17:35:53,444 - src.ontology.loader - INFO - skos: Cache is up-to-date
+2025-11-22 17:35:53,471 - src.ontology.loader - INFO - Loaded 252 triples from cache/ontologies/skos.rdf
+2025-11-22 17:35:53,471 - src.ontology.loader - INFO - Loading ontology: schema (Schema.org - structured data vocabulary (curated subset))
+2025-11-22 17:35:53,760 - src.ontology.loader - INFO - schema: Cache is up-to-date
+2025-11-22 17:35:54,663 - src.ontology.loader - INFO - Loaded 17253 triples from cache/ontologies/schema.turtle
+2025-11-22 17:35:54,663 - src.ontology.loader - INFO - Loaded 2/3 ontologies successfully
+2025-11-22 17:35:54,664 - __main__ - INFO - ✓ Loaded 2/3 ontologies
+2025-11-22 17:35:54,664 - __main__ - INFO - 🧠 Creating inference rules...
+2025-11-22 17:35:54,664 - __main__ - INFO - ✓ Created 3 inference rule(s)
+2025-11-22 17:35:54,664 - root - INFO - PersistenceService initialized with file path: knowledge_graph.ttl
+2025-11-22 17:35:54,664 - src.services.inference_engine - INFO - Inference engine initialized with 3 rule(s), threshold=0.8
+2025-11-22 17:35:54,664 - root - INFO - Loading knowledge graph from knowledge_graph.ttl
+2025-11-22 17:35:54,665 - root - INFO - Knowledge graph loaded successfully.
+2025-11-22 17:35:54,666 - __main__ - INFO - ✅ Services initialized successfully
+2025-11-22 17:35:54,666 - __main__ - INFO -    - Knowledge graph: 2 fact(s)
+2025-11-22 17:35:54,666 - __main__ - INFO -    - Ontologies: 17505 triple(s)
+2025-11-22 17:35:54,666 - __main__ - INFO -    - Inference rules: 3

@@ -1,0 +1,416 @@
+2025-11-22 17:48:28,547 - __main__ - INFO - 📝 Logging to file: /home/momo/Antigravity/SmartMemory/mcp_server.log
+2025-11-22 17:48:28,547 - __main__ - INFO - 🚀 Starting Semantic Memory MCP Server...
+2025-11-22 17:48:28,548 - __main__ - INFO - 📚 Loading standard ontologies (FOAF, SKOS, Schema.org)...
+2025-11-22 17:48:28,548 - src.ontology.cache - INFO - Loaded cache manifest with 2 entries
+2025-11-22 17:48:28,549 - src.ontology.loader - INFO - Loading 3 ontologies...
+2025-11-22 17:48:28,549 - src.ontology.loader - INFO - Loading ontology: foaf (Friend of a Friend (FOAF) - vocabulary for people and relationships)
+2025-11-22 17:48:28,549 - src.ontology.loader - INFO - foaf: No cache found, downloading
+2025-11-22 17:48:28,549 - src.ontology.fetcher - INFO - Downloading ontology from http://xmlns.com/foaf/0.1/
+2025-11-22 17:48:58,587 - src.ontology.loader - ERROR - foaf: Download failed: Failed to download from http://xmlns.com/foaf/0.1/: HTTPConnectionPool(host='xmlns.com', port=80): Max retries exceeded with url: /foaf/0.1/ (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x7e9df108f560>, 'Connection to xmlns.com timed out. (connect timeout=30)'))
+2025-11-22 17:48:58,587 - src.ontology.loader - INFO - Loading ontology: skos (Simple Knowledge Organization System (SKOS) - for concept schemes)
+2025-11-22 17:48:59,020 - src.ontology.loader - INFO - skos: Cache is up-to-date
+2025-11-22 17:48:59,043 - src.ontology.loader - INFO - Loaded 252 triples from cache/ontologies/skos.rdf
+2025-11-22 17:48:59,043 - src.ontology.loader - INFO - Loading ontology: schema (Schema.org - structured data vocabulary (curated subset))
+2025-11-22 17:48:59,339 - src.ontology.loader - INFO - schema: Cache is up-to-date
+2025-11-22 17:49:00,196 - src.ontology.loader - INFO - Loaded 17253 triples from cache/ontologies/schema.turtle
+2025-11-22 17:49:00,196 - src.ontology.loader - INFO - Loaded 2/3 ontologies successfully
+2025-11-22 17:49:00,196 - __main__ - INFO - ✓ Loaded 2/3 ontologies
+2025-11-22 17:49:00,196 - __main__ - INFO - 🧠 Creating inference rules...
+2025-11-22 17:49:00,196 - __main__ - INFO - ✓ Created 3 inference rule(s)
+2025-11-22 17:49:00,196 - root - INFO - PersistenceService initialized with file path: knowledge_graph.ttl
+2025-11-22 17:49:00,197 - src.services.inference_engine - INFO - Inference engine initialized with 3 rule(s), threshold=0.8
+2025-11-22 17:49:00,197 - root - INFO - Loading knowledge graph from knowledge_graph.ttl
+2025-11-22 17:49:00,198 - root - INFO - Knowledge graph loaded successfully.
+2025-11-22 17:49:00,198 - __main__ - INFO - ✅ Services initialized successfully
+2025-11-22 17:49:00,198 - __main__ - INFO -    - Knowledge graph: 5 fact(s)
+2025-11-22 17:49:00,198 - __main__ - INFO -    - Ontologies: 17505 triple(s)
+2025-11-22 17:49:00,198 - __main__ - INFO -    - Inference rules: 3
+2025-11-22 17:49:00,220 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-11-22 17:49:00,223 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-11-22 17:57:34,541 - __main__ - INFO - 📝 Logging to file: /home/momo/Antigravity/SmartMemory/mcp_server.log
+2025-11-22 17:57:34,541 - __main__ - INFO - 🚀 Starting Semantic Memory MCP Server...
+2025-11-22 17:57:34,541 - __main__ - INFO - 📚 Loading standard ontologies (FOAF, SKOS, Schema.org)...
+2025-11-22 17:57:34,542 - src.ontology.cache - INFO - Loaded cache manifest with 2 entries
+2025-11-22 17:57:34,542 - src.ontology.loader - INFO - Loading 3 ontologies...
+2025-11-22 17:57:34,542 - src.ontology.loader - INFO - Loading ontology: foaf (Friend of a Friend (FOAF) - vocabulary for people and relationships)
+2025-11-22 17:57:34,542 - src.ontology.loader - INFO - foaf: No cache found, downloading
+2025-11-22 17:57:34,542 - src.ontology.fetcher - INFO - Downloading ontology from http://xmlns.com/foaf/0.1/
+2025-11-22 17:58:04,697 - src.ontology.loader - ERROR - foaf: Download failed: Failed to download from http://xmlns.com/foaf/0.1/: HTTPConnectionPool(host='xmlns.com', port=80): Max retries exceeded with url: /foaf/0.1/ (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x772c44e2bb90>, 'Connection to xmlns.com timed out. (connect timeout=30)'))
+2025-11-22 17:58:04,697 - src.ontology.loader - INFO - Loading ontology: skos (Simple Knowledge Organization System (SKOS) - for concept schemes)
+2025-11-22 17:58:05,082 - src.ontology.loader - INFO - skos: Cache is up-to-date
+2025-11-22 17:58:05,105 - src.ontology.loader - INFO - Loaded 252 triples from cache/ontologies/skos.rdf
+2025-11-22 17:58:05,105 - src.ontology.loader - INFO - Loading ontology: schema (Schema.org - structured data vocabulary (curated subset))
+2025-11-22 17:58:05,183 - src.ontology.loader - INFO - schema: Cache is up-to-date
+2025-11-22 17:58:06,009 - src.ontology.loader - INFO - Loaded 17253 triples from cache/ontologies/schema.turtle
+2025-11-22 17:58:06,009 - src.ontology.loader - INFO - Loaded 2/3 ontologies successfully
+2025-11-22 17:58:06,009 - __main__ - INFO - ✓ Loaded 2/3 ontologies
+2025-11-22 17:58:06,009 - __main__ - INFO - 🧠 Creating inference rules...
+2025-11-22 17:58:06,009 - __main__ - INFO - ✓ Created 3 inference rule(s)
+2025-11-22 17:58:06,010 - root - INFO - PersistenceService initialized with file path: knowledge_graph.ttl
+2025-11-22 17:58:06,010 - src.services.inference_engine - INFO - Inference engine initialized with 3 rule(s), threshold=0.8
+2025-11-22 17:58:06,010 - root - INFO - Loading knowledge graph from knowledge_graph.ttl
+2025-11-22 17:58:06,011 - root - INFO - Knowledge graph loaded successfully.
+2025-11-22 17:58:06,011 - __main__ - INFO - ✅ Services initialized successfully
+2025-11-22 17:58:06,011 - __main__ - INFO -    - Knowledge graph: 5 fact(s)
+2025-11-22 17:58:06,011 - __main__ - INFO -    - Ontologies: 17505 triple(s)
+2025-11-22 17:58:06,011 - __main__ - INFO -    - Inference rules: 3
+2025-11-22 17:58:06,032 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-11-22 17:58:06,034 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-11-22 18:00:40,306 - __main__ - INFO - 📝 Logging to file: /home/momo/Antigravity/SmartMemory/mcp_server.log
+2025-11-22 18:00:40,306 - __main__ - INFO - 🚀 Starting Semantic Memory MCP Server...
+2025-11-22 18:00:40,306 - __main__ - INFO - 📚 Loading standard ontologies (FOAF, SKOS, Schema.org)...
+2025-11-22 18:00:40,307 - src.ontology.cache - INFO - Loaded cache manifest with 2 entries
+2025-11-22 18:00:40,308 - src.ontology.loader - INFO - Loading 3 ontologies...
+2025-11-22 18:00:40,308 - src.ontology.loader - INFO - Loading ontology: foaf (Friend of a Friend (FOAF) - vocabulary for people and relationships)
+2025-11-22 18:00:40,308 - src.ontology.loader - INFO - foaf: No cache found, downloading
+2025-11-22 18:00:40,308 - src.ontology.fetcher - INFO - Downloading ontology from http://xmlns.com/foaf/0.1/
+2025-11-22 18:01:10,352 - src.ontology.loader - ERROR - foaf: Download failed: Failed to download from http://xmlns.com/foaf/0.1/: HTTPConnectionPool(host='xmlns.com', port=80): Max retries exceeded with url: /foaf/0.1/ (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x7c948fdb4f20>, 'Connection to xmlns.com timed out. (connect timeout=30)'))
+2025-11-22 18:01:10,352 - src.ontology.loader - INFO - Loading ontology: skos (Simple Knowledge Organization System (SKOS) - for concept schemes)
+2025-11-22 18:01:10,969 - src.ontology.loader - INFO - skos: Cache is up-to-date
+2025-11-22 18:01:10,991 - src.ontology.loader - INFO - Loaded 252 triples from cache/ontologies/skos.rdf
+2025-11-22 18:01:10,992 - src.ontology.loader - INFO - Loading ontology: schema (Schema.org - structured data vocabulary (curated subset))
+2025-11-22 18:01:11,209 - src.ontology.loader - INFO - schema: Cache is up-to-date
+2025-11-22 18:01:12,084 - src.ontology.loader - INFO - Loaded 17253 triples from cache/ontologies/schema.turtle
+2025-11-22 18:01:12,084 - src.ontology.loader - INFO - Loaded 2/3 ontologies successfully
+2025-11-22 18:01:12,085 - __main__ - INFO - ✓ Loaded 2/3 ontologies
+2025-11-22 18:01:12,085 - __main__ - INFO - 🧠 Creating inference rules...
+2025-11-22 18:01:12,085 - __main__ - INFO - ✓ Created 3 inference rule(s)
+2025-11-22 18:01:12,085 - root - INFO - PersistenceService initialized with file path: knowledge_graph.ttl
+2025-11-22 18:01:12,085 - src.services.inference_engine - INFO - Inference engine initialized with 3 rule(s), threshold=0.8
+2025-11-22 18:01:12,085 - root - INFO - Loading knowledge graph from knowledge_graph.ttl
+2025-11-22 18:01:12,087 - root - INFO - Knowledge graph loaded successfully.
+2025-11-22 18:01:12,087 - __main__ - INFO - ✅ Services initialized successfully
+2025-11-22 18:01:12,087 - __main__ - INFO -    - Knowledge graph: 5 fact(s)
+2025-11-22 18:01:12,087 - __main__ - INFO -    - Ontologies: 17505 triple(s)
+2025-11-22 18:01:12,087 - __main__ - INFO -    - Inference rules: 3
+2025-11-22 18:01:12,107 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-11-22 18:01:12,111 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-11-22 18:02:26,105 - mcp.server.lowlevel.server - INFO - Processing request of type GetPromptRequest
+2025-11-22 18:05:34,328 - mcp.server.lowlevel.server - INFO - Processing request of type CallToolRequest
+2025-11-22 18:05:34,328 - root - INFO - Adding fact: :User :likes :Prolog
+2025-11-22 18:05:34,328 - src.services.inference_engine - INFO - 🔍 Rule 'programming_enthusiast' triggered by 4 fact(s)
+2025-11-22 18:05:34,329 - src.services.inference_engine - INFO -    ⚠️  Inferred (low confidence 0.70): :User :isA :ChocolatePancakes
+2025-11-22 18:05:34,329 - src.services.inference_engine - INFO -    → Requesting user verification
+2025-11-22 18:05:34,329 - src.services.inference_engine - INFO -    ⚠️  Inferred (low confidence 0.70): :User :isA :SvelteJS
+2025-11-22 18:05:34,329 - src.services.inference_engine - INFO -    → Requesting user verification
+2025-11-22 18:05:34,329 - src.services.inference_engine - INFO -    ⚠️  Inferred (low confidence 0.70): :User :isA :gardening
+2025-11-22 18:05:34,329 - src.services.inference_engine - INFO -    → Requesting user verification
+2025-11-22 18:05:34,329 - src.services.inference_engine - INFO -    ⚠️  Inferred (low confidence 0.70): :User :isA :Prolog
+2025-11-22 18:05:34,329 - src.services.inference_engine - INFO -    → Requesting user verification
+2025-11-22 18:05:34,329 - src.services.inference_engine - INFO -    Rule 'programming_enthusiast' produced 0 automatic inference(s)
+2025-11-22 18:05:34,329 - src.services.inference_engine - INFO - 📊 Inference summary: 0 fact(s) added automatically, 4 pending verification(s)
+2025-11-22 18:05:34,330 - root - INFO - Saving knowledge graph to knowledge_graph.ttl
+2025-11-22 18:05:34,331 - root - INFO - Knowledge graph saved successfully.
+2025-11-22 18:38:14,758 - __main__ - INFO - 📝 Logging to file: /home/momo/Antigravity/SmartMemory/mcp_server.log
+2025-11-22 18:38:14,758 - __main__ - INFO - 🚀 Starting Semantic Memory MCP Server...
+2025-11-22 18:38:14,759 - __main__ - INFO - 📚 Loading standard ontologies (FOAF, SKOS, Schema.org)...
+2025-11-22 18:38:14,760 - src.ontology.cache - INFO - No existing cache manifest found, starting fresh
+2025-11-22 18:38:14,760 - src.ontology.loader - INFO - Loading 3 ontologies...
+2025-11-22 18:38:14,760 - src.ontology.loader - INFO - Loading ontology: foaf (Friend of a Friend (FOAF) - vocabulary for people and relationships)
+2025-11-22 18:38:14,760 - src.ontology.loader - INFO - foaf: No cache found, downloading
+2025-11-22 18:38:14,760 - src.ontology.fetcher - INFO - Downloading ontology from http://xmlns.com/foaf/0.1/
+2025-11-22 18:38:44,817 - src.ontology.loader - ERROR - foaf: Download failed: Failed to download from http://xmlns.com/foaf/0.1/: HTTPConnectionPool(host='xmlns.com', port=80): Max retries exceeded with url: /foaf/0.1/ (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x7a5aaf2ef920>, 'Connection to xmlns.com timed out. (connect timeout=30)'))
+2025-11-22 18:38:44,817 - src.ontology.loader - INFO - Loading ontology: skos (Simple Knowledge Organization System (SKOS) - for concept schemes)
+2025-11-22 18:38:44,817 - src.ontology.loader - INFO - skos: No cache found, downloading
+2025-11-22 18:38:44,817 - src.ontology.fetcher - INFO - Downloading ontology from http://www.w3.org/2004/02/skos/core
+2025-11-22 18:38:45,236 - src.ontology.fetcher - INFO - Downloaded 28966 bytes to /tmp/tmp6lrxlx2h.xml
+2025-11-22 18:38:45,259 - src.ontology.fetcher - INFO - RDF validation successful: 252 triples
+2025-11-22 18:38:45,259 - src.ontology.loader - INFO - skos: Cached to cache/ontologies/skos.rdf
+2025-11-22 18:38:45,260 - src.ontology.cache - INFO - Updated cache entry for 'skos'
+2025-11-22 18:38:45,278 - src.ontology.loader - INFO - Loaded 252 triples from cache/ontologies/skos.rdf
+2025-11-22 18:38:45,278 - src.ontology.loader - INFO - Loading ontology: schema (Schema.org - structured data vocabulary (curated subset))
+2025-11-22 18:38:45,278 - src.ontology.loader - INFO - schema: No cache found, downloading
+2025-11-22 18:38:45,278 - src.ontology.fetcher - INFO - Downloading ontology from https://schema.org/version/latest/schemaorg-current-https.ttl
+2025-11-22 18:38:45,496 - src.ontology.fetcher - INFO - Downloaded 1067667 bytes to /tmp/tmpm8in56k7.turtle
+2025-11-22 18:38:46,357 - src.ontology.fetcher - INFO - RDF validation successful: 17253 triples
+2025-11-22 18:38:46,361 - src.ontology.loader - INFO - schema: Cached to cache/ontologies/schema.turtle
+2025-11-22 18:38:46,361 - src.ontology.cache - INFO - Updated cache entry for 'schema'
+2025-11-22 18:38:47,196 - src.ontology.loader - INFO - Loaded 17253 triples from cache/ontologies/schema.turtle
+2025-11-22 18:38:47,196 - src.ontology.loader - INFO - Loaded 2/3 ontologies successfully
+2025-11-22 18:38:47,197 - __main__ - INFO - ✓ Loaded 2/3 ontologies
+2025-11-22 18:38:47,197 - __main__ - INFO - 🧠 Creating inference rules...
+2025-11-22 18:38:47,197 - __main__ - INFO - ✓ Created 3 inference rule(s)
+2025-11-22 18:38:47,197 - root - INFO - PersistenceService initialized with file path: knowledge_graph.ttl
+2025-11-22 18:38:47,197 - src.services.inference_engine - INFO - Inference engine initialized with 3 rule(s), threshold=0.8
+2025-11-22 18:38:47,197 - root - INFO - Loading knowledge graph from knowledge_graph.ttl
+2025-11-22 18:38:47,199 - root - INFO - Knowledge graph loaded successfully.
+2025-11-22 18:38:47,199 - __main__ - INFO - ✅ Services initialized successfully
+2025-11-22 18:38:47,199 - __main__ - INFO -    - Knowledge graph: 1 fact(s)
+2025-11-22 18:38:47,199 - __main__ - INFO -    - Ontologies: 17505 triple(s)
+2025-11-22 18:38:47,199 - __main__ - INFO -    - Inference rules: 3
+2025-11-22 18:51:17,775 - __main__ - INFO - 📝 Logging to file: /home/momo/Antigravity/SmartMemory/mcp_server.log
+2025-11-22 18:51:17,775 - __main__ - INFO - 🚀 Starting Semantic Memory MCP Server...
+2025-11-22 18:51:17,775 - __main__ - INFO - 📚 Loading standard ontologies (FOAF, SKOS, Schema.org)...
+2025-11-22 18:51:17,776 - src.ontology.cache - INFO - Loaded cache manifest with 2 entries
+2025-11-22 18:51:17,776 - src.ontology.loader - INFO - Loading 3 ontologies...
+2025-11-22 18:51:17,776 - src.ontology.loader - INFO - Loading ontology: foaf (Friend of a Friend (FOAF) - vocabulary for people and relationships)
+2025-11-22 18:51:17,776 - src.ontology.loader - INFO - foaf: No cache found, downloading
+2025-11-22 18:51:17,776 - src.ontology.fetcher - INFO - Downloading ontology from http://xmlns.com/foaf/0.1/
+2025-11-22 18:51:47,819 - src.ontology.loader - ERROR - foaf: Download failed: Failed to download from http://xmlns.com/foaf/0.1/: HTTPConnectionPool(host='xmlns.com', port=80): Max retries exceeded with url: /foaf/0.1/ (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x76489af4ee40>, 'Connection to xmlns.com timed out. (connect timeout=30)'))
+2025-11-22 18:51:47,819 - src.ontology.loader - INFO - Loading ontology: skos (Simple Knowledge Organization System (SKOS) - for concept schemes)
+2025-11-22 18:51:48,389 - src.ontology.loader - INFO - skos: Cache is up-to-date
+2025-11-22 18:51:48,409 - src.ontology.loader - INFO - Loaded 252 triples from cache/ontologies/skos.rdf
+2025-11-22 18:51:48,409 - src.ontology.loader - INFO - Loading ontology: schema (Schema.org - structured data vocabulary (curated subset))
+2025-11-22 18:51:48,693 - src.ontology.loader - INFO - schema: Cache is up-to-date
+2025-11-22 18:51:49,382 - src.ontology.loader - INFO - Loaded 17253 triples from cache/ontologies/schema.turtle
+2025-11-22 18:51:49,382 - src.ontology.loader - INFO - Loaded 2/3 ontologies successfully
+2025-11-22 18:51:49,382 - __main__ - INFO - ✓ Loaded 2/3 ontologies
+2025-11-22 18:51:49,382 - __main__ - INFO - 🧠 Creating inference rules...
+2025-11-22 18:51:49,383 - __main__ - INFO - ✓ Created 3 inference rule(s)
+2025-11-22 18:51:49,383 - root - INFO - PersistenceService initialized with file path: knowledge_graph.ttl
+2025-11-22 18:51:49,383 - src.services.inference_engine - INFO - Inference engine initialized with 3 rule(s), threshold=0.8
+2025-11-22 18:51:49,383 - root - INFO - Loading knowledge graph from knowledge_graph.ttl
+2025-11-22 18:51:49,384 - root - INFO - Knowledge graph loaded successfully.
+2025-11-22 18:51:49,385 - __main__ - INFO - ✅ Services initialized successfully
+2025-11-22 18:51:49,385 - __main__ - INFO -    - Knowledge graph: 1 fact(s)
+2025-11-22 18:51:49,385 - __main__ - INFO -    - Ontologies: 17505 triple(s)
+2025-11-22 18:51:49,385 - __main__ - INFO -    - Inference rules: 3
+2025-11-22 18:52:40,819 - __main__ - INFO - 📝 Logging to file: /home/momo/Antigravity/SmartMemory/mcp_server.log
+2025-11-22 18:52:40,819 - __main__ - INFO - 🚀 Starting Semantic Memory MCP Server...
+2025-11-22 18:52:40,819 - __main__ - INFO - 📚 Loading standard ontologies (FOAF, SKOS, Schema.org)...
+2025-11-22 18:52:40,820 - src.ontology.cache - INFO - Loaded cache manifest with 2 entries
+2025-11-22 18:52:40,821 - src.ontology.loader - INFO - Loading 3 ontologies...
+2025-11-22 18:52:40,821 - src.ontology.loader - INFO - Loading ontology: foaf (Friend of a Friend (FOAF) - vocabulary for people and relationships)
+2025-11-22 18:52:40,821 - src.ontology.loader - INFO - foaf: No cache found, downloading
+2025-11-22 18:52:40,821 - src.ontology.fetcher - INFO - Downloading ontology from http://xmlns.com/foaf/0.1/
+2025-11-22 18:53:10,872 - src.ontology.loader - ERROR - foaf: Download failed: Failed to download from http://xmlns.com/foaf/0.1/: HTTPConnectionPool(host='xmlns.com', port=80): Max retries exceeded with url: /foaf/0.1/ (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x74227078f920>, 'Connection to xmlns.com timed out. (connect timeout=30)'))
+2025-11-22 18:53:10,872 - src.ontology.loader - INFO - Loading ontology: skos (Simple Knowledge Organization System (SKOS) - for concept schemes)
+2025-11-22 18:53:11,514 - src.ontology.loader - INFO - skos: Cache is up-to-date
+2025-11-22 18:53:11,540 - src.ontology.loader - INFO - Loaded 252 triples from cache/ontologies/skos.rdf
+2025-11-22 18:53:11,540 - src.ontology.loader - INFO - Loading ontology: schema (Schema.org - structured data vocabulary (curated subset))
+2025-11-22 18:53:11,883 - src.ontology.loader - INFO - schema: Cache is up-to-date
+2025-11-22 18:53:12,567 - src.ontology.loader - INFO - Loaded 17253 triples from cache/ontologies/schema.turtle
+2025-11-22 18:53:12,567 - src.ontology.loader - INFO - Loaded 2/3 ontologies successfully
+2025-11-22 18:53:12,567 - __main__ - INFO - ✓ Loaded 2/3 ontologies
+2025-11-22 18:53:12,568 - __main__ - INFO - 🧠 Creating inference rules...
+2025-11-22 18:53:12,568 - __main__ - INFO - ✓ Created 3 inference rule(s)
+2025-11-22 18:53:12,568 - root - INFO - PersistenceService initialized with file path: knowledge_graph.ttl
+2025-11-22 18:53:12,568 - src.services.inference_engine - INFO - Inference engine initialized with 3 rule(s), threshold=0.8
+2025-11-22 18:53:12,568 - root - INFO - Loading knowledge graph from knowledge_graph.ttl
+2025-11-22 18:53:12,569 - root - INFO - Knowledge graph loaded successfully.
+2025-11-22 18:53:12,569 - __main__ - INFO - ✅ Services initialized successfully
+2025-11-22 18:53:12,569 - __main__ - INFO -    - Knowledge graph: 1 fact(s)
+2025-11-22 18:53:12,569 - __main__ - INFO -    - Ontologies: 17505 triple(s)
+2025-11-22 18:53:12,569 - __main__ - INFO -    - Inference rules: 3
+2025-11-22 18:53:27,562 - __main__ - INFO - 📝 Logging to file: /home/momo/Antigravity/SmartMemory/mcp_server.log
+2025-11-22 18:53:27,562 - __main__ - INFO - 🚀 Starting Semantic Memory MCP Server...
+2025-11-22 18:53:27,562 - __main__ - INFO - 📚 Loading standard ontologies (FOAF, SKOS, Schema.org)...
+2025-11-22 18:53:27,563 - src.ontology.cache - INFO - Loaded cache manifest with 2 entries
+2025-11-22 18:53:27,564 - src.ontology.loader - INFO - Loading 3 ontologies...
+2025-11-22 18:53:27,564 - src.ontology.loader - INFO - Loading ontology: foaf (Friend of a Friend (FOAF) - vocabulary for people and relationships)
+2025-11-22 18:53:27,564 - src.ontology.loader - INFO - foaf: No cache found, downloading
+2025-11-22 18:53:27,564 - src.ontology.fetcher - INFO - Downloading ontology from http://xmlns.com/foaf/0.1/
+2025-11-22 18:53:57,616 - src.ontology.loader - ERROR - foaf: Download failed: Failed to download from http://xmlns.com/foaf/0.1/: HTTPConnectionPool(host='xmlns.com', port=80): Max retries exceeded with url: /foaf/0.1/ (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x7e52f9b56b40>, 'Connection to xmlns.com timed out. (connect timeout=30)'))
+2025-11-22 18:53:57,616 - src.ontology.loader - INFO - Loading ontology: skos (Simple Knowledge Organization System (SKOS) - for concept schemes)
+2025-11-22 18:53:57,986 - src.ontology.loader - INFO - skos: Cache is up-to-date
+2025-11-22 18:53:58,009 - src.ontology.loader - INFO - Loaded 252 triples from cache/ontologies/skos.rdf
+2025-11-22 18:53:58,009 - src.ontology.loader - INFO - Loading ontology: schema (Schema.org - structured data vocabulary (curated subset))
+2025-11-22 18:53:58,331 - src.ontology.loader - INFO - schema: Cache is up-to-date
+2025-11-22 18:53:58,990 - src.ontology.loader - INFO - Loaded 17253 triples from cache/ontologies/schema.turtle
+2025-11-22 18:53:58,990 - src.ontology.loader - INFO - Loaded 2/3 ontologies successfully
+2025-11-22 18:53:58,990 - __main__ - INFO - ✓ Loaded 2/3 ontologies
+2025-11-22 18:53:58,991 - __main__ - INFO - 🧠 Creating inference rules...
+2025-11-22 18:53:58,991 - __main__ - INFO - ✓ Created 3 inference rule(s)
+2025-11-22 18:53:58,991 - root - INFO - PersistenceService initialized with file path: knowledge_graph.ttl
+2025-11-22 18:53:58,991 - src.services.inference_engine - INFO - Inference engine initialized with 3 rule(s), threshold=0.8
+2025-11-22 18:53:58,991 - root - INFO - Loading knowledge graph from knowledge_graph.ttl
+2025-11-22 18:53:58,992 - root - INFO - Knowledge graph loaded successfully.
+2025-11-22 18:53:58,992 - __main__ - INFO - ✅ Services initialized successfully
+2025-11-22 18:53:58,992 - __main__ - INFO -    - Knowledge graph: 1 fact(s)
+2025-11-22 18:53:58,992 - __main__ - INFO -    - Ontologies: 17505 triple(s)
+2025-11-22 18:53:58,993 - __main__ - INFO -    - Inference rules: 3
+2025-11-22 18:54:31,183 - __main__ - INFO - 📝 Logging to file: /home/momo/Antigravity/SmartMemory/mcp_server.log
+2025-11-22 18:54:31,184 - __main__ - INFO - 🚀 Starting Semantic Memory MCP Server...
+2025-11-22 18:54:31,184 - __main__ - INFO - 📚 Loading standard ontologies (FOAF, SKOS, Schema.org)...
+2025-11-22 18:54:31,184 - src.ontology.cache - INFO - Loaded cache manifest with 2 entries
+2025-11-22 18:54:31,185 - src.ontology.loader - INFO - Loading 2 ontologies...
+2025-11-22 18:54:31,185 - src.ontology.loader - INFO - Loading ontology: skos (Simple Knowledge Organization System (SKOS) - for concept schemes)
+2025-11-22 18:54:31,654 - src.ontology.loader - INFO - skos: Cache is up-to-date
+2025-11-22 18:54:31,679 - src.ontology.loader - INFO - Loaded 252 triples from cache/ontologies/skos.rdf
+2025-11-22 18:54:31,679 - src.ontology.loader - INFO - Loading ontology: schema (Schema.org - structured data vocabulary (curated subset))
+2025-11-22 18:54:32,001 - src.ontology.loader - INFO - schema: Cache is up-to-date
+2025-11-22 18:54:32,744 - src.ontology.loader - INFO - Loaded 17253 triples from cache/ontologies/schema.turtle
+2025-11-22 18:54:32,745 - src.ontology.loader - INFO - Loaded 2/2 ontologies successfully
+2025-11-22 18:54:32,745 - __main__ - INFO - ✓ Loaded 2/2 ontologies
+2025-11-22 18:54:32,745 - __main__ - INFO - 🧠 Creating inference rules...
+2025-11-22 18:54:32,745 - __main__ - INFO - ✓ Created 3 inference rule(s)
+2025-11-22 18:54:32,745 - root - INFO - PersistenceService initialized with file path: knowledge_graph.ttl
+2025-11-22 18:54:32,745 - src.services.inference_engine - INFO - Inference engine initialized with 3 rule(s), threshold=0.8
+2025-11-22 18:54:32,745 - root - INFO - Loading knowledge graph from knowledge_graph.ttl
+2025-11-22 18:54:32,746 - root - INFO - Knowledge graph loaded successfully.
+2025-11-22 18:54:32,747 - __main__ - INFO - ✅ Services initialized successfully
+2025-11-22 18:54:32,747 - __main__ - INFO -    - Knowledge graph: 1 fact(s)
+2025-11-22 18:54:32,747 - __main__ - INFO -    - Ontologies: 17505 triple(s)
+2025-11-22 18:54:32,747 - __main__ - INFO -    - Inference rules: 3
+2025-11-22 18:54:32,770 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-11-22 18:54:32,772 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-11-22 18:54:32,773 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-11-22 18:54:52,953 - mcp.server.lowlevel.server - INFO - Processing request of type GetPromptRequest
+2025-11-22 18:56:09,147 - mcp.server.lowlevel.server - INFO - Processing request of type CallToolRequest
+2025-11-22 18:56:09,147 - root - INFO - Adding fact: :User :likes :Programming
+2025-11-22 18:56:09,148 - src.services.inference_engine - INFO - 🔍 Rule 'programming_enthusiast' triggered by 1 fact(s)
+2025-11-22 18:56:09,148 - src.services.inference_engine - INFO -    ⚠️  Inferred (low confidence 0.70): :User :isA :Programming
+2025-11-22 18:56:09,148 - src.services.inference_engine - INFO -    → Requesting user verification
+2025-11-22 18:56:09,148 - src.services.inference_engine - INFO -    Rule 'programming_enthusiast' produced 0 automatic inference(s)
+2025-11-22 18:56:09,148 - src.services.inference_engine - INFO - 📊 Inference summary: 0 fact(s) added automatically, 1 pending verification(s)
+2025-11-22 18:56:09,148 - root - INFO - Saving knowledge graph to knowledge_graph.ttl
+2025-11-22 18:56:09,151 - root - INFO - Knowledge graph saved successfully.
+2025-11-22 18:57:08,759 - mcp.server.lowlevel.server - INFO - Processing request of type CallToolRequest
+2025-11-22 18:57:08,760 - root - INFO - Adding fact: :User :likes :SvelteJS
+2025-11-22 18:57:08,760 - src.services.inference_engine - INFO - 🔍 Rule 'programming_enthusiast' triggered by 2 fact(s)
+2025-11-22 18:57:08,760 - src.services.inference_engine - INFO -    ⚠️  Inferred (low confidence 0.70): :User :isA :Programming
+2025-11-22 18:57:08,760 - src.services.inference_engine - INFO -    → Requesting user verification
+2025-11-22 18:57:08,760 - src.services.inference_engine - INFO -    ⚠️  Inferred (low confidence 0.70): :User :isA :SvelteJS
+2025-11-22 18:57:08,760 - src.services.inference_engine - INFO -    → Requesting user verification
+2025-11-22 18:57:08,760 - src.services.inference_engine - INFO -    Rule 'programming_enthusiast' produced 0 automatic inference(s)
+2025-11-22 18:57:08,761 - src.services.inference_engine - INFO - 📊 Inference summary: 0 fact(s) added automatically, 2 pending verification(s)
+2025-11-22 18:57:08,761 - root - INFO - Saving knowledge graph to knowledge_graph.ttl
+2025-11-22 18:57:08,761 - root - INFO - Knowledge graph saved successfully.
+2025-11-22 18:57:23,944 - mcp.server.lowlevel.server - INFO - Processing request of type CallToolRequest
+2025-11-22 19:14:24,483 - __main__ - INFO - 📝 Logging to file: /home/momo/Antigravity/SmartMemory/mcp_server.log
+2025-11-22 19:14:24,483 - __main__ - INFO - 🚀 Starting Semantic Memory MCP Server...
+2025-11-22 19:14:24,483 - __main__ - INFO - 📚 Loading standard ontologies (FOAF, SKOS, Schema.org)...
+2025-11-22 19:14:24,484 - src.ontology.cache - INFO - Loaded cache manifest with 2 entries
+2025-11-22 19:14:24,485 - src.ontology.loader - INFO - Loading 2 ontologies...
+2025-11-22 19:14:24,485 - src.ontology.loader - INFO - Loading ontology: skos (Simple Knowledge Organization System (SKOS) - for concept schemes)
+2025-11-22 19:14:25,170 - src.ontology.loader - INFO - skos: Cache is up-to-date
+2025-11-22 19:14:25,192 - src.ontology.loader - INFO - Loaded 252 triples from cache/ontologies/skos.rdf
+2025-11-22 19:14:25,192 - src.ontology.loader - INFO - Loading ontology: schema (Schema.org - structured data vocabulary (curated subset))
+2025-11-22 19:14:25,265 - src.ontology.loader - INFO - schema: Cache is up-to-date
+2025-11-22 19:14:26,011 - src.ontology.loader - INFO - Loaded 17253 triples from cache/ontologies/schema.turtle
+2025-11-22 19:14:26,012 - src.ontology.loader - INFO - Loaded 2/2 ontologies successfully
+2025-11-22 19:14:26,012 - __main__ - INFO - ✓ Loaded 2/2 ontologies
+2025-11-22 19:14:26,012 - __main__ - INFO - 🧠 Creating inference rules...
+2025-11-22 19:14:26,012 - __main__ - INFO - ✓ Created 3 inference rule(s)
+2025-11-22 19:14:26,012 - root - INFO - PersistenceService initialized with file path: knowledge_graph.ttl
+2025-11-22 19:14:26,012 - src.services.inference_engine - INFO - Inference engine initialized with 3 rule(s), threshold=0.8
+2025-11-22 19:14:26,012 - root - INFO - Loading knowledge graph from knowledge_graph.ttl
+2025-11-22 19:14:26,013 - root - INFO - Knowledge graph loaded successfully.
+2025-11-22 19:14:26,013 - __main__ - INFO - ✅ Services initialized successfully
+2025-11-22 19:14:26,013 - __main__ - INFO -    - Knowledge graph: 3 fact(s)
+2025-11-22 19:14:26,013 - __main__ - INFO -    - Ontologies: 17505 triple(s)
+2025-11-22 19:14:26,013 - __main__ - INFO -    - Inference rules: 3
+2025-11-22 19:14:26,036 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-11-22 19:14:26,038 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-11-22 19:14:26,038 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-11-22 19:15:48,500 - __main__ - INFO - 📝 Logging to file: /home/momo/Antigravity/SmartMemory/mcp_server.log
+2025-11-22 19:15:48,500 - __main__ - INFO - 🚀 Starting Semantic Memory MCP Server...
+2025-11-22 19:15:48,500 - __main__ - INFO - 📚 Loading standard ontologies (FOAF, SKOS, Schema.org)...
+2025-11-22 19:15:48,501 - src.ontology.cache - INFO - Loaded cache manifest with 2 entries
+2025-11-22 19:15:48,501 - src.ontology.loader - INFO - Loading 2 ontologies...
+2025-11-22 19:15:48,501 - src.ontology.loader - INFO - Loading ontology: skos (Simple Knowledge Organization System (SKOS) - for concept schemes)
+2025-11-22 19:15:49,020 - src.ontology.loader - INFO - skos: Cache is up-to-date
+2025-11-22 19:15:49,039 - src.ontology.loader - INFO - Loaded 252 triples from cache/ontologies/skos.rdf
+2025-11-22 19:15:49,040 - src.ontology.loader - INFO - Loading ontology: schema (Schema.org - structured data vocabulary (curated subset))
+2025-11-22 19:15:49,344 - src.ontology.loader - INFO - schema: Cache is up-to-date
+2025-11-22 19:15:50,031 - src.ontology.loader - INFO - Loaded 17253 triples from cache/ontologies/schema.turtle
+2025-11-22 19:15:50,031 - src.ontology.loader - INFO - Loaded 2/2 ontologies successfully
+2025-11-22 19:15:50,031 - __main__ - INFO - ✓ Loaded 2/2 ontologies
+2025-11-22 19:15:50,031 - __main__ - INFO - 🧠 Creating inference rules...
+2025-11-22 19:15:50,032 - __main__ - INFO - ✓ Created 3 inference rule(s)
+2025-11-22 19:15:50,032 - root - INFO - PersistenceService initialized with file path: knowledge_graph.ttl
+2025-11-22 19:15:50,032 - src.services.inference_engine - INFO - Inference engine initialized with 3 rule(s), threshold=0.8
+2025-11-22 19:15:50,032 - root - INFO - Loading knowledge graph from knowledge_graph.ttl
+2025-11-22 19:15:50,033 - root - INFO - Knowledge graph loaded successfully.
+2025-11-22 19:15:50,033 - __main__ - INFO - ✅ Services initialized successfully
+2025-11-22 19:15:50,033 - __main__ - INFO -    - Knowledge graph: 3 fact(s)
+2025-11-22 19:15:50,033 - __main__ - INFO -    - Ontologies: 17505 triple(s)
+2025-11-22 19:15:50,033 - __main__ - INFO -    - Inference rules: 3
+2025-11-22 19:17:01,511 - __main__ - INFO - 📝 Logging to file: /home/momo/Antigravity/SmartMemory/mcp_server.log
+2025-11-22 19:17:01,511 - __main__ - INFO - 🚀 Starting Semantic Memory MCP Server...
+2025-11-22 19:17:01,511 - __main__ - INFO - 📚 Loading standard ontologies (FOAF, SKOS, Schema.org)...
+2025-11-22 19:17:01,512 - src.ontology.cache - INFO - Loaded cache manifest with 2 entries
+2025-11-22 19:17:01,512 - src.ontology.loader - INFO - Loading 2 ontologies...
+2025-11-22 19:17:01,512 - src.ontology.loader - INFO - Loading ontology: skos (Simple Knowledge Organization System (SKOS) - for concept schemes)
+2025-11-22 19:17:02,019 - src.ontology.loader - INFO - skos: Cache is up-to-date
+2025-11-22 19:17:02,056 - src.ontology.loader - INFO - Loaded 252 triples from cache/ontologies/skos.rdf
+2025-11-22 19:17:02,057 - src.ontology.loader - INFO - Loading ontology: schema (Schema.org - structured data vocabulary (curated subset))
+2025-11-22 19:17:02,315 - src.ontology.loader - INFO - schema: Cache is up-to-date
+2025-11-22 19:17:03,041 - src.ontology.loader - INFO - Loaded 17253 triples from cache/ontologies/schema.turtle
+2025-11-22 19:17:03,041 - src.ontology.loader - INFO - Loaded 2/2 ontologies successfully
+2025-11-22 19:17:03,041 - __main__ - INFO - ✓ Loaded 2/2 ontologies
+2025-11-22 19:17:03,041 - __main__ - INFO - 🧠 Creating inference rules...
+2025-11-22 19:17:03,041 - __main__ - INFO - ✓ Created 3 inference rule(s)
+2025-11-22 19:17:03,041 - root - INFO - PersistenceService initialized with file path: knowledge_graph.ttl
+2025-11-22 19:17:03,042 - src.services.inference_engine - INFO - Inference engine initialized with 3 rule(s), threshold=0.8
+2025-11-22 19:17:03,042 - root - INFO - Loading knowledge graph from knowledge_graph.ttl
+2025-11-22 19:17:03,043 - root - INFO - Knowledge graph loaded successfully.
+2025-11-22 19:17:03,043 - __main__ - INFO - ✅ Services initialized successfully
+2025-11-22 19:17:03,043 - __main__ - INFO -    - Knowledge graph: 3 fact(s)
+2025-11-22 19:17:03,043 - __main__ - INFO -    - Ontologies: 17505 triple(s)
+2025-11-22 19:17:03,043 - __main__ - INFO -    - Inference rules: 3
+2025-11-22 19:17:03,065 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-11-22 19:17:03,067 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-11-22 19:17:03,068 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-11-22 19:17:11,707 - __main__ - INFO - 📝 Logging to file: /home/momo/Antigravity/SmartMemory/mcp_server.log
+2025-11-22 19:17:11,707 - __main__ - INFO - 🚀 Starting Semantic Memory MCP Server...
+2025-11-22 19:17:11,707 - __main__ - INFO - 📚 Loading standard ontologies (FOAF, SKOS, Schema.org)...
+2025-11-22 19:17:11,708 - src.ontology.cache - INFO - Loaded cache manifest with 2 entries
+2025-11-22 19:17:11,708 - src.ontology.loader - INFO - Loading 2 ontologies...
+2025-11-22 19:17:11,708 - src.ontology.loader - INFO - Loading ontology: skos (Simple Knowledge Organization System (SKOS) - for concept schemes)
+2025-11-22 19:17:12,164 - src.ontology.loader - INFO - skos: Cache is up-to-date
+2025-11-22 19:17:12,183 - src.ontology.loader - INFO - Loaded 252 triples from cache/ontologies/skos.rdf
+2025-11-22 19:17:12,184 - src.ontology.loader - INFO - Loading ontology: schema (Schema.org - structured data vocabulary (curated subset))
+2025-11-22 19:17:12,410 - src.ontology.loader - INFO - schema: Cache is up-to-date
+2025-11-22 19:17:13,138 - src.ontology.loader - INFO - Loaded 17253 triples from cache/ontologies/schema.turtle
+2025-11-22 19:17:13,139 - src.ontology.loader - INFO - Loaded 2/2 ontologies successfully
+2025-11-22 19:17:13,139 - __main__ - INFO - ✓ Loaded 2/2 ontologies
+2025-11-22 19:17:13,139 - __main__ - INFO - 🧠 Creating inference rules...
+2025-11-22 19:17:13,139 - __main__ - INFO - ✓ Created 3 inference rule(s)
+2025-11-22 19:17:13,139 - root - INFO - PersistenceService initialized with file path: knowledge_graph.ttl
+2025-11-22 19:17:13,139 - src.services.inference_engine - INFO - Inference engine initialized with 3 rule(s), threshold=0.8
+2025-11-22 19:17:13,139 - root - INFO - Loading knowledge graph from knowledge_graph.ttl
+2025-11-22 19:17:13,140 - root - INFO - Knowledge graph loaded successfully.
+2025-11-22 19:17:13,140 - __main__ - INFO - ✅ Services initialized successfully
+2025-11-22 19:17:13,140 - __main__ - INFO -    - Knowledge graph: 3 fact(s)
+2025-11-22 19:17:13,140 - __main__ - INFO -    - Ontologies: 17505 triple(s)
+2025-11-22 19:17:13,140 - __main__ - INFO -    - Inference rules: 3
+2025-11-22 19:20:13,881 - __main__ - INFO - 📝 Logging to file: /home/momo/Antigravity/SmartMemory/mcp_server.log
+2025-11-22 19:20:13,881 - __main__ - INFO - 🚀 Starting Semantic Memory MCP Server...
+2025-11-22 19:20:13,881 - __main__ - INFO - 📚 Loading standard ontologies (FOAF, SKOS, Schema.org)...
+2025-11-22 19:20:13,882 - src.ontology.cache - INFO - Loaded cache manifest with 2 entries
+2025-11-22 19:20:13,883 - src.ontology.loader - INFO - Loading 2 ontologies...
+2025-11-22 19:20:13,883 - src.ontology.loader - INFO - Loading ontology: skos (Simple Knowledge Organization System (SKOS) - for concept schemes)
+2025-11-22 19:20:14,444 - src.ontology.loader - INFO - skos: Cache is up-to-date
+2025-11-22 19:20:14,469 - src.ontology.loader - INFO - Loaded 252 triples from cache/ontologies/skos.rdf
+2025-11-22 19:20:14,469 - src.ontology.loader - INFO - Loading ontology: schema (Schema.org - structured data vocabulary (curated subset))
+2025-11-22 19:20:14,656 - src.ontology.loader - INFO - schema: Cache is up-to-date
+2025-11-22 19:20:15,400 - src.ontology.loader - INFO - Loaded 17253 triples from cache/ontologies/schema.turtle
+2025-11-22 19:20:15,400 - src.ontology.loader - INFO - Loaded 2/2 ontologies successfully
+2025-11-22 19:20:15,400 - __main__ - INFO - ✓ Loaded 2/2 ontologies
+2025-11-22 19:20:15,401 - __main__ - INFO - 🧠 Creating inference rules...
+2025-11-22 19:20:15,401 - __main__ - INFO - ✓ Created 3 inference rule(s)
+2025-11-22 19:20:15,401 - root - INFO - PersistenceService initialized with file path: knowledge_graph.ttl
+2025-11-22 19:20:15,401 - src.services.inference_engine - INFO - Inference engine initialized with 3 rule(s), threshold=0.8
+2025-11-22 19:20:15,401 - root - INFO - Loading knowledge graph from knowledge_graph.ttl
+2025-11-22 19:20:15,402 - root - INFO - Knowledge graph loaded successfully.
+2025-11-22 19:20:15,402 - __main__ - INFO - ✅ Services initialized successfully
+2025-11-22 19:20:15,402 - __main__ - INFO -    - Knowledge graph: 3 fact(s)
+2025-11-22 19:20:15,402 - __main__ - INFO -    - Ontologies: 17505 triple(s)
+2025-11-22 19:20:15,402 - __main__ - INFO -    - Inference rules: 3
+2025-11-22 19:20:15,423 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2025-11-22 19:20:15,425 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2025-11-22 19:20:15,426 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2025-11-22 19:27:05,971 - __main__ - INFO - 📝 Logging to file: /home/momo/Antigravity/SmartMemory/mcp_server.log
+2025-11-22 19:27:05,971 - __main__ - INFO - 🚀 Starting Semantic Memory MCP Server...
+2025-11-22 19:27:05,971 - __main__ - INFO - 📚 Loading standard ontologies (FOAF, SKOS, Schema.org)...
+2025-11-22 19:27:05,972 - src.ontology.cache - INFO - Loaded cache manifest with 2 entries
+2025-11-22 19:27:05,972 - src.ontology.loader - INFO - Loading 2 ontologies...
+2025-11-22 19:27:05,972 - src.ontology.loader - INFO - Loading ontology: skos (Simple Knowledge Organization System (SKOS) - for concept schemes)
+2025-11-22 19:27:06,536 - src.ontology.loader - INFO - skos: Cache is up-to-date
+2025-11-22 19:27:06,556 - src.ontology.loader - INFO - Loaded 252 triples from cache/ontologies/skos.rdf
+2025-11-22 19:27:06,556 - src.ontology.loader - INFO - Loading ontology: schema (Schema.org - structured data vocabulary (curated subset))
+2025-11-22 19:27:06,782 - src.ontology.loader - INFO - schema: Cache is up-to-date
+2025-11-22 19:27:07,503 - src.ontology.loader - INFO - Loaded 17253 triples from cache/ontologies/schema.turtle
+2025-11-22 19:27:07,503 - src.ontology.loader - INFO - Loaded 2/2 ontologies successfully
+2025-11-22 19:27:07,503 - __main__ - INFO - ✓ Loaded 2/2 ontologies
+2025-11-22 19:27:07,503 - __main__ - INFO - 🧠 Creating inference rules...
+2025-11-22 19:27:07,504 - __main__ - INFO - ✓ Created 3 inference rule(s)
+2025-11-22 19:27:07,504 - root - INFO - PersistenceService initialized with file path: knowledge_graph.ttl
+2025-11-22 19:27:07,504 - src.services.inference_engine - INFO - Inference engine initialized with 3 rule(s), threshold=0.8
+2025-11-22 19:27:07,504 - root - INFO - Loading knowledge graph from knowledge_graph.ttl
+2025-11-22 19:27:07,505 - root - INFO - Knowledge graph loaded successfully.
+2025-11-22 19:27:07,505 - __main__ - INFO - ✅ Services initialized successfully
+2025-11-22 19:27:07,505 - __main__ - INFO -    - Knowledge graph: 3 fact(s)
+2025-11-22 19:27:07,505 - __main__ - INFO -    - Ontologies: 17505 triple(s)
+2025-11-22 19:27:07,505 - __main__ - INFO -    - Inference rules: 3

@@ -1,0 +1,694 @@
+# MCP Tools Contract: Semantic Memory Server
+# Feature: 003-semantic-memory-server
+# Date: 2025-11-22
+# Protocol: Model Context Protocol (MCP)
+
+version: "1.0"
+server:
+  name: "semantic-memory"
+  version: "0.1.0"
+  description: "Active knowledge graph with automatic inference capabilities"
+
+tools:
+  - name: "add_memory"
+    description: "Store a natural language statement as RDF triples in the knowledge graph. The system automatically infers additional facts using loaded ontologies and custom rules."
+
+    input_schema:
+      type: "object"
+      properties:
+        text:
+          type: "string"
+          description: "Natural language statement to convert to RDF triples (e.g., 'Alice works at TechCorp')"
+          minLength: 1
+          maxLength: 5000
+        context:
+          type: "object"
+          description: "Optional metadata to aid triple extraction"
+          properties:
+            namespace:
+              type: "string"
+              description: "Preferred namespace for new entities (defaults to http://example.org/)"
+            language:
+              type: "string"
+              description: "Language code for literals (e.g., 'en', 'fr')"
+              default: "en"
+          required: []
+      required: ["text"]
+
+    output_schema:
+      type: "object"
+      properties:
+        status:
+          type: "string"
+          enum: ["success", "partial", "error"]
+          description: "Overall status of the operation"
+
+        explicit_triples:
+          type: "array"
+          description: "Triples directly extracted from input text"
+          items:
+            type: "object"
+            properties:
+              subject:
+                type: "string"
+                description: "Subject URI"
+              predicate:
+                type: "string"
+                description: "Predicate URI from ontology"
+              object:
+                type: "string"
+                description: "Object URI or literal value"
+            required: ["subject", "predicate", "object"]
+
+        inferred_triples:
+          type: "array"
+          description: "Triples automatically inferred from explicit triples"
+          items:
+            type: "object"
+            properties:
+              subject:
+                type: "string"
+              predicate:
+                type: "string"
+              object:
+                type: "string"
+              source:
+                type: "string"
+                enum: ["owlrl", "sparql-rule"]
+                description: "Inference mechanism that generated this triple"
+              source_rule:
+                type: "string"
+                description: "Rule filename if source is sparql-rule"
+            required: ["subject", "predicate", "object", "source"]
+
+        verification_requests:
+          type: "array"
+          description: "Uncertain inferences requiring user confirmation"
+          items:
+            type: "object"
+            properties:
+              id:
+                type: "string"
+                description: "Verification request ID (pass to verify_inference)"
+              triple:
+                type: "object"
+                properties:
+                  subject:
+                    type: "string"
+                  predicate:
+                    type: "string"
+                  object:
+                    type: "string"
+              confidence:
+                type: "number"
+                minimum: 0.0
+                maximum: 1.0
+                description: "Confidence score for this inference"
+              explanation:
+                type: "string"
+                description: "Human-readable explanation of why this was inferred"
+            required: ["id", "triple", "confidence"]
+
+        conflicts_detected:
+          type: "array"
+          description: "Inconsistencies found with existing knowledge"
+          items:
+            type: "object"
+            properties:
+              type:
+                type: "string"
+                enum: ["contradictory_literal", "disjoint_class", "functional_property"]
+              existing_triple:
+                type: "object"
+              new_triple:
+                type: "object"
+              explanation:
+                type: "string"
+
+        warnings:
+          type: "array"
+          description: "Non-fatal issues (e.g., custom predicates used)"
+          items:
+            type: "string"
+
+        error:
+          type: "string"
+          description: "Error message if status is 'error'"
+
+      required: ["status", "explicit_triples", "inferred_triples"]
+
+    examples:
+      - input:
+          text: "Alice works at TechCorp"
+        output:
+          status: "success"
+          explicit_triples:
+            - subject: "http://example.org/alice"
+              predicate: "https://schema.org/worksFor"
+              object: "http://example.org/TechCorp"
+          inferred_triples:
+            - subject: "http://example.org/alice"
+              predicate: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+              object: "http://xmlns.com/foaf/0.1/Agent"
+              source: "owlrl"
+          verification_requests: []
+          conflicts_detected: []
+          warnings: []
+
+  - name: "query_memory"
+    description: "Execute a SPARQL SELECT query against the knowledge graph. Returns both explicit and inferred facts."
+
+    input_schema:
+      type: "object"
+      properties:
+        sparql:
+          type: "string"
+          description: "SPARQL SELECT query"
+          minLength: 10
+
+        include_provenance:
+          type: "boolean"
+          description: "Include provenance metadata in results"
+          default: false
+
+        limit:
+          type: "integer"
+          description: "Maximum number of results"
+          minimum: 1
+          maximum: 10000
+          default: 100
+
+      required: ["sparql"]
+
+    output_schema:
+      type: "object"
+      properties:
+        status:
+          type: "string"
+          enum: ["success", "error"]
+
+        results:
+          type: "array"
+          description: "Query result bindings"
+          items:
+            type: "object"
+            additionalProperties: true
+
+        count:
+          type: "integer"
+          description: "Number of results returned"
+
+        execution_time_ms:
+          type: "number"
+          description: "Query execution time in milliseconds"
+
+        error:
+          type: "string"
+          description: "Error message if query failed"
+
+      required: ["status", "results", "count"]
+
+    examples:
+      - input:
+          sparql: |
+            PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+            SELECT ?person ?name WHERE {
+              ?person a foaf:Person .
+              ?person foaf:name ?name .
+            }
+          limit: 10
+        output:
+          status: "success"
+          results:
+            - person: "http://example.org/alice"
+              name: "Alice"
+            - person: "http://example.org/bob"
+              name: "Bob"
+          count: 2
+          execution_time_ms: 45.2
+
+  - name: "search_entity"
+    description: "Retrieve all facts (explicit and inferred) about a specific entity, with provenance information."
+
+    input_schema:
+      type: "object"
+      properties:
+        entity_uri:
+          type: "string"
+          description: "Full URI of the entity to search"
+
+        entity_label:
+          type: "string"
+          description: "Alternative: search by label (if entity_uri not provided)"
+
+        include_incoming:
+          type: "boolean"
+          description: "Include triples where entity is the object"
+          default: true
+
+        max_depth:
+          type: "integer"
+          description: "Maximum depth for related entities (0 = direct facts only)"
+          minimum: 0
+          maximum: 3
+          default: 0
+
+      oneOf:
+        - required: ["entity_uri"]
+        - required: ["entity_label"]
+
+    output_schema:
+      type: "object"
+      properties:
+        status:
+          type: "string"
+          enum: ["success", "not_found", "error"]
+
+        entity_uri:
+          type: "string"
+          description: "Resolved entity URI"
+
+        explicit_facts:
+          type: "array"
+          description: "User-provided triples"
+          items:
+            type: "object"
+            properties:
+              predicate:
+                type: "string"
+              object:
+                type: "string"
+              timestamp:
+                type: "string"
+                format: "date-time"
+
+        inferred_facts:
+          type: "array"
+          description: "System-generated triples"
+          items:
+            type: "object"
+            properties:
+              predicate:
+                type: "string"
+              object:
+                type: "string"
+              source:
+                type: "string"
+                enum: ["owlrl", "sparql-rule"]
+              source_rule:
+                type: "string"
+              timestamp:
+                type: "string"
+                format: "date-time"
+
+        types:
+          type: "array"
+          description: "RDF types of this entity"
+          items:
+            type: "string"
+
+        related_entities:
+          type: "array"
+          description: "Entities connected to this one (if max_depth > 0)"
+          items:
+            type: "object"
+            properties:
+              uri:
+                type: "string"
+              relation:
+                type: "string"
+              depth:
+                type: "integer"
+
+        error:
+          type: "string"
+
+      required: ["status"]
+
+    examples:
+      - input:
+          entity_uri: "http://example.org/alice"
+          include_incoming: true
+          max_depth: 1
+        output:
+          status: "success"
+          entity_uri: "http://example.org/alice"
+          explicit_facts:
+            - predicate: "https://schema.org/worksFor"
+              object: "http://example.org/TechCorp"
+              timestamp: "2025-11-22T10:30:00Z"
+          inferred_facts:
+            - predicate: "https://schema.org/colleague"
+              object: "http://example.org/bob"
+              source: "sparql-rule"
+              source_rule: "coworkers_inference.rq"
+              timestamp: "2025-11-22T10:30:05Z"
+          types:
+            - "https://schema.org/Person"
+            - "http://xmlns.com/foaf/0.1/Agent"
+          related_entities:
+            - uri: "http://example.org/TechCorp"
+              relation: "https://schema.org/worksFor"
+              depth: 1
+
+  - name: "verify_inference"
+    description: "Confirm or reject an uncertain inference that requires user verification."
+
+    input_schema:
+      type: "object"
+      properties:
+        verification_id:
+          type: "string"
+          description: "ID from verification_requests in add_memory response"
+
+        accept:
+          type: "boolean"
+          description: "true to confirm and add to graph, false to reject"
+
+        feedback:
+          type: "string"
+          description: "Optional user feedback about why accepted/rejected"
+          maxLength: 500
+
+      required: ["verification_id", "accept"]
+
+    output_schema:
+      type: "object"
+      properties:
+        status:
+          type: "string"
+          enum: ["confirmed", "rejected", "not_found", "error"]
+
+        triple:
+          type: "object"
+          description: "The triple that was confirmed or rejected"
+          properties:
+            subject:
+              type: "string"
+            predicate:
+              type: "string"
+            object:
+              type: "string"
+
+        added_to_graph:
+          type: "boolean"
+          description: "true if triple was inserted into main graph"
+
+        error:
+          type: "string"
+
+      required: ["status"]
+
+    examples:
+      - input:
+          verification_id: "ver_abc123"
+          accept: true
+          feedback: "Confirmed - they do work together"
+        output:
+          status: "confirmed"
+          triple:
+            subject: "http://example.org/alice"
+            predicate: "http://xmlns.com/foaf/0.1/knows"
+            object: "http://example.org/bob"
+          added_to_graph: true
+
+  - name: "load_custom_rule"
+    description: "Load and validate a custom SPARQL CONSTRUCT rule from user_rules/ directory. Rules are automatically loaded on startup; this tool is for dynamic reloading."
+
+    input_schema:
+      type: "object"
+      properties:
+        rule_filename:
+          type: "string"
+          description: "Filename of .rq file in user_rules/ (e.g., 'my_rule.rq')"
+          pattern: "^[a-zA-Z0-9_-]+\\.rq$"
+
+        reload_all:
+          type: "boolean"
+          description: "Reload all rules from both default and custom directories"
+          default: false
+
+      required: ["rule_filename"]
+
+    output_schema:
+      type: "object"
+      properties:
+        status:
+          type: "string"
+          enum: ["loaded", "validation_error", "not_found", "error"]
+
+        rule_id:
+          type: "string"
+          description: "Identifier for the loaded rule"
+
+        description:
+          type: "string"
+          description: "Extracted description from rule file"
+
+        validation_errors:
+          type: "array"
+          description: "SPARQL syntax errors or semantic issues"
+          items:
+            type: "string"
+
+        warnings:
+          type: "array"
+          description: "Non-fatal issues (e.g., missing FILTER NOT EXISTS)"
+          items:
+            type: "string"
+
+        error:
+          type: "string"
+
+      required: ["status"]
+
+    examples:
+      - input:
+          rule_filename: "my_custom_rule.rq"
+        output:
+          status: "loaded"
+          rule_id: "my_custom_rule"
+          description: "Custom inference for project relationships"
+          validation_errors: []
+          warnings:
+            - "Rule does not use FILTER NOT EXISTS - may generate duplicate inferences"
+
+  - name: "list_rules"
+    description: "List all loaded inference rules with execution statistics."
+
+    input_schema:
+      type: "object"
+      properties:
+        include_inactive:
+          type: "boolean"
+          description: "Include rules that failed validation"
+          default: false
+      required: []
+
+    output_schema:
+      type: "object"
+      properties:
+        status:
+          type: "string"
+          enum: ["success"]
+
+        rules:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              id:
+                type: "string"
+                description: "Rule identifier (filename without .rq)"
+              source:
+                type: "string"
+                enum: ["default", "custom"]
+              description:
+                type: "string"
+              is_active:
+                type: "boolean"
+              execution_count:
+                type: "integer"
+                description: "Number of times executed since startup"
+              triples_generated:
+                type: "integer"
+                description: "Total triples created by this rule"
+              file_path:
+                type: "string"
+            required: ["id", "source", "is_active"]
+
+        total_count:
+          type: "integer"
+
+        active_count:
+          type: "integer"
+
+      required: ["status", "rules", "total_count", "active_count"]
+
+    examples:
+      - input:
+          include_inactive: false
+        output:
+          status: "success"
+          rules:
+            - id: "spatial_transitivity"
+              source: "default"
+              description: "Infers transitive containment relationships"
+              is_active: true
+              execution_count: 5
+              triples_generated: 12
+              file_path: "/src/rules/defaults/spatial_transitivity.rq"
+            - id: "social_symmetry"
+              source: "default"
+              description: "Makes foaf:knows symmetric"
+              is_active: true
+              execution_count: 5
+              triples_generated: 8
+              file_path: "/src/rules/defaults/social_symmetry.rq"
+          total_count: 2
+          active_count: 2
+
+  - name: "get_graph_stats"
+    description: "Retrieve statistics about the knowledge graph (triple counts, ontology status, recent activity)."
+
+    input_schema:
+      type: "object"
+      properties: {}
+      required: []
+
+    output_schema:
+      type: "object"
+      properties:
+        status:
+          type: "string"
+          enum: ["success"]
+
+        triple_counts:
+          type: "object"
+          properties:
+            total:
+              type: "integer"
+            explicit:
+              type: "integer"
+            inferred:
+              type: "integer"
+            inferred_owlrl:
+              type: "integer"
+            inferred_sparql:
+              type: "integer"
+          required: ["total", "explicit", "inferred"]
+
+        ontologies_loaded:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              name:
+                type: "string"
+              namespace:
+                type: "string"
+              source:
+                type: "string"
+                enum: ["cached", "network"]
+              triple_count:
+                type: "integer"
+
+        rules_loaded:
+          type: "object"
+          properties:
+            default_count:
+              type: "integer"
+            custom_count:
+              type: "integer"
+            active_count:
+              type: "integer"
+
+        recent_activity:
+          type: "object"
+          properties:
+            last_memory_added:
+              type: "string"
+              format: "date-time"
+            last_inference_run:
+              type: "string"
+              format: "date-time"
+            inferences_last_24h:
+              type: "integer"
+
+        conflicts:
+          type: "object"
+          properties:
+            total_count:
+              type: "integer"
+            unresolved_count:
+              type: "integer"
+
+        pending_verifications:
+          type: "integer"
+          description: "Number of uncertain inferences awaiting confirmation"
+
+      required: ["status", "triple_counts", "ontologies_loaded", "rules_loaded"]
+
+    examples:
+      - input: {}
+        output:
+          status: "success"
+          triple_counts:
+            total: 1247
+            explicit: 485
+            inferred: 762
+            inferred_owlrl: 520
+            inferred_sparql: 242
+          ontologies_loaded:
+            - name: "FOAF"
+              namespace: "http://xmlns.com/foaf/0.1/"
+              source: "cached"
+              triple_count: 135
+            - name: "Schema.org"
+              namespace: "https://schema.org/"
+              source: "cached"
+              triple_count: 892
+          rules_loaded:
+            default_count: 5
+            custom_count: 2
+            active_count: 7
+          recent_activity:
+            last_memory_added: "2025-11-22T10:45:00Z"
+            last_inference_run: "2025-11-22T10:45:01Z"
+            inferences_last_24h: 156
+          conflicts:
+            total_count: 2
+            unresolved_count: 1
+          pending_verifications: 3
+
+errors:
+  - code: "INVALID_SPARQL"
+    message: "The provided SPARQL query is invalid"
+    http_status: 400
+
+  - code: "TRIPLE_EXTRACTION_FAILED"
+    message: "Could not extract triples from natural language input"
+    http_status: 422
+
+  - code: "VERIFICATION_NOT_FOUND"
+    message: "Verification request ID not found"
+    http_status: 404
+
+  - code: "RULE_VALIDATION_ERROR"
+    message: "SPARQL rule contains syntax or semantic errors"
+    http_status: 400
+
+  - code: "INFERENCE_TIMEOUT"
+    message: "Inference took too long (possible infinite loop)"
+    http_status: 504
+
+  - code: "ONTOLOGY_LOAD_ERROR"
+    message: "Failed to load required ontology"
+    http_status: 500
+
+notes:
+  - "All tools return results synchronously (MCP does not support streaming yet)"
+  - "URIs in responses may be abbreviated with namespace prefixes for readability"
+  - "Timestamps are in ISO 8601 format (UTC)"
+  - "Provenance tracking is automatic and cannot be disabled"
+  - "Rule execution order: default rules first, then custom rules, alphabetically within each"

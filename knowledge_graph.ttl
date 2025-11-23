@@ -1,0 +1,9 @@
+@prefix ns1: <:> .
+
+ns1:User ns1:dislikes ns1:long_distance_driving ;
+    ns1:likes ns1:ChocolatePancakes,
+        ns1:Prolog,
+        ns1:SvelteJS,
+        ns1:gardening ;
+    ns1:prefers ns1:train_travel .
+
