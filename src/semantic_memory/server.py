@@ -31,9 +31,12 @@ class SemanticMemoryServer:
         self.ontology_loader = None
         self.reasoner = None
         self.rule_engine = None
+        self.triple_extractor = None
 
         logger.info(f"Initializing Semantic Memory Server v{self._get_version()}")
-        logger.info(f"Configuration: {config}")
+        logger.debug(f"Cache directory: {config.cache_dir}")
+        logger.debug(f"Persistence path: {config.persistence_path}")
+        logger.debug(f"Persistence backend: {config.persistence_backend}")
 
     def _get_version(self) -> str:
         """Get the server version."""
@@ -53,27 +56,61 @@ class SemanticMemoryServer:
         """
         logger.info("Starting up Semantic Memory server...")
 
-        # TODO: Initialize ProvenanceGraph
-        # from semantic_memory.knowledge import ProvenanceGraph
-        # self.graph = ProvenanceGraph()
-        # self.graph.load_from_file(config.persistence_path)
+        # Initialize ProvenanceGraph
+        from semantic_memory.knowledge import ProvenanceGraph
 
-        # TODO: Load standard ontologies
-        # from semantic_memory.inference.ontology_loader import OntologyLoader
-        # self.ontology_loader = OntologyLoader()
-        # await self.ontology_loader.load_standard_ontologies(self.graph)
+        self.graph = ProvenanceGraph()
+        logger.info("Provenance graph initialized")
 
-        # TODO: Apply OWL-RL reasoning
-        # from semantic_memory.inference.reasoner import Reasoner
-        # self.reasoner = Reasoner()
-        # self.reasoner.apply_closure(self.graph)
+        # Load persisted knowledge graph if it exists
+        if config.persistence_path.exists():
+            try:
+                self.graph.load_from_file(config.persistence_path)
+                logger.info(
+                    f"Loaded {self.graph.get_triple_count()} triples from {config.persistence_path}"
+                )
+            except Exception as e:
+                logger.warning(f"Failed to load persisted graph: {e}")
 
-        # TODO: Load inference rules
+        # Initialize triple extractor
+        from semantic_memory.nlp import TripleExtractor
+
+        self.triple_extractor = TripleExtractor()
+        logger.info("Triple extractor initialized")
+
+        # Load standard ontologies
+        from semantic_memory.inference.ontology_loader import OntologyLoader
+
+        self.ontology_loader = OntologyLoader()
+        try:
+            await self.ontology_loader.load_standard_ontologies(self.graph)
+            logger.info("Standard ontologies loaded")
+        except Exception as e:
+            logger.error(f"Failed to load ontologies: {e}", exc_info=True)
+            logger.warning("Continuing without ontologies...")
+
+        # Initialize reasoner
+        from semantic_memory.inference.reasoner import Reasoner
+
+        self.reasoner = Reasoner()
+        logger.info("Reasoner initialized")
+
+        # Apply initial OWL-RL reasoning
+        try:
+            inferred = self.reasoner.apply_closure(self.graph)
+            logger.info(f"Initial OWL-RL reasoning inferred {inferred} triples")
+        except Exception as e:
+            logger.error(f"Initial reasoning failed: {e}", exc_info=True)
+
+        # TODO: Load inference rules (Phase 4 - User Story 2)
         # from semantic_memory.inference.rule_engine import RuleEngine
         # self.rule_engine = RuleEngine()
         # await self.rule_engine.load_default_rules()
 
-        logger.info("Semantic Memory server startup complete")
+        logger.info(
+            f"Semantic Memory server startup complete. "
+            f"Knowledge graph has {self.graph.get_triple_count()} triples."
+        )
 
     async def shutdown(self) -> None:
         """
@@ -83,10 +120,16 @@ class SemanticMemoryServer:
         """
         logger.info("Shutting down Semantic Memory server...")
 
-        # TODO: Save graph to persistence
-        # if self.graph:
-        #     self.graph.save_to_file(config.persistence_path)
-        #     logger.info(f"Knowledge graph saved to {config.persistence_path}")
+        # Save graph to persistence
+        if self.graph:
+            try:
+                self.graph.save_to_file(config.persistence_path)
+                logger.info(
+                    f"Knowledge graph saved to {config.persistence_path} "
+                    f"({self.graph.get_triple_count()} triples)"
+                )
+            except Exception as e:
+                logger.error(f"Failed to save graph: {e}", exc_info=True)
 
         logger.info("Shutdown complete")
 
@@ -98,28 +141,49 @@ class SemanticMemoryServer:
         - add_memory: Add natural language or RDF triples
         - query_memory: Execute SPARQL queries
         - search_entity: Full-text search for entities
-        - verify_inference: Confirm/reject uncertain inferences
-        - load_custom_rule: Load user-defined SPARQL rules
-        - list_rules: List all active rules
-        - get_graph_stats: Get knowledge graph statistics
+        - verify_inference: Confirm/reject uncertain inferences (TODO: Phase 3)
+        - load_custom_rule: Load user-defined SPARQL rules (TODO: Phase 4)
+        - list_rules: List all active rules (TODO: Phase 4)
+        - get_graph_stats: Get knowledge graph statistics (TODO: Phase 5)
         """
         logger.info("Registering MCP tools...")
 
-        # TODO: Import and register tools
-        # from semantic_memory.tools.add_memory import add_memory
-        # from semantic_memory.tools.query_memory import query_memory
-        # from semantic_memory.tools.search_entity import search_entity
-        # from semantic_memory.tools.verify_inference import verify_inference
-        # from semantic_memory.tools.load_custom_rule import load_custom_rule
-        # from semantic_memory.tools.list_rules import list_rules
-        # from semantic_memory.tools.get_graph_stats import get_graph_stats
+        # Import tools
+        from semantic_memory.tools.add_memory import ADD_MEMORY_TOOL, add_memory
+        from semantic_memory.tools.query_memory import QUERY_MEMORY_TOOL, query_memory
+        from semantic_memory.tools.search_entity import SEARCH_ENTITY_TOOL, search_entity
 
-        # Register each tool with the server
-        # self.server.add_tool(add_memory)
-        # self.server.add_tool(query_memory)
-        # ... etc
+        # Register add_memory
+        @self.server.call_tool()
+        async def handle_call_tool(name: str, arguments: dict) -> list:
+            """Handle tool calls."""
+            logger.info(f"Tool called: {name}")
 
-        logger.info("MCP tools registered")
+            if name == "add_memory":
+                return await add_memory(
+                    arguments,
+                    self.graph,
+                    self.reasoner,
+                    self.triple_extractor,
+                )
+            elif name == "query_memory":
+                return await query_memory(arguments, self.graph)
+            elif name == "search_entity":
+                return await search_entity(arguments, self.graph)
+            else:
+                raise ValueError(f"Unknown tool: {name}")
+
+        # Register tool schemas
+        @self.server.list_tools()
+        async def handle_list_tools() -> list:
+            """List available tools."""
+            return [
+                ADD_MEMORY_TOOL,
+                QUERY_MEMORY_TOOL,
+                SEARCH_ENTITY_TOOL,
+            ]
+
+        logger.info("MCP tools registered: add_memory, query_memory, search_entity")
 
     async def run(self) -> None:
         """Run the MCP server with stdio transport."""
