@@ -100,6 +100,15 @@ To use this MCP server with Claude Desktop or other MCP clients, add to your MCP
 }
 ```
 
+Commande Claude complete:
+
+claude mcp add-json semantic-memory '{
+    "command": 
+  "/home/momo/Antigravity/SmartMemory/venv/bin/python",
+    "args": ["-m", "semantic_memory.server"]
+  }'
+
+
 **Other MCP Clients:**
 ```json
 {
