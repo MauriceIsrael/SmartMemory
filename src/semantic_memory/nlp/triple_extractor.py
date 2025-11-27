@@ -52,39 +52,64 @@ class TripleExtractor:
         - handler: Function to convert match to ExtractedTriple
         """
         return [
+            # First-person "I know X" (English)
+            {
+                "name": "i_know",
+                "regex": r"(?:I|i)\s+(?:know|knows)\s+(\w+)",
+                "handler": self._handle_i_know,
+            },
+            # First-person "Je connais X" (French)
+            {
+                "name": "je_connais",
+                "regex": r"(?:Je|je|J'|j')\s+(?:connais|connaît|connait|sais)\s+(\w+)",
+                "handler": self._handle_i_know,
+            },
+            # Work relationships (English)
             {
                 "name": "works_at",
                 "regex": r"(\w+)\s+(?:works at|works for|is employed by)\s+(.+)",
                 "handler": self._handle_works_at,
             },
+            # Work relationships (French)
+            {
+                "name": "works_at_fr",
+                "regex": r"(\w+)\s+(?:travaille chez|travaille à|bosse chez|bosse à|est employé par|est employée par)\s+(.+)",
+                "handler": self._handle_works_at,
+            },
+            # Social relationships
             {
                 "name": "knows",
-                "regex": r"(\w+)\s+(?:knows|is friends with|is a friend of)\s+(\w+)",
+                "regex": r"(\w+)\s+(?:knows|is friends with|is a friend of|connaît|connait|est ami avec|est amie avec)\s+(\w+)",
                 "handler": self._handle_knows,
             },
+            # Type/classification
             {
                 "name": "is_a",
-                "regex": r"(\w+)\s+(?:is a|is an)\s+(\w+)",
+                "regex": r"(\w+)\s+(?:is a|is an|est un|est une)\s+(\w+)",
                 "handler": self._handle_is_a,
             },
+            # Location
             {
                 "name": "located_in",
-                "regex": r"(\w+)\s+(?:is in|is located in|is contained in)\s+(.+)",
+                "regex": r"(\w+)\s+(?:is in|is located in|is contained in|est à|est en|se trouve à|se trouve en)\s+(.+)",
                 "handler": self._handle_located_in,
             },
+            # Events
             {
                 "name": "attended_event",
-                "regex": r"(\w+)\s+(?:attended|went to|participated in)\s+(.+)",
+                "regex": r"(\w+)\s+(?:attended|went to|participated in|a assisté à|est allé à|est allée à|a participé à)\s+(.+)",
                 "handler": self._handle_attended,
             },
+            # Creation
             {
                 "name": "created",
-                "regex": r"(\w+)\s+(?:created|wrote|made|authored)\s+(.+)",
+                "regex": r"(\w+)\s+(?:created|wrote|made|authored|a créé|a écrit|a fait)\s+(.+)",
                 "handler": self._handle_created,
             },
+            # Topics
             {
                 "name": "about_topic",
-                "regex": r"(.+?)\s+(?:is about|covers|discusses)\s+(.+)",
+                "regex": r"(.+?)\s+(?:is about|covers|discusses|parle de|traite de|concerne)\s+(.+)",
                 "handler": self._handle_about,
             },
         ]
@@ -102,6 +127,35 @@ class TripleExtractor:
         # Clean the name
         clean_name = name.strip().replace(" ", "_")
         return USER_NS[clean_name]
+
+    def _handle_i_know(self, match: re.Match) -> list[ExtractedTriple]:
+        """Handle 'I know X' or 'Je connais X' pattern."""
+        person2 = match.group(1)
+        
+        # Use :User for the current user
+        user_uri = self._make_uri("User")
+        person2_uri = self._make_uri(person2)
+        
+        return [
+            ExtractedTriple(
+                subject=user_uri,
+                predicate=FOAF.knows,
+                object=person2_uri,
+                confidence=0.9,
+            ),
+            ExtractedTriple(
+                subject=user_uri,
+                predicate=RDF.type,
+                object=FOAF.Person,
+                confidence=0.85,
+            ),
+            ExtractedTriple(
+                subject=person2_uri,
+                predicate=RDF.type,
+                object=FOAF.Person,
+                confidence=0.85,
+            ),
+        ]
 
     def _handle_works_at(self, match: re.Match) -> list[ExtractedTriple]:
         """Handle 'X works at Y' pattern."""

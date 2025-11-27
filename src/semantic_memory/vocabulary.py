@@ -15,6 +15,7 @@ SOURCE_RULE = SEM.sourceRule  # URI of the SPARQL rule file that generated this 
 TIMESTAMP = SEM.timestamp  # xsd:dateTime when the triple was added
 CONFIDENCE = SEM.confidence  # xsd:decimal between 0.0 and 1.0
 UNCERTAIN = SEM.uncertain  # xsd:boolean - true if verification is needed
+UNCERTAIN_PREDICATE = SEM.uncertainPredicate # a predicate that is uncertain
 
 # Verification properties
 VERIFICATION_ID = SEM.verificationId  # Unique ID for pending verifications
@@ -44,6 +45,7 @@ def get_provenance_predicates() -> list[URIRef]:
         TIMESTAMP,
         CONFIDENCE,
         UNCERTAIN,
+        UNCERTAIN_PREDICATE,
         VERIFICATION_ID,
         VERIFICATION_QUESTION,
         VERIFICATION_STATUS,
@@ -65,6 +67,7 @@ __all__ = [
     "TIMESTAMP",
     "CONFIDENCE",
     "UNCERTAIN",
+    "UNCERTAIN_PREDICATE",
     # Verification properties
     "VERIFICATION_ID",
     "VERIFICATION_QUESTION",

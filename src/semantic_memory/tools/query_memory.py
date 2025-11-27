@@ -40,6 +40,8 @@ QUERY_MEMORY_TOOL = Tool(
 )
 
 
+import time
+
 async def query_memory(
     arguments: dict[str, Any],
     graph,
@@ -60,9 +62,29 @@ async def query_memory(
     logger.info(f"query_memory called with {len(query_str)} char query")
     logger.debug(f"Query: {query_str}")
 
+    # Auto-prepend common PREFIX declarations if not already present
+    # This helps when Gemini forgets to include them
+    common_prefixes = """PREFIX : <http://semanticmemory.org/user#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX schema: <https://schema.org/>
+PREFIX sem: <http://example.org/semanticmemory/>
+
+"""
+    
+    # Only prepend if query doesn't already have PREFIX declarations
+    if "PREFIX" not in query_str.upper():
+        query_str = common_prefixes + query_str
+        logger.debug("Auto-prepended common PREFIX declarations")
+
     try:
         # Execute the query
+        start_time = time.time()
         results = graph.query(query_str)
+        execution_time_ms = (time.time() - start_time) * 1000
+        logger.info(f"Query executed in {execution_time_ms:.2f} ms")
 
         # Format results based on output format
         if output_format == "json":
@@ -80,26 +102,30 @@ async def query_memory(
                 response_text = "Query did not return a graph (use CONSTRUCT for Turtle output)"
 
         else:  # table format (default)
-            result_list = list(results)
-
-            if not result_list:
-                response_text = "No results found."
+            # Check if this is an ASK query (returns boolean)
+            if isinstance(results, bool):
+                response_text = f"Query result: {results}\n\nExecution time: {execution_time_ms:.2f} ms"
             else:
-                # Format as a readable table
-                response_lines = [f"Found {len(result_list)} result(s):\n"]
+                result_list = list(results)
 
-                for i, row in enumerate(result_list, 1):
-                    response_lines.append(f"\n--- Result {i} ---")
+                if not result_list:
+                    response_text = "No results found."
+                else:
+                    # Format as a readable table
+                    response_lines = [f"Found {len(result_list)} result(s) in {execution_time_ms:.2f} ms:\n"]
 
-                    if isinstance(row, dict):
-                        for key, value in row.items():
-                            response_lines.append(f"  {key}: {value}")
-                    else:
-                        # Handle tuple results
-                        for j, value in enumerate(row):
-                            response_lines.append(f"  {j}: {value}")
+                    for i, row in enumerate(result_list, 1):
+                        response_lines.append(f"\n--- Result {i} ---")
 
-                response_text = "\n".join(response_lines)
+                        if isinstance(row, dict):
+                            for key, value in row.items():
+                                response_lines.append(f"  {key}: {value}")
+                        else:
+                            # Handle tuple results
+                            for j, value in enumerate(row):
+                                response_lines.append(f"  {j}: {value}")
+
+                    response_text = "\n".join(response_lines)
 
         logger.info(f"Query returned {len(list(results)) if hasattr(results, '__iter__') else 0} results")
 

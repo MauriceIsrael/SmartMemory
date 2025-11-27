@@ -48,6 +48,7 @@ async def add_memory(
     graph,
     reasoner,
     triple_extractor: TripleExtractor,
+    rule_engine,
 ) -> list[TextContent]:
     """
     Add a memory to the knowledge graph.
@@ -117,18 +118,72 @@ async def add_memory(
         except Exception as e:
             logger.error(f"Failed to add triple: {e}", exc_info=True)
 
-    # Apply OWL-RL reasoning to derive new facts
-    try:
-        inferred_count = reasoner.apply_closure(graph)
-        logger.info(f"Reasoning inferred {inferred_count} new triples")
-    except Exception as e:
-        logger.error(f"Reasoning failed: {e}", exc_info=True)
-        inferred_count = 0
+    # Apply OWL-RL reasoning to derive new facts (if enabled)
+    owl_inferred_count = 0
+    if config.enable_owl_reasoning:
+        try:
+            owl_inferred_count = reasoner.apply_closure(graph)
+            logger.info(f"Reasoning inferred {owl_inferred_count} new triples")
+        except Exception as e:
+            logger.error(f"Reasoning failed: {e}", exc_info=True)
+    else:
+        logger.debug("OWL-RL reasoning disabled, skipping")
 
-    # TODO: Apply SPARQL rules (will be implemented in Phase 4)
-    # from semantic_memory.inference.rule_engine import RuleEngine
-    # rule_engine = RuleEngine()
-    # rule_inferred_count = await rule_engine.apply_rules(graph)
+    # Apply SPARQL rules
+    sparql_inferred_count = 0
+    if rule_engine:
+        try:
+            sparql_inferred_count = rule_engine.execute_rules(graph)
+            logger.info(f"SPARQL rules inferred {sparql_inferred_count} new triples")
+        except Exception as e:
+            logger.error(f"Rule engine failed: {e}", exc_info=True)
+
+    # Detect conflicts (only in user data, not ontologies)
+    from semantic_memory.knowledge.conflicts import ContradictoryLiteralDetector, DisjointClassDetector, FunctionalPropertyDetector
+    
+    # Only check user-added triples for conflicts, not ontology triples
+    # We do this by creating a temporary subgraph with only user data
+    # This prevents false positives from ontologies having multiple comments/notes
+    user_triples_query = """
+    PREFIX sem: <http://example.org/semanticmemory/>
+    
+    SELECT ?s ?p ?o
+    WHERE {
+        ?s ?p ?o .
+        ?stmt a <http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement> ;
+              <http://www.w3.org/1999/02/22-rdf-syntax-ns#subject> ?s ;
+              <http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate> ?p ;
+              <http://www.w3.org/1999/02/22-rdf-syntax-ns#object> ?o ;
+              sem:source "user" .
+    }
+    """
+    
+    detectors = [ContradictoryLiteralDetector(), DisjointClassDetector(), FunctionalPropertyDetector()]
+    all_conflicts = []
+    
+    # Only run conflict detection if there are user triples
+    try:
+        user_results = list(graph.query(user_triples_query))
+        if user_results:
+            # For now, run on full graph but this could be optimized
+            # to only check user triples in the future
+            for detector in detectors:
+                conflicts = detector.detect_conflicts(graph)
+                # Filter out conflicts where all involved subjects are ontology URIs
+                filtered_conflicts = []
+                for conflict in conflicts:
+                    # Check if conflict involves user data (URIs in user namespace)
+                    involves_user_data = any(
+                        str(config.user_namespace) in str(triple[0])  # subject
+                        for triple in conflict.triples
+                    )
+                    if involves_user_data:
+                        filtered_conflicts.append(conflict)
+                all_conflicts.extend(filtered_conflicts)
+        
+        logger.debug(f"Found {len(all_conflicts)} conflicts in user data (ontology conflicts filtered)")
+    except Exception as e:
+        logger.warning(f"Conflict detection failed: {e}")
 
     # Save graph to persistence
     try:
@@ -138,11 +193,19 @@ async def add_memory(
         logger.error(f"Failed to save graph: {e}", exc_info=True)
 
     # Prepare response
+    total_inferred = owl_inferred_count + sparql_inferred_count
     response_text = (
         f"✓ Added {added_count} explicit triple(s) from your input.\n"
-        f"✓ Inferred {inferred_count} additional triple(s) via OWL-RL reasoning.\n"
+        f"✓ Inferred {total_inferred} additional triple(s) "
+        f"({owl_inferred_count} via OWL-RL, {sparql_inferred_count} via SPARQL rules).\n"
         f"\nTotal triples in knowledge graph: {graph.get_triple_count()}"
     )
+
+
+    if all_conflicts:
+        response_text += f"\n\n⚠ Found {len(all_conflicts)} conflicts."
+        for conflict in all_conflicts:
+            response_text += f"\n- {conflict.type}: {conflict.triples}"
 
     # Check for uncertain inferences that need verification
     uncertain_query = """
@@ -158,7 +221,7 @@ async def add_memory(
     """
 
     try:
-        uncertain_results = graph.query(uncertain_query)
+        uncertain_results = list(graph.query(uncertain_query))  # Convert to list to avoid consuming generator
         if uncertain_results:
             response_text += f"\n\n⚠ {len(uncertain_results)} inference(s) need verification."
             response_text += "\nUse the verify_inference tool to confirm or reject them."

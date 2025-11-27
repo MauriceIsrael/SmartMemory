@@ -27,9 +27,9 @@ cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLO
 Python 3.11+: Follow standard conventions
 
 ## Recent Changes
+- 005-inference-supervision-dashboard: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 - 002-ontology-cache: Added Python 3.11+ + `rdflib`, `requests` (for HTTP HEAD/GET with caching headers)
 - 002-ontology-cache: Added Python 3.11+ + `rdflib`, `requests` (for HTTP HEAD/GET with caching headers)
-- 002-ontology-cache: Added Python 3.11+ + `rdflib`, `httpx` (for async HTTP with caching headers), `aiofiles` (for async file I/O)
 
 
 <!-- MANUAL ADDITIONS START -->

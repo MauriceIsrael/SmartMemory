@@ -125,6 +125,52 @@ Found 2 pending verification(s):
 
 ---
 
+### 5. Show Statistics
+
+Display detailed statistics about the knowledge graph.
+
+```bash
+PYTHONPATH=. venv/bin/python src/cli/show_stat.py [OPTIONS]
+```
+
+**Options:**
+- `--graph-file PATH` : Path to knowledge graph file (default: knowledge_graph.ttl)
+- `-v, --verbose` : Show detailed statistics including predicate breakdown
+
+**Examples:**
+```bash
+# Show basic statistics
+PYTHONPATH=. venv/bin/python src/cli/show_stat.py
+
+# Show detailed statistics with predicate breakdown
+PYTHONPATH=. venv/bin/python src/cli/show_stat.py --verbose
+```
+
+**Output (basic):**
+```
+📊 Knowledge Graph Statistics
+
+==================================================
+  Total Facts (Triples):     42
+==================================================
+  Unique Subjects:           12
+  Unique Predicates:         8
+  Unique Objects:            18
+  Unique Entities (S∪O):     25
+==================================================
+  URI References:            95
+  Literals:                  15
+  Blank Nodes:               0
+==================================================
+
+💡 Use --verbose to see detailed predicate breakdown
+```
+
+**Output (verbose):**
+Shows the same statistics plus a breakdown of each predicate with counts, percentages, and visual bars.
+
+---
+
 ## Quick Reference
 
 | Command | Purpose | Example |
@@ -133,6 +179,7 @@ Found 2 pending verification(s):
 | `list_facts.py` | Show recent facts | `list_facts.py --count 10` |
 | `list_rules.py` | Show inference rules | `list_rules.py --verbose` |
 | `get_pending_verifications.py` | Show pending verifications | `get_pending_verifications.py` |
+| `show_stat.py` | Show graph statistics | `show_stat.py --verbose` |
 
 ## Logging
 
@@ -160,6 +207,7 @@ INFO - 📊 Inference summary: 0 fact(s) added automatically, 1 pending verifica
    alias sm-list='PYTHONPATH=. venv/bin/python src/cli/list_facts.py'
    alias sm-rules='PYTHONPATH=. venv/bin/python src/cli/list_rules.py'
    alias sm-verify='PYTHONPATH=. venv/bin/python src/cli/get_pending_verifications.py'
+   alias sm-stat='PYTHONPATH=. venv/bin/python src/cli/show_stat.py'
    ```
 
 2. **Monitor server logs** to see inference in action:

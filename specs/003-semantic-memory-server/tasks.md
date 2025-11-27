@@ -98,18 +98,18 @@
 
 ### Rule Engine Implementation
 
-- [ ] T037 [US2] Create rule metadata model in src/semantic_memory/inference/rule_engine.py (InferenceRule dataclass with file_path, sparql_query, stats)
-- [ ] T038 [US2] Implement rule loader in src/semantic_memory/inference/rule_engine.py (load_rules function to scan .rq files from defaults/ and user_rules/)
-- [ ] T039 [US2] Implement SPARQL rule validator in src/semantic_memory/inference/rule_engine.py (validate_rule function checking CONSTRUCT syntax)
-- [ ] T040 [US2] Implement rule execution engine in src/semantic_memory/inference/rule_engine.py (RuleEngine class with execute_rules method)
-- [ ] T041 [US2] Add cycle detection to rule engine in src/semantic_memory/inference/rule_engine.py (fixed-point iteration with max_depth=10)
-- [ ] T042 [US2] Implement list_rules MCP tool in src/semantic_memory/tools/list_rules.py (list_rules async function)
-- [ ] T043 [US2] Implement load_custom_rule MCP tool in src/semantic_memory/tools/load_custom_rule.py (load_custom_rule async function)
-- [ ] T044 [US2] Integrate rule engine into server startup in src/semantic_memory/server.py (after OWL-RL, execute SPARQL rules)
-- [ ] T045 [US2] Update add_memory tool to trigger rule re-execution in src/semantic_memory/tools/add_memory.py
-- [ ] T046 [P] [US2] Create unit test for rule loader in tests/unit/test_rule_engine.py
-- [ ] T047 [P] [US2] Create unit test for cycle detection in tests/unit/test_rule_engine.py
-- [ ] T048 [US2] Create integration test for US2 in tests/integration/test_user_story_2.py (load custom rule, verify inference)
+- [X] T037 [US2] Create rule metadata model in src/semantic_memory/inference/rule_engine.py (InferenceRule dataclass with file_path, sparql_query, stats)
+- [X] T038 [US2] Implement rule loader in src/semantic_memory/inference/rule_engine.py (load_rules function to scan .rq files from defaults/ and user_rules/)
+- [X] T039 [US2] Implement SPARQL rule validator in src/semantic_memory/inference/rule_engine.py (validate_rule function checking CONSTRUCT syntax)
+- [X] T040 [US2] Implement rule execution engine in src/semantic_memory/inference/rule_engine.py (RuleEngine class with execute_rules method)
+- [X] T041 [US2] Add cycle detection to rule engine in src/semantic_memory/inference/rule_engine.py (fixed-point iteration with max_depth=10)
+- [X] T042 [US2] Implement list_rules MCP tool in src/semantic_memory/tools/list_rules.py (list_rules async function)
+- [X] T043 [US2] Implement load_custom_rule MCP tool in src/semantic_memory/tools/load_custom_rule.py (load_custom_rule async function)
+- [X] T044 [US2] Integrate rule engine into server startup in src/semantic_memory/server.py (after OWL-RL, execute SPARQL rules)
+- [X] T045 [US2] Update add_memory tool to trigger rule re-execution in src/semantic_memory/tools/add_memory.py
+- [X] T046 [P] [US2] Create unit test for rule loader in tests/unit/test_rule_engine.py
+- [X] T047 [P] [US2] Create unit test for cycle detection in tests/unit/test_rule_engine.py
+- [X] T048 [US2] Create integration test for US2 in tests/integration/test_user_story_2.py (load custom rule, verify inference)
 
 **Checkpoint**: At this point, both User Story 1 AND 2 work - can use both OWL-RL and custom SPARQL rules
 
@@ -123,15 +123,15 @@
 
 ### Implementation for User Story 3
 
-- [ ] T049 [P] [US3] Create verification request model in src/semantic_memory/knowledge/verification.py (VerificationRequest dataclass)
-- [ ] T050 [P] [US3] Create pending verifications graph in src/semantic_memory/knowledge/graph.py (separate graph for uncertain inferences)
-- [ ] T051 [US3] Implement uncertainty detection in src/semantic_memory/inference/rule_engine.py (check for sem:uncertain annotation in CONSTRUCT results)
-- [ ] T052 [US3] Update add_memory tool to return verification_requests in src/semantic_memory/tools/add_memory.py
-- [ ] T053 [US3] Implement verify_inference MCP tool in src/semantic_memory/tools/verify_inference.py (accept/reject logic)
-- [ ] T054 [US3] Add verification status tracking to graph in src/semantic_memory/knowledge/graph.py (pending/confirmed/rejected)
-- [ ] T055 [US3] Update get_graph_stats tool to include pending_verifications count in src/semantic_memory/tools/get_graph_stats.py
-- [ ] T056 [P] [US3] Create unit test for verification request handling in tests/unit/test_verification.py
-- [ ] T057 [US3] Create integration test for US3 in tests/integration/test_user_story_3.py (uncertain inference → verify → confirm/reject)
+- [X] T049 [P] [US3] Create verification request model in src/semantic_memory/knowledge/verification.py (VerificationRequest dataclass)
+- [X] T050 [P] [US3] Create pending verifications graph in src/semantic_memory/knowledge/graph.py (separate graph for uncertain inferences)
+- [X] T051 [US3] Implement uncertainty detection in src/semantic_memory/inference/rule_engine.py (check for sem:uncertain annotation in CONSTRUCT results)
+- [X] T052 [US3] Update add_memory tool to return verification_requests in src/semantic_memory/tools/add_memory.py
+- [X] T053 [US3] Implement verify_inference MCP tool in src/semantic_memory/tools/verify_inference.py (accept/reject logic)
+- [X] T054 [US3] Add verification status tracking to graph in src/semantic_memory/knowledge/graph.py (pending/confirmed/rejected)
+- [X] T055 [US3] Update get_graph_stats tool to include pending_verifications count in src/semantic_memory/tools/get_graph_stats.py
+- [X] T056 [P] [US3] Create unit test for verification request handling in tests/unit/test_verification.py
+- [X] T057 [US3] Create integration test for US3 in tests/integration/test_user_story_3.py (uncertain inference → verify → confirm/reject)
 
 **Checkpoint**: All P2 user stories (US1, US2, US3) now functional independently
 
@@ -145,14 +145,14 @@
 
 ### Implementation for User Story 4
 
-- [ ] T058 [P] [US4] Add network error handling to ontology loader in src/semantic_memory/inference/ontology_loader.py (catch ConnectionError, use cache)
-- [ ] T059 [US4] Implement conditional GET with If-None-Match/If-Modified-Since in src/semantic_memory/inference/ontology_loader.py
-- [ ] T060 [US4] Add cache metadata persistence in src/semantic_memory/inference/ontology_loader.py (save/load .meta.json files)
-- [ ] T061 [US4] Update server startup to check ontology freshness in src/semantic_memory/server.py (call check_freshness before loading)
-- [ ] T062 [US4] Add offline mode flag to config in src/semantic_memory/config.py (FORCE_OFFLINE for testing)
-- [ ] T063 [P] [US4] Create unit test for cache freshness check in tests/unit/test_ontology_loader.py
-- [ ] T064 [P] [US4] Create unit test for offline fallback in tests/unit/test_ontology_loader.py
-- [ ] T065 [US4] Create integration test for US4 in tests/integration/test_user_story_4.py (offline startup scenario)
+- [X] T058 [P] [US4] Add network error handling to ontology loader in src/semantic_memory/inference/ontology_loader.py (catch ConnectionError, use cache)
+- [X] T059 [US4] Implement conditional GET with If-None-Match/If-Modified-Since in src/semantic_memory/inference/ontology_loader.py
+- [X] T060 [US4] Add cache metadata persistence in src/semantic_memory/inference/ontology_loader.py (save/load .meta.json files)
+- [X] T061 [US4] Update server startup to check ontology freshness in src/semantic_memory/server.py (call check_freshness before loading)
+- [X] T062 [US4] Add offline mode flag to config in src/semantic_memory/config.py (FORCE_OFFLINE for testing)
+- [X] T063 [P] [US4] Create unit test for cache freshness check in tests/unit/test_ontology_loader.py
+- [X] T064 [P] [US4] Create unit test for offline fallback in tests/unit/test_ontology_loader.py
+- [X] T065 [US4] Create integration test for US4 in tests/integration/test_user_story_4.py (offline startup scenario)
 
 **Checkpoint**: User Story 4 complete - system works offline using cached ontologies
 
@@ -166,17 +166,17 @@
 
 ### Implementation for User Story 5
 
-- [ ] T066 [P] [US5] Implement Turtle serialization in src/semantic_memory/knowledge/persistence.py (TurtlePersistence class with save/load methods)
-- [ ] T067 [P] [US5] Implement SQLite backend in src/semantic_memory/knowledge/persistence.py (SQLitePersistence class using rdflib.Graph with SQLAlchemy store)
-- [ ] T068 [P] [US5] Implement Oxigraph backend in src/semantic_memory/knowledge/persistence.py (OxigraphPersistence class - optional)
-- [ ] T069 [US5] Add persistence backend factory in src/semantic_memory/knowledge/persistence.py (get_persistence_backend function based on config)
-- [ ] T070 [US5] Integrate save on shutdown in src/semantic_memory/server.py (graceful shutdown handler)
-- [ ] T071 [US5] Integrate load on startup in src/semantic_memory/server.py (before ontology loading)
-- [ ] T072 [US5] Add re-inference after load in src/semantic_memory/server.py (call reasoner + rule engine after restoring graph)
-- [ ] T073 [US5] Add persistence format config option in src/semantic_memory/config.py (PERSISTENCE_BACKEND, PERSISTENCE_PATH)
-- [ ] T074 [P] [US5] Create unit test for Turtle persistence in tests/unit/test_persistence.py
-- [ ] T075 [P] [US5] Create unit test for SQLite persistence in tests/unit/test_persistence.py
-- [ ] T076 [US5] Create integration test for US5 in tests/integration/test_persistence_recovery.py (save → restart → load → verify)
+- [X] T066 [P] [US5] Implement Turtle serialization in src/semantic_memory/knowledge/persistence.py (TurtlePersistence class with save/load methods)
+- [X] T067 [P] [US5] Implement SQLite backend in src/semantic_memory/knowledge/persistence.py (SQLitePersistence class using rdflib.Graph with SQLAlchemy store)
+- [X] T068 [P] [US5] Implement Oxigraph backend in src/semantic_memory/knowledge/persistence.py (OxigraphPersistence class - optional)
+- [X] T069 [US5] Add persistence backend factory in src/semantic_memory/knowledge/persistence.py (get_persistence_backend function based on config)
+- [X] T070 [US5] Integrate save on shutdown in src/semantic_memory/server.py (graceful shutdown handler)
+- [X] T071 [US5] Integrate load on startup in src/semantic_memory/server.py (before ontology loading)
+- [X] T072 [US5] Add re-inference after load in src/semantic_memory/server.py (call reasoner + rule engine after restoring graph)
+- [X] T073 [US5] Add persistence format config option in src/semantic_memory/config.py (PERSISTENCE_BACKEND, PERSISTENCE_PATH)
+- [X] T074 [P] [US5] Create unit test for Turtle persistence in tests/unit/test_persistence.py
+- [X] T075 [P] [US5] Create unit test for SQLite persistence in tests/unit/test_persistence.py
+- [X] T076 [US5] Create integration test for US5 in tests/integration/test_persistence_recovery.py (save → restart → load → verify)
 
 **Checkpoint**: All user stories (P1, P2, P3) complete and independently functional
 
@@ -188,14 +188,14 @@
 
 ### Implementation
 
-- [ ] T077 [P] Create conflict detection module in src/semantic_memory/knowledge/conflicts.py (ConflictDetector class)
-- [ ] T078 [P] Implement contradictory literal detection in src/semantic_memory/knowledge/conflicts.py (same subject+predicate, different values)
-- [ ] T079 [P] Implement disjoint class detection in src/semantic_memory/knowledge/conflicts.py (check owl:disjointWith in ontologies)
-- [ ] T080 [P] Implement functional property violation detection in src/semantic_memory/knowledge/conflicts.py (check owl:FunctionalProperty)
-- [ ] T081 Integrate conflict detection into add_memory tool in src/semantic_memory/tools/add_memory.py (run after inference)
-- [ ] T082 Implement get_graph_stats MCP tool in src/semantic_memory/tools/get_graph_stats.py (triple counts, ontology status, rules, conflicts)
-- [ ] T083 [P] Create unit test for conflict detection in tests/unit/test_conflicts.py
-- [ ] T084 Create integration test for conflict detection in tests/integration/test_conflicts.py
+- [X] T077 [P] Create conflict detection module in src/semantic_memory/knowledge/conflicts.py (ConflictDetector class)
+- [X] T078 [P] Implement contradictory literal detection in src/semantic_memory/knowledge/conflicts.py (same subject+predicate, different values)
+- [X] T079 [P] Implement disjoint class detection in src/semantic_memory/knowledge/conflicts.py (check owl:disjointWith in ontologies)
+- [X] T080 [P] Implement functional property violation detection in src/semantic_memory/knowledge/conflicts.py (check owl:FunctionalProperty)
+- [X] T081 Integrate conflict detection into add_memory tool in src/semantic_memory/tools/add_memory.py (run after inference)
+- [X] T082 Implement get_graph_stats MCP tool in src/semantic_memory/tools/get_graph_stats.py (triple counts, ontology status, rules, conflicts)
+- [X] T083 [P] Create unit test for conflict detection in tests/unit/test_conflicts.py
+- [X] T084 Create integration test for conflict detection in tests/integration/test_conflicts.py
 
 ---
 
@@ -203,18 +203,18 @@
 
 **Purpose**: Final improvements, documentation, and validation
 
-- [ ] T085 [P] Add comprehensive docstrings to all public APIs in src/semantic_memory/
-- [ ] T086 [P] Run mypy type checking across entire codebase and fix any errors
-- [ ] T087 [P] Run black formatter on all Python files
-- [ ] T088 [P] Run ruff linter and address warnings
-- [ ] T089 [P] Update README.md with complete usage examples from quickstart.md
-- [ ] T090 [P] Create CONTRIBUTING.md with development setup instructions
-- [ ] T091 Add performance logging for query execution times in src/semantic_memory/tools/query_memory.py
-- [ ] T092 Add CLI entry point in src/semantic_memory/__main__.py for direct execution
-- [ ] T093 Validate all scenarios from quickstart.md manually
-- [ ] T094 [P] Create example custom rule in user_rules/README.md
-- [ ] T095 Add error recovery documentation in docs/error-handling.md
-- [ ] T096 Review and update all type hints for Python 3.11+ syntax
+- [X] T085 [P] Add comprehensive docstrings to all public APIs in src/semantic_memory/
+- [X] T086 [P] Run mypy type checking across entire codebase and fix any errors
+- [X] T087 [P] Run black formatter on all Python files
+- [X] T088 [P] Run ruff linter and address warnings
+- [X] T089 [P] Update README.md with complete usage examples from quickstart.md
+- [X] T090 [P] Create CONTRIBUTING.md with development setup instructions
+- [X] T091 Add performance logging for query execution times in src/semantic_memory/tools/query_memory.py
+- [X] T092 Add CLI entry point in src/semantic_memory/__main__.py for direct execution
+- [X] T093 Validate all scenarios from quickstart.md manually
+- [X] T094 [P] Create example custom rule in user_rules/README.md
+- [X] T095 Add error recovery documentation in docs/error-handling.md
+- [X] T096 Review and update all type hints for Python 3.11+ syntax
 
 ---
 

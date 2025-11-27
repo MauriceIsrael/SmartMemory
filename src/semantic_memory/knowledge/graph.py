@@ -39,27 +39,45 @@ class ProvenanceGraph:
             identifier: Optional identifier for the graph (useful for named graphs)
         """
         self.graph = Graph(identifier=identifier)
+        self.pending_verifications_graph = Graph()
+        self.rejected_verifications_graph = Graph()
         self._bind_namespaces()
+        self._bind_namespaces(graph=self.pending_verifications_graph)
+        self._bind_namespaces(graph=self.rejected_verifications_graph)
 
-    def _bind_namespaces(self) -> None:
+    def _bind_namespaces(self, graph: Optional[Graph] = None) -> None:
         """Bind common namespaces for readable serialization."""
         from semantic_memory.vocabulary import FOAF, RDFS, SKOS, OWL, SCHEMA
+        
+        target_graph = graph if graph is not None else self.graph
+        target_graph.bind("sem", SEM)
+        target_graph.bind("foaf", FOAF)
+        target_graph.bind("rdfs", RDFS)
+        target_graph.bind("skos", SKOS)
+        target_graph.bind("owl", OWL)
+        target_graph.bind("schema", SCHEMA)
+        target_graph.bind("rdf", RDF)
+        target_graph.bind("xsd", XSD)
+    
+    def add_pending_verification(self, verification_request) -> None:
+        """Adds a verification request to the pending graph."""
+        graph = self.pending_verifications_graph
+        s, p, o = verification_request.triple
+        statement_node = BNode()
+        graph.add((statement_node, RDF.type, RDF.Statement))
+        graph.add((statement_node, RDF.subject, s))
+        graph.add((statement_node, RDF.predicate, p))
+        graph.add((statement_node, RDF.object, o))
+        graph.add((statement_node, SEM.sourceRule, RDFLiteral(verification_request.source_rule)))
+        graph.add((statement_node, SEM.confidence, RDFLiteral(verification_request.confidence, datatype=XSD.decimal)))
 
-        self.graph.bind("sem", SEM)
-        self.graph.bind("foaf", FOAF)
-        self.graph.bind("rdfs", RDFS)
-        self.graph.bind("skos", SKOS)
-        self.graph.bind("owl", OWL)
-        self.graph.bind("schema", SCHEMA)
-        self.graph.bind("rdf", RDF)
-        self.graph.bind("xsd", XSD)
 
     def add_triple_with_provenance(
         self,
         subject: URIRef | BNode,
         predicate: URIRef,
         obj: URIRef | BNode | RDFLiteral,
-        source: Literal["user", "owlrl", "sparql-rule"],
+        source: Literal["user", "owlrl", "sparql-rule", "user-verified"],
         confidence: float = 1.0,
         source_rule: Optional[str] = None,
         uncertain: bool = False,
@@ -127,7 +145,7 @@ class ProvenanceGraph:
         """
         self.graph.add((subject, predicate, obj))
 
-    def query(self, sparql: str) -> list[dict]:
+    def query(self, sparql: str) -> Any:
         """
         Execute a SPARQL query against the graph.
 
@@ -135,9 +153,20 @@ class ProvenanceGraph:
             sparql: SPARQL query string
 
         Returns:
-            List of result bindings as dictionaries
+            List of result bindings (SELECT), boolean (ASK), or Graph (CONSTRUCT)
         """
+        from typing import Any
         results = self.graph.query(sparql)
+        
+        # Handle ASK queries (boolean result)
+        if isinstance(results, bool):
+            return results
+            
+        # Handle CONSTRUCT queries (Graph result)
+        if hasattr(results, 'graph'):
+            return results
+            
+        # Handle SELECT queries (iterable of rows)
         return [dict(row.asdict()) for row in results]
 
     def serialize(self, format: str = "turtle", destination: Optional[Path] = None) -> str:

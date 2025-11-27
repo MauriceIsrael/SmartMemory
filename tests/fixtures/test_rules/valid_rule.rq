@@ -1,0 +1,8 @@
+# This is a valid rule to find coworkers.
+PREFIX schema: <https://schema.org/>
+CONSTRUCT { ?p1 schema:colleague ?p2 . ?p2 schema:colleague ?p1 . }
+WHERE {
+    ?p1 schema:worksFor ?org .
+    ?p2 schema:worksFor ?org .
+    FILTER(?p1 != ?p2)
+}

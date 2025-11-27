@@ -73,6 +73,15 @@ def fetch_with_cache(
     """
     logger.info(f"Fetching ontology from {url}")
 
+    if config.force_offline:
+        logger.info("FORCE_OFFLINE is True, skipping network request.")
+        if metadata and metadata.file_path and Path(metadata.file_path).exists():
+            logger.info(f"Using cached fallback for {url}")
+            with open(metadata.file_path, "r", encoding="utf-8") as f:
+                return f.read(), metadata
+        else:
+            raise requests.RequestException(f"Offline mode: No cache available for {url}")
+
     # Prepare conditional GET headers
     headers = {}
     if metadata:
@@ -187,12 +196,25 @@ class OntologyLoader:
         Uses cached version if available and valid, otherwise downloads.
 
         Args:
-            url: URL of the ontology
+            url: URL of the ontology (http://, https://, or file://)
             graph: RDFLib graph to load into
 
         Raises:
             Exception: If loading fails and no cache is available
         """
+        # Handle local file:// URLs directly
+        if url.startswith("file://"):
+            local_path = url.replace("file://", "")
+            logger.info(f"Loading local ontology from {local_path}")
+            try:
+                graph.parse(local_path, format="xml")
+                logger.info(f"Successfully loaded local ontology from {local_path}")
+                return
+            except Exception as e:
+                logger.error(f"Failed to load local ontology from {local_path}: {e}")
+                raise
+        
+        # For http/https URLs, use caching
         metadata = self.metadata.get(url)
 
         # Check if cache exists and is not expired
@@ -211,12 +233,12 @@ class OntologyLoader:
 
                 if content:
                     # New content downloaded
-                    graph.parse(data=content)
+                    graph.parse(data=content, format="xml") # Explicitly specify format
                     self.metadata[url] = new_metadata
                     self._save_metadata()
                 elif metadata:
                     # Cache still valid (304), load from file
-                    graph.parse(metadata.file_path)
+                    graph.parse(metadata.file_path, format="xml") # Explicitly specify format
                     self.metadata[url] = new_metadata
                     self._save_metadata()
 
@@ -237,17 +259,33 @@ class OntologyLoader:
         """
         logger.info("Loading standard ontologies...")
 
-        for name, url in config.ontology_urls.items():
-            try:
-                logger.info(f"Loading {name} ontology from {url}")
-                self.load_ontology(url, provenance_graph.graph)
-            except Exception as e:
-                logger.error(f"Failed to load {name} ontology: {e}")
-                # Continue loading other ontologies even if one fails
+        for name, urls in config.ontology_urls.items():
+            # Support both single URL (string) and multiple fallback URLs (list)
+            url_list = urls if isinstance(urls, list) else [urls]
+            
+            loaded = False
+            last_error = None
+            
+            for url in url_list:
+                try:
+                    logger.info(f"Loading {name} ontology from {url}")
+                    self.load_ontology(url, provenance_graph.graph)
+                    loaded = True
+                    break  # Success! No need to try other URLs
+                except Exception as e:
+                    last_error = e
+                    logger.warning(f"Failed to load {name} from {url}: {e}")
+                    # Try next fallback URL
+                    continue
+            
+            if not loaded:
+                logger.error(f"Failed to load {name} ontology from all sources: {last_error}")
+                # Continue loading other ontologies even if one fails completely
 
         logger.info(
             f"Finished loading ontologies. Graph now has {len(provenance_graph.graph)} triples"
         )
+
 
 
 __all__ = ["OntologyCacheMetadata", "fetch_with_cache", "OntologyLoader"]

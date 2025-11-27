@@ -49,10 +49,16 @@ class SemanticMemoryConfig(BaseSettings):
         description="Path to persistence file (format depends on backend)",
     )
 
-    # Inference configuration
+    # Reasoning configuration
+    enable_owl_reasoning: bool = Field(
+        default=True,
+        description="Enable OWL-RL reasoning (can be slow on large ontologies, set to false for faster startup)",
+    )
+
+    # Inference depth and confidence configuration
     max_inference_depth: int = Field(
         default=10,
-        description="Maximum inference depth to prevent infinite loops",
+        description="Maximum depth for recursive inference to prevent infinite loops",
         ge=1,
         le=100,
     )
@@ -82,15 +88,32 @@ class SemanticMemoryConfig(BaseSettings):
         description="Directory for user-defined SPARQL rules",
     )
 
-    # Ontology URLs
-    ontology_urls: dict[str, str] = Field(
+    # Ontology URLs with fallbacks (for when primary URLs timeout)
+    ontology_urls: dict[str, list[str]] | dict[str, str] = Field(
         default={
-            "foaf": "http://xmlns.com/foaf/0.1/",
-            "schema": "https://schema.org/version/latest/schemaorg-current-https.rdf",
-            "skos": "http://www.w3.org/2009/08/skos-reference/skos.rdf",
-            "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+            "foaf": [
+                # Local bundled copy (fastest, most reliable)
+                "file://" + str(Path(__file__).parent / "ontologies" / "foaf.rdf"),
+                # GitHub mirror (more reliable than xmlns.com)
+                "https://raw.githubusercontent.com/vocab/foaf/master/foaf.rdf",
+                # Original (often times out)
+                "http://xmlns.com/foaf/0.1/",
+            ],
+            "schema": [
+                "https://schema.org/version/latest/schemaorg-current-https.rdf",
+                # Fallback to specific version if latest is unavailable
+                "https://schema.org/version/23.0/schemaorg-current-https.rdf",
+            ],
+            "skos": [
+                "http://www.w3.org/2009/08/skos-reference/skos.rdf",
+                "https://www.w3.org/TR/skos-reference/skos.rdf",
+            ],
+            "rdfs": [
+                "http://www.w3.org/2000/01/rdf-schema#",
+                "https://www.w3.org/2000/01/rdf-schema",
+            ],
         },
-        description="URLs for external ontologies to load",
+        description="URLs for external ontologies to load (with fallbacks)",
     )
 
     # Server configuration
@@ -102,6 +125,11 @@ class SemanticMemoryConfig(BaseSettings):
     enable_provenance_tracking: bool = Field(
         default=True,
         description="Track provenance metadata for all triples",
+    )
+
+    force_offline: bool = Field(
+        default=False,
+        description="Force offline mode (no network requests) for testing",
     )
 
     def __init__(self, **kwargs):

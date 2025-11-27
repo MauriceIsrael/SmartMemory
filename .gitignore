@@ -19,7 +19,6 @@ build/
 .cache/
 *.ttl
 knowledge_graph.ttl
-user_rules/*.rq
 mcp_server.log
 server.log
 
