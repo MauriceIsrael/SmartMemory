@@ -28,10 +28,11 @@ def main():
     
     # Load default rules
     # Assuming running from project root
-    rules_dir = "src/rules/defaults"
-    if not os.path.exists(rules_dir):
+    from pathlib import Path
+    rules_dir = Path("src/rules/defaults")
+    if not rules_dir.exists():
         # Fallback if running from examples/
-        rules_dir = "../src/rules/defaults"
+        rules_dir = Path("../src/rules/defaults")
         
     rules = load_rules([rules_dir])
     rule_engine = RuleEngine(rules)
