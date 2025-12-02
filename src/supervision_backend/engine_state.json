@@ -1,0 +1,12 @@
+{
+    "owl_reasoning": {
+        "enabled": false,
+        "name": "OWL-RL Engine",
+        "rules_loaded": false
+    },
+    "sparql_rules": {
+        "enabled": false,
+        "name": "SPARQL Engine",
+        "rules_loaded": false
+    }
+}

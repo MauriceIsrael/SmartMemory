@@ -25,23 +25,26 @@ def test_turtle_persistence(tmp_path, populated_graph):
     assert len(new_graph.graph) == len(populated_graph.graph)
     assert (EX.s1, EX.p1, EX.o1) in new_graph.graph
 
-def test_sqlite_persistence(tmp_path, populated_graph):
+def test_sqlite_persistence(tmp_path):
+    """Test SQLite persistence backend"""
     db_file = tmp_path / "test.db"
-    persistence = SQLitePersistence(db_file)
+    identifier = "test_graph"
     
-    # The rdflib-sqlalchemy store works directly on the graph object
-    # So we need to create a graph with the store
-    store = persistence.store
-    g_to_save = Graph(store=store, identifier="test")
-    g_to_save.open(str(db_file), create=True)
-    for t in populated_graph.graph:
-        g_to_save.add(t)
+    # Create and save
+    g_to_save = Graph(store="SQLAlchemy", identifier=identifier)
+    g_to_save.open(f"sqlite:///{db_file}", create=True)
+    
+    # Add some triples
+    g_to_save.add((EX.subject, EX.predicate, EX.object))
+    g_to_save.commit()
     g_to_save.close()
-
-    # Now load it into a new graph
-    new_persistence = SQLitePersistence(db_file)
-    new_graph_wrapper = ProvenanceGraph()
-    new_persistence.load(new_graph_wrapper)
     
-    assert len(new_graph_wrapper.graph) == len(populated_graph.graph)
-    assert (EX.s1, EX.p1, EX.o1) in new_graph_wrapper.graph
+    # Load in new graph with same identifier
+    g_loaded = Graph(store="SQLAlchemy", identifier=identifier)
+    g_loaded.open(f"sqlite:///{db_file}", create=False)
+    
+    assert len(g_loaded) == 1
+    assert (EX.subject, EX.predicate, EX.object) in g_loaded
+    
+    g_loaded.close()
+

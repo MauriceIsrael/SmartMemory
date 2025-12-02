@@ -81,21 +81,27 @@ class SemanticMemoryServer:
         self.triple_extractor = TripleExtractor()
         logger.info("Triple extractor initialized")
 
-        # Load standard ontologies
-        from semantic_memory.inference.ontology_loader import OntologyLoader
+        # Load standard ontologies (ONLY if enabled - adds ~17k triples and 5-10s startup)
+        # Set load_ontologies=True in config to enable (required for core_* rules in _optional/)
+        if config.load_ontologies:
+            from semantic_memory.inference.ontology_loader import OntologyLoader
 
-        logger.debug("DEBUG: About to create OntologyLoader")
-        self.ontology_loader = OntologyLoader()
-        logger.debug("DEBUG: OntologyLoader created")
-        
-        try:
-            logger.debug("DEBUG: About to load standard ontologies")
-            await self.ontology_loader.load_standard_ontologies(self.graph)
-            logger.debug("DEBUG: load_standard_ontologies returned")
-            logger.info("Standard ontologies loaded")
-        except Exception as e:
-            logger.error(f"Failed to load ontologies: {e}", exc_info=True)
-            logger.warning("Continuing without ontologies...")
+            logger.debug("DEBUG: About to create OntologyLoader")
+            self.ontology_loader = OntologyLoader()
+            logger.debug("DEBUG: OntologyLoader created")
+            
+            try:
+                logger.debug("DEBUG: About to load standard ontologies")
+                await self.ontology_loader.load_standard_ontologies(self.graph)
+                logger.debug("DEBUG: load_standard_ontologies returned")
+                logger.info("Standard ontologies loaded")
+            except Exception as e:
+                logger.error(f"Failed to load ontologies: {e}", exc_info=True)
+                logger.warning("Continuing without ontologies...")
+        else:
+            logger.info("Ontology loading disabled by config (load_ontologies=False).")
+            logger.info("To enable: set load_ontologies=True in config and copy core_*.rq rules from _optional/ to defaults/")
+            self.ontology_loader = None
 
         # Initialize reasoner
         logger.debug("DEBUG: About to import Reasoner")
@@ -106,16 +112,15 @@ class SemanticMemoryServer:
         logger.info("Reasoner initialized")
 
         # Apply automatic reasoning
-        logger.debug("DEBUG: Checking if OWL reasoning is enabled")
+        # Apply OWL-RL reasoning (if enabled)
+        # MOVED TO BACKGROUND: Don't block startup with heavy reasoning!
         if config.enable_owl_reasoning:
-            logger.info("Applying OWL-RL reasoning...")
-            try:
-                inferred = self.reasoner.apply_closure(self.graph)
-                logger.info(f"Inferred {inferred} additional triples via OWL-RL")
-            except Exception as e:
-                logger.error(f"Error during OWL-RL reasoning: {e}")
+            logger.info("Triggering background OWL-RL reasoning...")
+            # We don't call apply_closure directly here.
+            # Instead, we rely on the InferenceManager to pick it up.
+            # We'll trigger it after the manager is started.
         else:
-            logger.info("OWL-RL reasoning disabled (SEMMEM_ENABLE_OWL_REASONING=false)")
+            logger.info("OWL-RL reasoning disabled by config.")
 
         # Load and execute inference rules
         logger.debug("DEBUG: About to import RuleEngine")
@@ -124,9 +129,38 @@ class SemanticMemoryServer:
         rules = load_rules([config.default_rules_dir, config.user_rules_dir])
         logger.debug(f"DEBUG: Loaded {len(rules)} rules")
         self.rule_engine = RuleEngine(rules)
-        # Note: Don't execute rules on the full ontology graph at startup!
-        # Rules will be executed when user adds new triples via add_memory
-        logger.info(f"Loaded {len(rules)} inference rules (will execute on user data).")
+        logger.info(f"Loaded {len(rules)} inference rules.")
+
+        # Initialize Inference Manager for async background reasoning
+        from semantic_memory.inference.inference_manager import InferenceManager
+        self.inference_manager = InferenceManager(debounce_seconds=1.0)
+        
+        # Register reasoning callbacks
+        # 1. OWL-RL (if enabled)
+        if config.enable_owl_reasoning:
+            async def run_owl_reasoning():
+                logger.info("Running background OWL-RL reasoning...")
+                # Run CPU-bound reasoning in a separate thread to avoid blocking the event loop
+                loop = asyncio.get_running_loop()
+                count = await loop.run_in_executor(None, self.reasoner.apply_closure, self.graph)
+                logger.info(f"OWL-RL inferred {count} new triples")
+            self.inference_manager.register_callback(run_owl_reasoning)
+            
+        # 2. SPARQL Rules
+        async def run_sparql_rules():
+            logger.info("Running background SPARQL rules...")
+            # Run CPU-bound rules in a separate thread
+            loop = asyncio.get_running_loop()
+            count = await loop.run_in_executor(None, self.rule_engine.execute_rules, self.graph)
+            logger.info(f"SPARQL rules inferred {count} new triples")
+        self.inference_manager.register_callback(run_sparql_rules)
+        
+        # Start background worker
+        await self.inference_manager.start()
+        
+        # Trigger initial inference pass to catch up on any missing deductions
+        if config.enable_owl_reasoning:
+            self.inference_manager.trigger_inference()
 
         logger.info(
             f"Semantic Memory server startup complete. "
@@ -140,6 +174,10 @@ class SemanticMemoryServer:
         Saves the knowledge graph to persistence before shutting down.
         """
         logger.info("Shutting down Semantic Memory server...")
+
+        # Stop inference manager
+        if hasattr(self, 'inference_manager') and self.inference_manager:
+            await self.inference_manager.stop()
 
         # Save graph to persistence
         if self.graph and self.persistence:
@@ -176,7 +214,12 @@ class SemanticMemoryServer:
         from semantic_memory.tools.list_rules import LIST_RULES_TOOL, list_rules
         from semantic_memory.tools.load_custom_rule import LOAD_CUSTOM_RULE_TOOL, load_custom_rule
         from semantic_memory.tools.verify_inference import VERIFY_INFERENCE_TOOL, verify_inference
+        from semantic_memory.tools.suggest_rule import SUGGEST_RULE_TOOL, suggest_rule
         from semantic_memory.tools.get_pending_verifications import GET_PENDING_VERIFICATIONS_TOOL, get_pending_verifications
+        from semantic_memory.tools.pending_rules import (
+            GET_PENDING_RULES_TOOL, APPROVE_RULE_TOOL, REJECT_RULE_TOOL,
+            get_pending_rules, approve_rule, reject_rule
+        )
         from semantic_memory.tools.get_graph_stats import GET_GRAPH_STATS_TOOL, get_graph_stats
 
         @self.server.call_tool()
@@ -191,6 +234,7 @@ class SemanticMemoryServer:
                     self.reasoner,
                     self.triple_extractor,
                     self.rule_engine,
+                    inference_manager=self.inference_manager,  # CRITICAL FIX
                 )
             elif name == "query_memory":
                 return await query_memory(arguments, self.graph)
@@ -202,8 +246,16 @@ class SemanticMemoryServer:
                 return await load_custom_rule(arguments, self.rule_engine, self.graph)
             elif name == "verify_inference":
                 return await verify_inference(arguments, self.graph)
+            elif name == "suggest_rule":
+                return await suggest_rule(arguments, self.graph, self.rule_engine)
             elif name == "get_pending_verifications":
                 return await get_pending_verifications(arguments, self.graph)
+            elif name == "get_pending_rules":
+                return await get_pending_rules(arguments)
+            elif name == "approve_rule":
+                return await approve_rule(arguments, self.rule_engine, self.graph)
+            elif name == "reject_rule":
+                return await reject_rule(arguments)
             elif name == "get_graph_stats":
                 return await get_graph_stats(arguments, self.graph, self.rule_engine)
             else:
@@ -219,7 +271,11 @@ class SemanticMemoryServer:
                 LIST_RULES_TOOL,
                 LOAD_CUSTOM_RULE_TOOL,
                 VERIFY_INFERENCE_TOOL,
+                SUGGEST_RULE_TOOL,
                 GET_PENDING_VERIFICATIONS_TOOL,
+                GET_PENDING_RULES_TOOL,
+                APPROVE_RULE_TOOL,
+                REJECT_RULE_TOOL,
                 GET_GRAPH_STATS_TOOL,
             ]
 

@@ -1,0 +1,9 @@
+# Définit l'amitié comme une relation mutuelle qui implique une connaissance mutuelle.
+CONSTRUCT {
+    ?b :isFriendOf ?a .
+    ?a foaf:knows ?b .
+    ?b foaf:knows ?a .
+}
+WHERE {
+    ?a :isFriendOf ?b .
+}

@@ -27,9 +27,23 @@ def load_rules(rules_dirs: List[Path]) -> List[InferenceRule]:
             path = Path(rule_path)
             with open(path, "r") as f:
                 content = f.read()
+                # Extract description from comment
                 description = None
                 if content.strip().startswith("#"):
                     description = content.strip().split("\n")[0].lstrip("#").strip()
+                
+                # Auto-prepend common prefixes if not already present
+                if "PREFIX" not in content.upper():
+                    common_prefixes = """PREFIX : <http://semanticmemory.org/user#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX schema: <https://schema.org/>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+
+"""
+                    content = common_prefixes + content
                 
                 rule = InferenceRule(
                     id=path.stem,
@@ -92,19 +106,29 @@ class RuleEngine:
                         # If it's already a graph (some versions of rdflib)
                         inferred_triples_result = result
                     
+                    # IMPORTANT: Convert to list to avoid iterator exhaustion
+                    all_inferred_triples = list(inferred_triples_result)
+                    
                     # Separate uncertain predicates from actual triples
-                    uncertain_preds = {p for s, p, o in inferred_triples_result if p == UNCERTAIN_PREDICATE}
-                    actual_triples = [t for t in inferred_triples_result if t[1] != UNCERTAIN_PREDICATE]
+                    uncertain_preds = {p for s, p, o in all_inferred_triples if p == UNCERTAIN_PREDICATE}
+                    actual_triples = [t for t in all_inferred_triples if t[1] != UNCERTAIN_PREDICATE]
 
                     logger.debug(f"Rule '{rule.id}' found {len(actual_triples)} candidate triples")
+                    logger.debug(f"Rule '{rule.id}' found {len(uncertain_preds)} uncertainty markers")
 
                     for triple in actual_triples:
                         if triple not in p_graph.graph and triple not in inferred_graph:
                             
                             # Check for uncertainty
-                            is_uncertain = (triple[0], UNCERTAIN_PREDICATE, triple[1]) in inferred_triples_result
+                            # The rule might generate: `?s sem:uncertainPredicate ?p`
+                            # We need to check if the predicate in this triple is marked uncertain
+                            # for ANY subject (not just the triple's subject)
+                            predicate_is_uncertain = any(
+                                t[1] == UNCERTAIN_PREDICATE and t[2] == triple[1]
+                                for t in all_inferred_triples
+                            )
 
-                            if is_uncertain:
+                            if predicate_is_uncertain:
                                 verification_request = VerificationRequest(
                                     triple=triple,
                                     confidence=0.5, # Or extract from rule

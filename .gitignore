@@ -1,40 +1,52 @@
 # Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-.venv/
+*.py[cod]
+*$py.class
+*.so
+.Python
 venv/
 env/
+ENV/
+.venv
+*.egg-info/
 dist/
 build/
-*.egg-info/
 *.egg
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-*.log
 
-# RDF & Semantic Memory specific
-.cache/
-*.ttl
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
 knowledge_graph.ttl
-mcp_server.log
-server.log
+knowledge_graph_pending.ttl
+knowledge_graph_rejected.ttl
+cache/
+*.db
+*.sqlite
+
+# Logs
+*.log
+test_*.txt
 
 # Environment
 .env
 .env.local
-.env.*.local
 
-# Cache
-cache/
-
-# Universal
-.DS_Store
-Thumbs.db
-*.tmp
-*.swp
-.vscode/
-.idea/
-*.sublime-*
+# Temporary files
+reproduce_issue.py
+test_*.py
+_archive/

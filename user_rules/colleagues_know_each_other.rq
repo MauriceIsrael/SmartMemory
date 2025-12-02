@@ -1,0 +1,2 @@
+# Infers that if two people are colleagues, they know each other.
+CONSTRUCT { ?person1 foaf:knows ?person2 . } WHERE { ?person1 schema:colleague ?person2 . }

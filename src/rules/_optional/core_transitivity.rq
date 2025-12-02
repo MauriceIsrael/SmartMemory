@@ -1,0 +1,23 @@
+# Generic Transitivity Rule (SCOPED to user namespace)
+# Infers transitive relationships based on owl:TransitiveProperty definition
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX : <http://semanticmemory.org/user#>
+
+CONSTRUCT {
+    ?x ?p ?z .
+}
+WHERE {
+    # Find properties defined as Transitive
+    ?p a owl:TransitiveProperty .
+    
+    # Find chain: x -> y -> z IN USER NAMESPACE ONLY
+    ?x ?p ?y .
+    ?y ?p ?z .
+    
+    # CRITICAL: Only infer for user entities
+    FILTER(STRSTARTS(STR(?x), STR(:)) && STRSTARTS(STR(?z), STR(:)))
+    
+    # Avoid duplicates and loops
+    FILTER(?x != ?z)
+    FILTER NOT EXISTS { ?x ?p ?z }
+}

@@ -8,17 +8,25 @@ from semantic_memory.config import config
 
 LOAD_CUSTOM_RULE_TOOL = Tool(
     name="load_custom_rule",
-    description="Loads a new custom SPARQL CONSTRUCT rule from text or a file.",
+    description=(
+        "Loads a new custom SPARQL CONSTRUCT rule from text. "
+        "\n\nThe rule should be a SPARQL CONSTRUCT query that infers new triples. "
+        "\n\n**PREFIX declarations are optional** - common prefixes (rdf, schema, foaf, etc.) "
+        "will be auto-added if not present."
+        "\n\nExample rule content:"
+        "\nCONSTRUCT { ?person rdf:type :Engineer . }"
+        "\nWHERE { ?person schema:worksFor :Company . }"
+    ),
     inputSchema={
         "type": "object",
         "properties": {
             "rule_id": {
                 "type": "string",
-                "description": "A unique ID for the new rule.",
+                "description": "A unique ID for the new rule (lowercase, underscores only).",
             },
             "rule_content": {
                 "type": "string",
-                "description": "The full SPARQL CONSTRUCT query.",
+                "description": "The SPARQL CONSTRUCT query (PREFIX declarations optional).",
             },
             "description": {
                 "type": "string",
@@ -52,11 +60,25 @@ async def load_custom_rule(
             f.write(f"# {description}\n")
         f.write(rule_content)
 
+    # Auto-prepend common prefixes if not already present (match rule_engine.load_rules logic)
+    final_rule_content = rule_content
+    if "PREFIX" not in rule_content.upper():
+        common_prefixes = """PREFIX : <http://semanticmemory.org/user#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX schema: <https://schema.org/>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+
+"""
+        final_rule_content = common_prefixes + rule_content
+
     # Create and validate the new rule
     new_rule = InferenceRule(
         id=rule_id,
         file_path=rule_path,
-        sparql_query=rule_content,
+        sparql_query=final_rule_content,  # Use prefix-injected version
         source="custom",
         description=description,
     )

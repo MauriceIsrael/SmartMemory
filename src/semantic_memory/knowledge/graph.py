@@ -6,7 +6,7 @@ Extends RDFLib's Graph with automatic provenance tracking for all triples.
 
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal, Optional, Any
 
 from rdflib import Graph, URIRef, Literal as RDFLiteral, BNode
 from rdflib.namespace import RDF, XSD
@@ -50,6 +50,8 @@ class ProvenanceGraph:
         from semantic_memory.vocabulary import FOAF, RDFS, SKOS, OWL, SCHEMA
         
         target_graph = graph if graph is not None else self.graph
+        # Bind default namespace (empty prefix) for ':Entity' syntax
+        target_graph.bind("", config.user_namespace)
         target_graph.bind("sem", SEM)
         target_graph.bind("foaf", FOAF)
         target_graph.bind("rdfs", RDFS)
@@ -153,20 +155,31 @@ class ProvenanceGraph:
             sparql: SPARQL query string
 
         Returns:
-            List of result bindings (SELECT), boolean (ASK), or Graph (CONSTRUCT)
+            List of result bindings (SELECT), boolean (ASK), or Graph (CONSTRUCT/DESCRIBE)
         """
         from typing import Any
+        import re
+        
         results = self.graph.query(sparql)
         
-        # Handle ASK queries (boolean result)
-        if isinstance(results, bool):
-            return results
+        # Detect query type by checking the SPARQL string
+        # Remove comments (lines starting with #) and collapse whitespace
+        query_no_comments = re.sub(r'#[^\n]*', '', sparql)
+        query_upper = ' '.join(query_no_comments.split()).upper()
+        
+        # Handle ASK queries - return boolean
+        if re.search(r'\bASK\b', query_upper):
+            return bool(results)
             
-        # Handle CONSTRUCT queries (Graph result)
-        if hasattr(results, 'graph'):
-            return results
+        # Handle CONSTRUCT queries - return Graph
+        if re.search(r'\bCONSTRUCT\b', query_upper):
+            return results.graph if hasattr(results, 'graph') else results
             
-        # Handle SELECT queries (iterable of rows)
+        # Handle DESCRIBE queries - return Graph
+        if re.search(r'\bDESCRIBE\b', query_upper):
+            return results.graph if hasattr(results, 'graph') else results
+            
+        # Handle SELECT queries - return list of dicts
         return [dict(row.asdict()) for row in results]
 
     def serialize(self, format: str = "turtle", destination: Optional[Path] = None) -> str:
@@ -203,21 +216,41 @@ class ProvenanceGraph:
         Load graph from persistence file.
 
         Args:
-            path: Path to the RDF file
+            path: Path to the main RDF file
         """
         if path.exists():
             format = "turtle" if path.suffix == ".ttl" else "xml"
             self.parse(source=path, format=format)
+        
+        # Load pending verifications graph
+        pending_path = path.with_stem(f"{path.stem}_pending")
+        if pending_path.exists():
+            self.pending_verifications_graph.parse(str(pending_path), format=format)
+        
+        # Load rejected verifications graph
+        rejected_path = path.with_stem(f"{path.stem}_rejected")
+        if rejected_path.exists():
+            self.rejected_verifications_graph.parse(str(rejected_path), format=format)
 
     def save_to_file(self, path: Path) -> None:
         """
-        Save graph to persistence file.
+        Save all graphs to persistence files.
 
         Args:
-            path: Path to save the RDF file
+            path: Path to save the main RDF file
         """
         format = "turtle" if path.suffix == ".ttl" else "xml"
+        
+        # Save main graph
         self.serialize(format=format, destination=path)
+        
+        # Save pending verifications graph
+        pending_path = path.with_stem(f"{path.stem}_pending")
+        self.pending_verifications_graph.serialize(destination=str(pending_path), format=format)
+        
+        # Save rejected verifications graph
+        rejected_path = path.with_stem(f"{path.stem}_rejected")
+        self.rejected_verifications_graph.serialize(destination=str(rejected_path), format=format)
 
     def get_triple_count(self) -> int:
         """Return the number of triples in the graph (excluding provenance)."""

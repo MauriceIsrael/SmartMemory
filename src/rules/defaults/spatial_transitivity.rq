@@ -1,5 +1,6 @@
-# Infers transitive containment relationships (if A in B and B in C, then A in C)
+# Infers transitive containment relationships (SCOPED to user namespace)
 PREFIX schema: <https://schema.org/>
+PREFIX : <http://semanticmemory.org/user#>
 
 CONSTRUCT {
     ?inner schema:containedInPlace ?outer .
@@ -7,5 +8,6 @@ CONSTRUCT {
 WHERE {
     ?inner schema:containedInPlace ?middle .
     ?middle schema:containedInPlace ?outer .
+    FILTER(STRSTARTS(STR(?inner), STR(:)) && STRSTARTS(STR(?outer), STR(:)))
     FILTER NOT EXISTS { ?inner schema:containedInPlace ?outer }
 }

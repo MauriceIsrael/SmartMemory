@@ -19,23 +19,30 @@ logger = get_logger(__name__)
 ADD_MEMORY_TOOL = Tool(
     name="add_memory",
     description=(
-        "Add a memory to the knowledge graph. "
-        "Can accept natural language statements (e.g., 'Alice works at Google') "
-        "or explicit RDF triples (e.g., ':Alice schema:worksFor :Google'). "
-        "Automatically infers additional facts using OWL-RL reasoning and SPARQL rules."
+        "Store a fact in semantic memory using RDF triple notation."
+        "\n\n**What happens when you add a fact:**"
+        "\n1. Fact is stored with confidence=1.0 (explicit user fact)"
+        "\n2. SPARQL inference rules automatically run in background"
+        "\n3. New facts may be inferred (e.g., symmetry, transitivity)"
+        "\n4. Check get_pending_verifications() for inferred facts needing approval"
+        "\n\n**Supported predicates:**"
+        "\n- foaf:knows, foaf:friend - Social relationships"
+        "\n- schema:worksFor, schema:colleague - Work relationships"  
+        "\n- rdf:type - Classifications"
+        "\n- :customPredicate - Any custom predicate (user namespace)"
+        "\n\n**Format:** ':Subject predicate:name :Object'"
+        "\n\n**Examples:**"
+        "\n  add_memory(':User foaf:knows :Alice')"
+        "\n  add_memory(':User :isFriendOf :Bob')  # Custom predicate"
+        "\n  add_memory(':Charlie schema:worksFor :AcmeCorp')"
+        "\n\n**Note:** Use ':User' for current user, ':' prefix for all user entities."
     ),
     inputSchema={
         "type": "object",
         "properties": {
             "input": {
                 "type": "string",
-                "description": "Natural language statement or RDF triple to add",
-            },
-            "format": {
-                "type": "string",
-                "enum": ["natural_language", "triple_notation"],
-                "default": "natural_language",
-                "description": "Format of the input (auto-detected if not specified)",
+                "description": "RDF triple: ':Subject predicate :Object'",
             },
         },
         "required": ["input"],
@@ -49,6 +56,7 @@ async def add_memory(
     reasoner,
     triple_extractor: TripleExtractor,
     rule_engine,
+    inference_manager: Any = None,
 ) -> list[TextContent]:
     """
     Add a memory to the knowledge graph.
@@ -58,6 +66,8 @@ async def add_memory(
         graph: ProvenanceGraph instance
         reasoner: Reasoner instance for OWL-RL inference
         triple_extractor: TripleExtractor for NL processing
+        rule_engine: RuleEngine instance
+        inference_manager: InferenceManager instance for background reasoning
 
     Returns:
         List of TextContent with results
@@ -118,72 +128,58 @@ async def add_memory(
         except Exception as e:
             logger.error(f"Failed to add triple: {e}", exc_info=True)
 
-    # Apply OWL-RL reasoning to derive new facts (if enabled)
-    owl_inferred_count = 0
-    if config.enable_owl_reasoning:
-        try:
-            owl_inferred_count = reasoner.apply_closure(graph)
-            logger.info(f"Reasoning inferred {owl_inferred_count} new triples")
-        except Exception as e:
-            logger.error(f"Reasoning failed: {e}", exc_info=True)
-    else:
-        logger.debug("OWL-RL reasoning disabled, skipping")
-
-    # Apply SPARQL rules
-    sparql_inferred_count = 0
-    if rule_engine:
-        try:
-            sparql_inferred_count = rule_engine.execute_rules(graph)
-            logger.info(f"SPARQL rules inferred {sparql_inferred_count} new triples")
-        except Exception as e:
-            logger.error(f"Rule engine failed: {e}", exc_info=True)
-
-    # Detect conflicts (only in user data, not ontologies)
-    from semantic_memory.knowledge.conflicts import ContradictoryLiteralDetector, DisjointClassDetector, FunctionalPropertyDetector
+    # Capture graph size before inference
+    triples_before = graph.get_triple_count()
     
-    # Only check user-added triples for conflicts, not ontology triples
-    # We do this by creating a temporary subgraph with only user data
-    # This prevents false positives from ontologies having multiple comments/notes
-    user_triples_query = """
-    PREFIX sem: <http://example.org/semanticmemory/>
-    
-    SELECT ?s ?p ?o
-    WHERE {
-        ?s ?p ?o .
-        ?stmt a <http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement> ;
-              <http://www.w3.org/1999/02/22-rdf-syntax-ns#subject> ?s ;
-              <http://www.w3.org/1999/02/22-rdf-syntax-ns#predicate> ?p ;
-              <http://www.w3.org/1999/02/22-rdf-syntax-ns#object> ?o ;
-              sem:source "user" .
-    }
-    """
-    
-    detectors = [ContradictoryLiteralDetector(), DisjointClassDetector(), FunctionalPropertyDetector()]
-    all_conflicts = []
-    
-    # Only run conflict detection if there are user triples
-    try:
-        user_results = list(graph.query(user_triples_query))
-        if user_results:
-            # For now, run on full graph but this could be optimized
-            # to only check user triples in the future
-            for detector in detectors:
-                conflicts = detector.detect_conflicts(graph)
-                # Filter out conflicts where all involved subjects are ontology URIs
-                filtered_conflicts = []
-                for conflict in conflicts:
-                    # Check if conflict involves user data (URIs in user namespace)
-                    involves_user_data = any(
-                        str(config.user_namespace) in str(triple[0])  # subject
-                        for triple in conflict.triples
-                    )
-                    if involves_user_data:
-                        filtered_conflicts.append(conflict)
-                all_conflicts.extend(filtered_conflicts)
+    # Trigger background inference and wait for completion
+    inferred_facts_text = ""
+    if inference_manager:
+        logger.info("Triggering background inference...")
+        inference_manager.trigger_inference()
         
-        logger.debug(f"Found {len(all_conflicts)} conflicts in user data (ontology conflicts filtered)")
-    except Exception as e:
-        logger.warning(f"Conflict detection failed: {e}")
+        # Wait briefly for inference to complete (max 2 seconds)
+        # This allows us to report what was inferred
+        import asyncio
+        try:
+            await asyncio.wait_for(inference_manager.wait_until_idle(), timeout=2.0)
+            
+            # Capture graph size after inference
+            triples_after = graph.get_triple_count()
+            inferred_count = triples_after - triples_before - added_count
+            
+            if inferred_count > 0:
+                # Query the most recently added triples (provenance = sparql-rule)
+                inferred_triples_query = """
+                PREFIX sem: <http://semanticmemory.org/vocab#>
+                SELECT ?s ?p ?o WHERE {
+                    ?stmt sem:subject ?s ;
+                          sem:predicate ?p ;
+                          sem:object ?o ;
+                          sem:source ?source .
+                    FILTER(?source = <sparql-rule>)
+                }
+                ORDER BY DESC(?stmt)
+                LIMIT 10
+                """
+                try:
+                    results = graph.query(inferred_triples_query)
+                    if results:
+                        inferred_facts_text = f"\n\n✨ **Inferred {inferred_count} new facts:**"
+                        for i, row in enumerate(results[:5], 1):  # Show max 5
+                            s = str(row['s']).replace('http://semanticmemory.org/user#', ':')
+                            p = str(row['p']).replace('http://xmlns.com/foaf/0.1/', 'foaf:').replace('https://schema.org/', 'schema:')
+                            o = str(row['o']).replace('http://semanticmemory.org/user#', ':')
+                            inferred_facts_text += f"\n  • {s} {p} {o}"
+                        if inferred_count > 5:
+                            inferred_facts_text += f"\n  ... and {inferred_count - 5} more"
+                except Exception as e:
+                    logger.warning(f"Failed to query inferred triples: {e}")
+                    inferred_facts_text = f"\n\n✨ Inferred {inferred_count} new facts."
+        except asyncio.TimeoutError:
+            logger.debug("Inference still running (async)")
+            inferred_facts_text = "\n\n⏳ Background inference in progress..."
+    else:
+        logger.warning("InferenceManager not provided, skipping background inference trigger")
 
     # Save graph to persistence
     try:
@@ -192,43 +188,12 @@ async def add_memory(
     except Exception as e:
         logger.error(f"Failed to save graph: {e}", exc_info=True)
 
-    # Prepare response
-    total_inferred = owl_inferred_count + sparql_inferred_count
-    response_text = (
-        f"✓ Added {added_count} explicit triple(s) from your input.\n"
-        f"✓ Inferred {total_inferred} additional triple(s) "
-        f"({owl_inferred_count} via OWL-RL, {sparql_inferred_count} via SPARQL rules).\n"
-        f"\nTotal triples in knowledge graph: {graph.get_triple_count()}"
-    )
-
-
-    if all_conflicts:
-        response_text += f"\n\n⚠ Found {len(all_conflicts)} conflicts."
-        for conflict in all_conflicts:
-            response_text += f"\n- {conflict.type}: {conflict.triples}"
-
-    # Check for uncertain inferences that need verification
-    uncertain_query = """
-    SELECT ?s ?p ?o
-    WHERE {
-        ?stmt a rdf:Statement ;
-              rdf:subject ?s ;
-              rdf:predicate ?p ;
-              rdf:object ?o ;
-              sem:uncertain true .
-    }
-    LIMIT 5
-    """
-
-    try:
-        uncertain_results = list(graph.query(uncertain_query))  # Convert to list to avoid consuming generator
-        if uncertain_results:
-            response_text += f"\n\n⚠ {len(uncertain_results)} inference(s) need verification."
-            response_text += "\nUse the verify_inference tool to confirm or reject them."
-    except Exception as e:
-        logger.warning(f"Failed to query for uncertain inferences: {e}")
-
-    return [TextContent(type="text", text=response_text)]
+    return [
+        TextContent(
+            type="text",
+            text=f"Added {added_count} triples to memory.{inferred_facts_text}"
+        )
+    ]
 
 
 __all__ = ["ADD_MEMORY_TOOL", "add_memory"]

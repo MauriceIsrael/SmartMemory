@@ -1,5 +1,6 @@
-# Infers colleague relationships from shared workplace
+# Infers colleague relationships from shared workplace (SCOPED to user namespace)
 PREFIX schema: <https://schema.org/>
+PREFIX : <http://semanticmemory.org/user#>
 
 CONSTRUCT {
     ?person1 schema:colleague ?person2 .
@@ -7,6 +8,10 @@ CONSTRUCT {
 WHERE {
     ?person1 schema:worksFor ?org .
     ?person2 schema:worksFor ?org .
+    
+    # CRITICAL: Only infer for user entities (prevents ontology explosion)
+    FILTER(STRSTARTS(STR(?person1), STR(:)) && STRSTARTS(STR(?person2), STR(:)))
+    
     FILTER(?person1 != ?person2)
     FILTER NOT EXISTS { ?person1 schema:colleague ?person2 }
 }

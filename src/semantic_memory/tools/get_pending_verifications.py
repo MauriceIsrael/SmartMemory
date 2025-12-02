@@ -53,28 +53,27 @@ async def get_pending_verifications(
     
     logger.info(f"get_pending_verifications called with limit={limit}")
 
-    # Query for uncertain inferences
+    # Query for uncertain inferences in the PENDING graph
     query = f"""
     PREFIX sem: <http://example.org/semanticmemory/>
     PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     
-    SELECT ?id ?s ?p ?o ?confidence ?source_rule
+    SELECT ?stmt ?s ?p ?o ?confidence ?source_rule
     WHERE {{
         ?stmt a rdf:Statement ;
               rdf:subject ?s ;
               rdf:predicate ?p ;
               rdf:object ?o ;
-              sem:uncertain true ;
-              sem:confidence ?confidence ;
-              sem:verification_id ?id .
-        OPTIONAL {{ ?stmt sem:source_rule ?source_rule }}
+              sem:confidence ?confidence .
+        OPTIONAL {{ ?stmt sem:sourceRule ?source_rule }}
     }}
     ORDER BY DESC(?confidence)
     LIMIT {limit}
     """
 
     try:
-        results = list(graph.query(query))
+        # CRITICAL: Query the pending_verifications_graph, NOT the main graph!
+        results = list(graph.pending_verifications_graph.query(query))
         
         if not results:
             return [
@@ -88,12 +87,14 @@ async def get_pending_verifications(
         response_text = f"📋 **{len(results)} Pending Verification(s)**\n\n"
         
         for i, row in enumerate(results, 1):
-            verification_id = str(row.id)
-            subject = str(row.s).replace(config.user_namespace, ":")
-            predicate = str(row.p).replace("http://xmlns.com/foaf/0.1/", "foaf:")
-            obj = str(row.o).replace(config.user_namespace, ":")
-            confidence = float(row.confidence)
-            source_rule = str(row.source_rule) if row.source_rule else "unknown"
+            # Use the statement node as verification ID
+            verification_id = str(row['stmt'])
+            subject = str(row['s']).replace(config.user_namespace, ":")
+            predicate = str(row['p']).replace("http://xmlns.com/foaf/0.1/", "foaf:")
+            predicate = predicate.replace("https://schema.org/", "schema:")
+            obj = str(row['o']).replace(config.user_namespace, ":")
+            confidence = float(row['confidence'])
+            source_rule = str(row['source_rule']) if 'source_rule' in row and row['source_rule'] else "unknown"
             
             response_text += f"**{i}. Verification ID: `{verification_id}`**\n"
             response_text += f"   - Triple: `{subject} {predicate} {obj}`\n"

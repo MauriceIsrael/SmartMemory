@@ -1,0 +1,8 @@
+# Infers that if two people are friends, they both know each other.
+CONSTRUCT {
+  ?personA foaf:knows ?personB .
+  ?personB foaf:knows ?personA .
+}
+WHERE {
+  ?personA foaf:friendOf ?personB .
+}

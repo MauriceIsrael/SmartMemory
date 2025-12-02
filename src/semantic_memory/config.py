@@ -54,6 +54,11 @@ class SemanticMemoryConfig(BaseSettings):
         default=True,
         description="Enable OWL-RL reasoning (can be slow on large ontologies, set to false for faster startup)",
     )
+    
+    load_ontologies: bool = Field(
+        default=False,
+        description="Load full ontologies (Schema.org, FOAF, SKOS). Required for core_* rules in _optional/. Adds ~17k triples and 5-10s startup time.",
+    )
 
     # Inference depth and confidence configuration
     max_inference_depth: int = Field(
@@ -130,6 +135,11 @@ class SemanticMemoryConfig(BaseSettings):
     force_offline: bool = Field(
         default=False,
         description="Force offline mode (no network requests) for testing",
+    )
+
+    user_namespace: str = Field(
+        default="http://semanticmemory.org/user#",
+        description="Namespace for user-created entities (referenced with ':' prefix)",
     )
 
     def __init__(self, **kwargs):

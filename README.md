@@ -1,464 +1,190 @@
-# Semantic Memory MCP Server
+# SmartMemory
 
-A Model Context Protocol (MCP) server that provides semantic memory capabilities using a Knowledge Graph. It allows AI agents to store, infer, and verify facts using a persistent RDF store with **dual-level inference** (OWL-RL + custom SPARQL rules).
+**Neuro-Symbolic AI** | Blend LLM flexibility with formal reasoning guarantees
 
-## Features
+<p align="center">
+  <em>Convert conversations into verified knowledge graphs with SPARQL inference rules</em>
+</p>
 
-- ✅ **Semantic Ingestion**: Convert natural language statements into RDF triples
-- ✅ **Dual-Level Inference**: 
-  - Level 1: OWL-RL ontological reasoning (automatic, high confidence)
-  - Level 2: Custom SPARQL CONSTRUCT rules (may require verification)
-- ✅ **Smart Ontology Caching**: HTTP conditional GET for FOAF, Schema.org, SKOS, RDFS
-- ✅ **Verification Loop**: Request user verification for uncertain inferences
-- ✅ **Custom Rules**: Load user-defined SPARQL inference rules at runtime
-- ✅ **Provenance Tracking**: Track origin, confidence, and timestamps for all facts
-- ✅ **Conflict Detection**: Detect contradictory literals, disjoint classes, functional property violations
-- ✅ **Persistence**: Multiple backends (Turtle, SQLite) with automatic save/load
+---
 
-## Quick Start
+## 🎯 What is SmartMemory?
 
-### Installation
+A **Model Context Protocol (MCP) server** that lets AI assistants (Claude, Gemini) build **formal knowledge graphs** from natural language conversations, with:
+
+- ✅ **Provenance tracking**: Every fact has source, confidence, timestamp
+- ✅ **SPARQL inference rules**: Automatic deductions with formal guarantees  
+- ✅ **Human-in-the-loop**: Approve/reject uncertain inferences
+- ✅ **Collaborative rule creation**: LLM proposes, you validate, system enforces
+
+**Perfect for**: Compliance systems, access control, business rules, knowledge bases
+
+---
+
+## 🚀 Quick Start
+
+### 1. Install
 
 ```bash
-# Clone the repository
-git clone <repository-url>
+git clone https://github.com/yourusername/SmartMemory
 cd SmartMemory
-
-# Create and activate virtual environment
 python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
+source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -e .
 ```
 
-### Configuration for MCP Clients
+### 2. Test Standalone
 
-**For detailed setup instructions**, see [`docs/mcp-client-setup.md`](docs/mcp-client-setup.md)
+```bash
+python examples/quick_demo.py
+```
 
-#### Claude Desktop (Quick Setup)
+Expected output:
+```
+🧠 SmartMemory v0.1 - Quick Demo
+✓ Knowledge graph initialized
+✓ Alice knows Bob
+✓ Alice works at Google
+Query: Who works at Google?
+  ✓ :Alice
+  ✓ :Bob
+✨ Demo complete!
+```
 
-**macOS**: Edit `~/Library/Application Support/Claude/claude_desktop_config.json`
+### 3. Use with MCP Clients
 
-**Linux**: Edit `~/.config/Claude/claude_desktop_config.json`
+**Claude Desktop**: Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `~/.config/Claude/claude_desktop_config.json` (Linux):
 
 ```json
 {
   "mcpServers": {
-    "semantic-memory": {
+    "smartmemory": {
       "command": "/absolute/path/to/SmartMemory/venv/bin/python",
-      "args": ["-m", "semantic_memory.server"],
-      "env": {
-        "SEMMEM_LOG_LEVEL": "INFO"
-      }
+      "args": ["-m", "semantic_memory.server"]
     }
   }
 }
 ```
 
-Replace `/absolute/path/to/SmartMemory` with your actual path.
+**Restart Claude**, then:
+```
+You: "Remember that Alice works at Google"
+Claude: [uses add_memory]
+  ✓ Added 1 triple to knowledge graph
 
-**Restart Claude Desktop** to load the server.
+You: "Bob also works there"  
+Claude: [uses add_memory + inference]
+  ✓ Added 1 triple
+  ⚠️  Inferred: Alice might be colleagues with Bob (confidence: 0.75)
+  → Requires verification
+
+You: "Yes, they work together"
+Claude: [uses verify_inference]
+  ✓ Inference accepted and formalized
+```
+
+**See [docs/getting-started.md](docs/getting-started.md) for Gemini setup and more examples.**
 
 ---
 
-## How It Works: Dual-Level Inference
+## 💡 Key Feature: Conversational Rule Learning
 
-SmartMemory uses a **two-level inference architecture** to automatically deduce new facts while maintaining accuracy:
+SmartMemory lets LLMs **extract business rules** from conversation and formalize them:
 
 ```
-User Input → add_memory → Storage → Level 1 (OWL-RL) → Level 2 (SPARQL) → Confidence Check → Verification (if needed)
+You: "Driving a car requires a license"
+LLM: [proposes SPARQL rule with preview]
+  Rule: driving_requires_license
+  Preview: Would infer "Bob needs license" (he drives)
+  
+You: approve_rule('driving_requires_license')
+LLM: ✓ Rule activated
+
+You: "Charlie also drives to work"  
+LLM: [automatic inference]
+  ✓ Charlie now requires license (inferred by rule)
 ```
 
-### Level 1: Ontological Inference (OWL-RL)
-- Automatic reasoning using FOAF, Schema.org, SKOS, RDFS ontologies
-- Handles: `rdfs:subClassOf`, `rdfs:domain`, `rdfs:range`, `owl:TransitiveProperty`, `owl:SymmetricProperty`
-- **Confidence**: 1.0 (ontological truth) → **Auto-accepted**
-
-**Example**:
-```
-Input: "Alice knows Bob"
-Level 1 Infers: "Bob knows Alice" (foaf:knows is symmetric)
-```
-
-### Level 2: Custom SPARQL Rules
-- 5 default rules + user-defined rules via `load_custom_rule`
-- Variable confidence (0.5-0.95 depending on rule)
-- **Confidence < 0.85**: Requests user verification
-
-**Example**:
-```
-Input: "Alice works at Google" + "Bob works at Google"
-Level 2 Infers: "Alice colleague Bob" (confidence: 0.75)
-→ Requires user confirmation
-```
-
-### Default Inference Rules
-
-| Rule | Description | Confidence |
-|------|-------------|------------|
-| **spatial_transitivity** | If A in B and B in C, then A in C | 0.85 |
-| **social_symmetry** | If A knows B, then B knows A | 0.90 |
-| **coworkers_inference** | Same workplace → colleagues | 0.75 |
-| **interest_discovery** | Created/attended topic → interest | 0.80 |
-| **event_location_inheritance** | Sub-event inherits parent location | 0.85 |
-
-See [`src/rules/defaults/`](src/rules/defaults/) for the full rule definitions.
+Real conversation example from development: [See full scenario](docs/example-scenario.md)
 
 ---
 
-## MCP Tools (7 Total)
+## 🧠 Architecture
 
-The server exposes 7 tools for AI agents:
+```
+┌─────────────────┐
+│   LLM (Gemini)  │  ← Natural language
+│    Claude, etc. │     understanding
+└────────┬────────┘
+         │ MCP Protocol
+         ▼
+┌─────────────────────────────────────┐
+│   SmartMemory Server                │
+│  ┌──────────────┐  ┌─────────────┐ │
+│  │ 12 MCP Tools │  │ Rule Engine │ │
+│  │ - add_memory │  │ - SPARQL    │ │
+│  │ - verify     │  │ - Inference │ │
+│  │ - suggest    │  │ - Provenance│ │
+│  └──────────────┘  └─────────────┘ │
+└────────┬───────────────────────────┘
+         │
+         ▼
+  ┌──────────────┐
+  │ RDF Knowledge│  ← Persistent, auditable
+  │     Graph    │     formal reasoning
+  └──────────────┘
+```
 
-| Tool | Description | Use Case |
-|------|-------------|----------|
-| **add_memory** | Add natural language or RDF triple to knowledge graph | "Remember that Alice works at Google" |
-| **query_memory** | Execute SPARQL query against the graph | "Who works at Google?" |
-| **search_entity** | Full-text search for entities by name/label | "Find all people named Alice" |
-| **verify_inference** | Confirm or reject uncertain inferences | Approve/reject colleague relationship |
-| **load_custom_rule** | Load user-defined SPARQL CONSTRUCT rule | Add domain-specific inference logic |
-| **list_rules** | List all active inference rules (default + custom) | View what rules are currently active |
-| **get_graph_stats** | Get statistics (triple count, provenance, conflicts) | "How many facts do you know?" |
-
-## MCP Prompts (5 Total)
-
-The server also provides pre-defined **prompts** that appear in your LLM client as conversation starters:
-
-| Prompt | Description |
-|--------|-------------|
-| **remember-fact** | Store a new fact (e.g., "Alice works at Google") |
-| **query-knowledge** | Search for information (e.g., "Who works at Google?") |
-| **add-custom-rule** | Create a custom inference rule |
-| **show-stats** | Show knowledge graph statistics |
-| **verify-inferences** | Review pending verifications |
-
-In Claude Desktop, these appear as `/remember-fact`, `/query-knowledge`, etc.
+**Tech Stack**: Python 3.11+, RDFLib, OWL-RL, MCP SDK
 
 ---
 
-## Usage Examples
+## 📚 Documentation
 
-### Example 1: Basic Memory Storage
-
-**User**: "Alice works at Google and knows Bob"
-
-**LLM** (uses `add_memory`):
-```json
-{
-  "tool": "add_memory",
-  "input": "Alice works at Google and knows Bob"
-}
-```
-
-**Response**:
-```
-✓ Added 6 explicit triple(s) from your input.
-✓ Inferred 2 additional triple(s) via OWL-RL reasoning.
-  - Bob knows Alice (symmetric foaf:knows)
-
-Total triples in knowledge graph: 8
-```
-
-### Example 2: Querying Knowledge
-
-**User**: "Who do I know that works at tech companies?"
-
-**LLM** (uses `query_memory`):
-```json
-{
-  "tool": "query_memory",
-  "query": "SELECT ?person ?company WHERE { ?person schema:worksFor ?company . ?company a schema:Organization }"
-}
-```
-
-**Response**:
-```
-Found 1 result in 12.34 ms:
-
---- Result 1 ---
-  person: Alice
-  company: Google
-```
-
-### Example 3: Verification Workflow
-
-**User**: "Bob also works at Google"
-
-**LLM** (uses `add_memory`):
-```
-✓ Added 1 explicit triple(s)
-⚠ 1 inference(s) need verification:
-   - "Alice might be colleagues with Bob" (confidence: 0.75)
-   Use verify_inference to confirm or reject.
-```
-
-**User**: "Yes, they work together on projects"
-
-**LLM** (uses `verify_inference`):
-```json
-{
-  "tool": "verify_inference",
-  "triple": ":Alice schema:colleague :Bob",
-  "action": "accept"
-}
-```
-
-**Response**:
-```
-✓ Inference accepted and added to the knowledge graph.
-```
-
-### Example 4: Custom Rules
-
-**User**: "Create a rule that infers mentorship from teaching"
-
-**LLM** (uses `load_custom_rule`):
-```json
-{
-  "tool": "load_custom_rule",
-  "rule_id": "mentorship_inference",
-  "rule_content": "PREFIX schema: <https://schema.org/>\nCONSTRUCT { ?teacher schema:mentor ?student }\nWHERE { ?course schema:instructor ?teacher . ?course schema:attendee ?student }",
-  "description": "Infers mentorship from course teaching"
-}
-```
-
-See [`user_rules/README.md`](user_rules/README.md) for more examples.
+- **[Getting Started](docs/getting-started.md)**: Installation & first steps
+- **[MCP Tools Reference](docs/mcp-tools.md)**: All 12 available tools
+- **[Custom Rules Guide](docs/custom-rules.md)**: Write SPARQL inference rules
+- **[Architecture Deep Dive](docs/architecture.md)**: Design decisions
 
 ---
 
-## Architecture
+## 🔬 Research Context
 
-### Technology Stack
-- **RDF Library**: `rdflib` for graph operations
-- **Reasoning**: `owlrl` for OWL-RL deductive closure  
-- **Protocol**: MCP Python SDK for tool exposure
-- **Persistence**: Turtle (.ttl) files or SQLite
-- **NLP**: Pattern matching for natural language extraction
-- **Ontologies**: FOAF, Schema.org, SKOS, RDFS (cached with HTTP conditional GET)
+SmartMemory implements **neuro-symbolic AI** concepts:
+- **Neural** (LLM): Flexibility, natural language, learning
+- **Symbolic** (SPARQL/RDF): Formal guarantees, provenance, auditability
 
-### Project Structure
-
-```
-src/semantic_memory/
-├── server.py              # MCP server entry point
-├── config.py              # Configuration (env variables)
-├── vocabulary.py          # Custom RDF namespace (sem:)
-├── inference/
-│   ├── ontology_loader.py # Smart HTTP caching
-│   ├── reasoner.py        # OWL-RL reasoning
-│   └── rule_engine.py     # SPARQL rule execution
-├── knowledge/
-│   ├── graph.py           # Provenance-aware RDF graph
-│   ├── persistence.py     # Turtle/SQLite backends
-│   ├── verification.py    # Verification model
-│   └── conflicts.py       # Conflict detection
-├── tools/                 # MCP tools (7 total)
-│   ├── add_memory.py
-│   ├── query_memory.py
-│   ├── search_entity.py
-│   ├── verify_inference.py
-│   ├── load_custom_rule.py
-│   ├── list_rules.py
-│   └── get_graph_stats.py
-└── nlp/
-    └── triple_extractor.py # Natural language → RDF
-
-src/rules/defaults/        # 5 default SPARQL rules
-user_rules/                # Your custom rules
-```
+**Relevant research areas**:
+- Knowledge distillation from neural networks
+- Explainable AI (XAI) by design
+- Human-in-the-loop machine learning
 
 ---
 
-## Configuration
+## 🤝 Contributing
 
-Configure via environment variables (prefix: `SEMMEM_`):
-
-```bash
-# Logging
-export SEMMEM_LOG_LEVEL=INFO  # DEBUG, INFO, WARNING, ERROR
-
-# Persistence
-export SEMMEM_PERSISTENCE_PATH=~/.smartmemory/knowledge_graph.ttl
-export SEMMEM_PERSISTENCE_BACKEND=turtle  # turtle, sqlite
-
-# Caching
-export SEMMEM_CACHE_DIR=~/.smartmemory/cache
-export SEMMEM_CACHE_TTL_HOURS=24
-export SEMMEM_FORCE_OFFLINE=false  # Use cached ontologies only
-
-# Inference
-export SEMMEM_MAX_INFERENCE_DEPTH=10  # Prevent loops
-export SEMMEM_AUTO_ACCEPT_THRESHOLD=0.85  # Auto-accept if confidence ≥ 0.85
-
-# Rules
-export SEMMEM_USER_RULES_DIR=~/.smartmemory/rules
-```
-
-See [`docs/mcp-client-setup.md`](docs/mcp-client-setup.md) for full configuration examples.
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for:
+- Development setup
+- Code style guidelines  
+- How to submit PRs
 
 ---
 
-## Provenance Tracking
+## 📜 License
 
-Every triple has metadata:
-
-```turtle
-:Alice schema:colleague :Bob .
-
-# Provenance metadata (RDF reification)
-_:stmt1 a rdf:Statement ;
-        rdf:subject :Alice ;
-        rdf:predicate schema:colleague ;
-        rdf:object :Bob ;
-        sem:source "user-verified" ;
-        sem:sourceRule <file:///rules/defaults/coworkers_inference.rq> ;
-        sem:confidence 1.0 ;
-        sem:timestamp "2025-11-25T14:00:00Z" ;
-        sem:uncertain false .
-```
-
-Query provenance:
-```sparql
-SELECT ?s ?p ?o ?source ?confidence
-WHERE {
-  ?s ?p ?o .
-  ?stmt a rdf:Statement ;
-        rdf:subject ?s ; rdf:predicate ?p ; rdf:object ?o ;
-        sem:source ?source ;
-        sem:confidence ?confidence .
-}
-```
+MIT License - see [LICENSE](LICENSE)
 
 ---
 
-## Development
+## 🙏 Acknowledgments
 
-### Running Tests
-
-```bash
-# Run all tests
-./venv/bin/pytest
-
-# Run specific test file
-./venv/bin/pytest tests/unit/test_rule_engine.py -v
-
-# Run with coverage
-./venv/bin/pytest --cov=src/semantic_memory
-```
-
-### Code Quality
-
-```bash
-# Type checking
-mypy src/
-
-# Code formatting
-black src/ tests/
-
-# Linting
-ruff check src/ tests/
-```
-
-### Adding Custom Inference Rules
-
-Create a SPARQL CONSTRUCT query in `user_rules/`:
-
-**Example**: `user_rules/collaboration_inference.rq`
-```sparql
-# Infers collaboration from co-authorship
-PREFIX schema: <https://schema.org/>
-
-CONSTRUCT {
-    ?author1 schema:collaboratesWith ?author2 .
-}
-WHERE {
-    ?article schema:author ?author1 .
-    ?article schema:author ?author2 .
-    FILTER(?author1 != ?author2)
-    FILTER NOT EXISTS { ?author1 schema:collaboratesWith ?author2 }
-}
-```
-
-Load at runtime:
-```json
-{
-  "tool": "load_custom_rule",
-  "rule_id": "collaboration",
-  "rule_content": "<rule content>",
-  "confidence": 0.80
-}
-```
+Built with ❤️ using:
+- [RDFLib](https://rdflib.readthedocs.io/) - RDF processing
+- [Model Context Protocol](https://modelcontextprotocol.io/) - LLM integration
+- W3C Semantic Web standards (SPARQL, OWL, RDF)
 
 ---
 
-## Documentation
+**Questions?** Open an issue or discussion on GitHub
 
-- **[MCP Client Setup Guide](docs/mcp-client-setup.md)**: Detailed configuration for Claude, Continue.dev, Cline, Zed
-- **[Realistic Dialog Scenario](docs/realistic-dialog-scenario.md)**: Example conversation with dual-level inference
-- **[Error Handling](docs/error-handling.md)**: Common errors and recovery strategies
-- **[Custom Rules Guide](user_rules/README.md)**: How to write SPARQL inference rules
-- **[Contributing](CONTRIBUTING.md)**: Development setup and guidelines
-
-### Specification Documents
-
-Complete technical specifications in [`specs/003-semantic-memory-server/`](specs/003-semantic-memory-server/):
-- **[spec.md](specs/003-semantic-memory-server/spec.md)**: Feature specification with 5 user stories
-- **[plan.md](specs/003-semantic-memory-server/plan.md)**: Technical architecture and approach
-- **[research.md](specs/003-semantic-memory-server/research.md)**: Technical decisions and rationale
-- **[data-model.md](specs/003-semantic-memory-server/data-model.md)**: RDF schema and ontology mappings
-- **[tasks.md](specs/003-semantic-memory-server/tasks.md)**: 96-task implementation plan (all complete)
-
----
-
-## Troubleshooting
-
-### Server won't start
-```bash
-# Test manually
-/path/to/venv/bin/python -m semantic_memory.server
-
-# Check Python version
-python --version  # Should be 3.11+
-
-# Check dependencies
-pip list | grep rdflib
-```
-
-### Tools not showing up
-1. Restart MCP client completely
-2. Check JSON syntax in config file
-3. Verify absolute paths are correct
-
-### Persistence errors
-```bash
-# Create directory
-mkdir -p ~/.smartmemory
-chmod 755 ~/.smartmemory
-
-# Test write permissions
-touch ~/.smartmemory/test.txt
-```
-
-See [`docs/mcp-client-setup.md#troubleshooting`](docs/mcp-client-setup.md#troubleshooting) for more solutions.
-
----
-
-## License
-
-[Specify your license here]
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, code style guidelines, and how to submit pull requests.
-
----
-
-## Contact & Support
-
-- **Issues**: Report bugs via GitHub Issues
-- **Discussions**: For questions and feature requests
-
----
-
-**Built with ❤️ using W3C RDF standards**
+**Built by**: SmartMemory Contributors | **Version**: 0.1.0

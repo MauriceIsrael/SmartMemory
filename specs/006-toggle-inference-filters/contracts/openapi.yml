@@ -1,0 +1,136 @@
+openapi: 3.0.3
+info:
+  title: Supervision Admin API
+  version: 1.0.0
+  description: API for managing the supervision application, including inference engines and data filtering.
+
+paths:
+  /api/inference-engines:
+    get:
+      summary: List Inference Engines
+      description: Retrieves a list of all available inference engines and their current state.
+      responses:
+        '200':
+          description: A list of inference engines.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InferenceEngineState'
+
+  /api/inference-engines/{engine_name}:
+    post:
+      summary: Update Inference Engine State
+      description: Enables or disables a specific inference engine.
+      parameters:
+        - name: engine_name
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: ["OWL-RL Engine", "SPARQL Engine"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                is_enabled:
+                  type: boolean
+              required:
+                - is_enabled
+      responses:
+        '200':
+          description: The engine state was updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InferenceEngineState'
+        '404':
+          description: Engine not found.
+        '400':
+          description: Invalid request body.
+
+  /api/rules:
+    get:
+      summary: List Rules
+      description: Retrieves a list of inference rules, with an option to filter by source.
+      parameters:
+        - name: source
+          in: query
+          schema:
+            type: string
+            enum: ["default", "dynamic"]
+          description: Filter rules by their source.
+      responses:
+        '200':
+          description: A list of rules.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Rule'
+
+  /api/facts:
+    get:
+      summary: List Facts
+      description: Retrieves a list of facts, with an option to filter by origin.
+      parameters:
+        - name: origin
+          in: query
+          schema:
+            type: string
+            enum: ["explicit", "inferred"]
+          description: Filter facts by their origin.
+      responses:
+        '200':
+          description: A list of facts.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Fact'
+
+components:
+  schemas:
+    InferenceEngineState:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "OWL-RL Engine"
+        is_enabled:
+          type: boolean
+          example: true
+        description:
+          type: string
+          example: "Handles OWL-RL based inferences."
+
+    Rule:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "spouses_know_each_other"
+        content:
+          type: string
+          example: "CONSTRUCT { ?p1 foaf:knows ?p2 } WHERE { ?p1 schema:spouse ?p2 }"
+        source:
+          type: string
+          enum: ["default", "dynamic"]
+          example: "dynamic"
+
+    Fact:
+      type: object
+      properties:
+        triple:
+          type: string
+          example: ":Gilles foaf:knows :Daniel"
+        origin:
+          type: string
+          enum: ["explicit", "inferred"]
+          example: "inferred"

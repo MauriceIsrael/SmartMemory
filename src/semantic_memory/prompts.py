@@ -55,7 +55,7 @@ PROMPTS = [
 ]
 
 
-async def get_prompt(name: str, arguments: dict[str, str] | None) -> PromptMessage:
+async def get_prompt(name: str, arguments: dict[str, str] | None) -> dict:
     """
     Get a prompt message for the given prompt name and arguments.
     
@@ -64,13 +64,13 @@ async def get_prompt(name: str, arguments: dict[str, str] | None) -> PromptMessa
         arguments: Arguments provided for the prompt
         
     Returns:
-        PromptMessage with the prompt content
+        GetPromptResult dict with the prompt message
     """
     arguments = arguments or {}
     
     if name == "remember-fact":
         fact = arguments.get("fact", "")
-        return PromptMessage(
+        message = PromptMessage(
             role="user",
             content=TextContent(
                 type="text",
@@ -79,10 +79,11 @@ async def get_prompt(name: str, arguments: dict[str, str] | None) -> PromptMessa
                      f"Tell me what was stored and if any new facts were automatically inferred."
             )
         )
+        return {"messages": [message]}
     
     elif name == "query-knowledge":
         question = arguments.get("question", "")
-        return PromptMessage(
+        message = PromptMessage(
             role="user",
             content=TextContent(
                 type="text",
@@ -91,10 +92,11 @@ async def get_prompt(name: str, arguments: dict[str, str] | None) -> PromptMessa
                      f"Show me what you find and explain any relevant inferences."
             )
         )
+        return {"messages": [message]}
     
     elif name == "add-custom-rule":
         rule_desc = arguments.get("rule_description", "")
-        return PromptMessage(
+        message = PromptMessage(
             role="user",
             content=TextContent(
                 type="text",
@@ -103,9 +105,10 @@ async def get_prompt(name: str, arguments: dict[str, str] | None) -> PromptMessa
                      f"Explain what the rule will do and show me an example of what it would infer."
             )
         )
+        return {"messages": [message]}
     
     elif name == "show-stats":
-        return PromptMessage(
+        message = PromptMessage(
             role="user",
             content=TextContent(
                 type="text",
@@ -117,17 +120,19 @@ async def get_prompt(name: str, arguments: dict[str, str] | None) -> PromptMessa
                      "- Any conflicts or pending verifications"
             )
         )
+        return {"messages": [message]}
     
     elif name == "verify-inferences":
-        return PromptMessage(
+        message = PromptMessage(
             role="user",
             content=TextContent(
                 type="text",
                 text="Show me any uncertain inferences that need my confirmation.\n\n"
-                     "First use get_graph_stats to see if there are pending verifications, "
+                     "First use get_pending_verifications to see if there are pending verifications, "
                      "then help me review and either accept or reject each one using the verify_inference tool."
             )
         )
+        return {"messages": [message]}
     
     else:
         raise ValueError(f"Unknown prompt: {name}")
