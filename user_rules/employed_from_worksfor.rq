@@ -1,0 +1,2 @@
+# Infer that a person is employed if they work for a company.
+CONSTRUCT { ?person rdf:type :EmployedPerson . } WHERE { ?person schema:worksFor ?company . }

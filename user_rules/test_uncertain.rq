@@ -1,0 +1,15 @@
+# Test uncertain rule
+
+    PREFIX schema: <https://schema.org/>
+    PREFIX sem: <http://semanticmemory.org/vocab#>
+    
+    CONSTRUCT {
+        ?p1 schema:colleague ?p2 .
+        ?p1 sem:uncertainPredicate schema:colleague .
+    }
+    WHERE {
+        ?p1 schema:worksFor ?org .
+        ?p2 schema:worksFor ?org .
+        FILTER(?p1 != ?p2)
+    }
+    

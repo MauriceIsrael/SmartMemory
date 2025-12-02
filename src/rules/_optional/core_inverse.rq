@@ -1,0 +1,26 @@
+# Generic Inverse Rule (SCOPED to user namespace)
+# Infers inverse relationships based on owl:inverseOf definition
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX : <http://semanticmemory.org/user#>
+
+CONSTRUCT {
+    ?y ?p2 ?x .
+    ?x ?p1 ?y .
+}
+WHERE {
+    # Find inverse property definitions
+    ?p1 owl:inverseOf ?p2 .
+    
+    # Match either direction IN USER NAMESPACE ONLY
+    {
+        ?x ?p1 ?y .
+        FILTER(STRSTARTS(STR(?x), STR(:)) && STRSTARTS(STR(?y), STR(:)))
+        FILTER NOT EXISTS { ?y ?p2 ?x }
+    }
+    UNION
+    {
+        ?y ?p2 ?x .
+        FILTER(STRSTARTS(STR(?x), STR(:)) && STRSTARTS(STR(?y), STR(:)))
+        FILTER NOT EXISTS { ?x ?p1 ?y }
+    }
+}

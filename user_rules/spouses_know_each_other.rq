@@ -1,0 +1,11 @@
+# Infers that if two people are spouses, they know each other.
+
+CONSTRUCT {
+    ?person1 foaf:knows ?person2 .
+    ?person2 foaf:knows ?person1 .
+}
+WHERE {
+    { ?person1 schema:spouse ?person2 . }
+    UNION
+    { ?person2 schema:spouse ?person1 . }
+}

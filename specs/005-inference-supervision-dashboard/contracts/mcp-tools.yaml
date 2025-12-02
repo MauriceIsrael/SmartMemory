@@ -1,0 +1,141 @@
+openapi: 3.0.0
+info:
+  title: SmartMemory Supervision API
+  description: API for supervising the SmartMemory inference engine.
+  version: 1.0.0
+
+paths:
+  /stats:
+    get:
+      summary: Get System Statistics
+      description: Retrieves key metrics about the knowledge graph and rule engine.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemStats'
+
+  /facts:
+    get:
+      summary: Get Facts
+      description: Retrieves a paginated list of facts from the knowledge graph.
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A paginated list of facts.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_items:
+                    type: integer
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Fact'
+
+  /rules:
+    get:
+      summary: Get Inference Rules
+      description: Retrieves a list of all inference rules.
+      responses:
+        '200':
+          description: A list of inference rules.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InferenceRule'
+
+  /rules/{id}/toggle:
+    post:
+      summary: Toggle Rule State
+      description: Activates or deactivates an inference rule.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Rule state updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InferenceRule'
+        '404':
+          description: Rule not found.
+
+  /inference/run:
+    post:
+      summary: Run Inference
+      description: Manually triggers a full inference run.
+      responses:
+        '202':
+          description: Inference run accepted and started.
+
+components:
+  schemas:
+    SystemStats:
+      type: object
+      properties:
+        total_triplets:
+          type: integer
+        inferred_triplet_count:
+          type: integer
+        asserted_triplet_count:
+          type: integer
+        active_rule_count:
+          type: integer
+        inactive_rule_count:
+          type: integer
+
+    Fact:
+      type: object
+      properties:
+        Subject:
+          type: string
+        Predicate:
+          type: string
+        Object:
+          type: string
+        Provenance:
+          type: string
+
+    InferenceRule:
+      type: object
+      properties:
+        id:
+          type: string
+        description:
+          type: string
+        sparql_query:
+          type: string
+        is_active:
+          type: boolean
+        execution_count:
+          type: integer
+        triples_generated:
+          type: integer
+        validation_error:
+          type: string
+          nullable: true

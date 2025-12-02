@@ -1,0 +1,13 @@
+# Inherits location from parent event for sub-events (SCOPED to user namespace)
+PREFIX schema: <https://schema.org/>
+PREFIX : <http://semanticmemory.org/user#>
+
+CONSTRUCT {
+    ?subEvent schema:location ?location .
+}
+WHERE {
+    ?subEvent schema:superEvent ?parentEvent .
+    ?parentEvent schema:location ?location .
+    FILTER(STRSTARTS(STR(?subEvent), STR(:)))
+    FILTER NOT EXISTS { ?subEvent schema:location ?existingLocation }
+}

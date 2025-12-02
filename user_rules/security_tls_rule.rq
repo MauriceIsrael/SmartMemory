@@ -1,0 +1,10 @@
+# High security IP flows require TLS
+
+    CONSTRUCT {
+        ?flow :requiresEncryption :TLS .
+    }
+    WHERE {
+        ?flow rdf:type :IPFlow .
+        ?flow :security :High .
+    }
+    

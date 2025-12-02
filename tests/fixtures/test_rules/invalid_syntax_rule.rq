@@ -1,0 +1,2 @@
+# This rule has invalid syntax
+SELECT * WHERE { ?s ?p ?o }

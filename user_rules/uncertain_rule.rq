@@ -1,0 +1,12 @@
+PREFIX schema: <https://schema.org/>
+PREFIX ex: <http://example.org/>
+PREFIX sem: <http://semanticmemory.org/vocab#>
+
+CONSTRUCT { 
+    ?person ex:isCitizenOf ?country .
+    ?person sem:uncertainPredicate ex:isCitizenOf .
+}
+WHERE {
+    ?person schema:homeLocation ?city .
+    ?city schema:containedInPlace ?country .
+}

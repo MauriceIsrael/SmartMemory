@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+   xmlns:schema="https://schema.org/">
+
+  <!-- Classes -->
+  <rdfs:Class rdf:about="https://schema.org/Person">
+    <rdfs:label>Person</rdfs:label>
+  </rdfs:Class>
+
+  <rdfs:Class rdf:about="https://schema.org/Organization">
+    <rdfs:label>Organization</rdfs:label>
+  </rdfs:Class>
+
+  <rdfs:Class rdf:about="https://schema.org/Place">
+    <rdfs:label>Place</rdfs:label>
+  </rdfs:Class>
+
+  <rdfs:Class rdf:about="https://schema.org/Event">
+    <rdfs:label>Event</rdfs:label>
+  </rdfs:Class>
+
+  <!-- Properties -->
+  <rdf:Property rdf:about="https://schema.org/worksFor">
+    <rdfs:label>worksFor</rdfs:label>
+    <rdfs:domain rdf:resource="https://schema.org/Person"/>
+    <rdfs:range rdf:resource="https://schema.org/Organization"/>
+  </rdf:Property>
+
+  <rdf:Property rdf:about="https://schema.org/colleague">
+    <rdfs:label>colleague</rdfs:label>
+    <rdfs:domain rdf:resource="https://schema.org/Person"/>
+    <rdfs:range rdf:resource="https://schema.org/Person"/>
+  </rdf:Property>
+
+  <rdf:Property rdf:about="https://schema.org/containedInPlace">
+    <rdfs:label>containedInPlace</rdfs:label>
+    <rdfs:domain rdf:resource="https://schema.org/Place"/>
+    <rdfs:range rdf:resource="https://schema.org/Place"/>
+  </rdf:Property>
+
+  <rdf:Property rdf:about="https://schema.org/location">
+    <rdfs:label>location</rdfs:label>
+    <rdfs:range rdf:resource="https://schema.org/Place"/>
+  </rdf:Property>
+
+  <rdf:Property rdf:about="https://schema.org/superEvent">
+    <rdfs:label>superEvent</rdfs:label>
+    <rdfs:domain rdf:resource="https://schema.org/Event"/>
+    <rdfs:range rdf:resource="https://schema.org/Event"/>
+  </rdf:Property>
+
+  <rdf:Property rdf:about="https://schema.org/creator">
+    <rdfs:label>creator</rdfs:label>
+    <rdfs:range rdf:resource="https://schema.org/Person"/>
+  </rdf:Property>
+
+  <rdf:Property rdf:about="https://schema.org/attendee">
+    <rdfs:label>attendee</rdfs:label>
+    <rdfs:domain rdf:resource="https://schema.org/Event"/>
+    <rdfs:range rdf:resource="https://schema.org/Person"/>
+  </rdf:Property>
+
+  <rdf:Property rdf:about="https://schema.org/about">
+    <rdfs:label>about</rdfs:label>
+  </rdf:Property>
+
+  <rdf:Property rdf:about="https://schema.org/interestOf">
+    <rdfs:label>interestOf</rdfs:label>
+    <rdfs:domain rdf:resource="https://schema.org/Person"/>
+  </rdf:Property>
+
+</rdf:RDF>

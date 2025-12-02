@@ -1,0 +1,14 @@
+# Infers potential mentorship (uncertain)
+
+    PREFIX schema: <https://schema.org/>
+    PREFIX sem: <http://semanticmemory.org/vocab#>
+    
+    CONSTRUCT {
+        ?instructor sem:potentialMentor ?student .
+        ?instructor sem:uncertainPredicate sem:potentialMentor .
+    }
+    WHERE {
+        ?course schema:instructor ?instructor .
+        ?course schema:attendee ?student .
+    }
+    

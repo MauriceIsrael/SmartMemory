@@ -1,0 +1,3 @@
+PREFIX : <http://example.org/>
+CONSTRUCT { ?b :relatesTo ?a . }
+WHERE { ?a :relatesTo ?b . }

@@ -1,18 +1,52 @@
 # Python
 __pycache__/
-*.pyc
-.venv/
+*.py[cod]
+*$py.class
+*.so
+.Python
 venv/
-dist/
+env/
+ENV/
+.venv
 *.egg-info/
+dist/
+build/
+*.egg
 
-# Cache
-cache/
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
 
-# Universal
-.DS_Store
-Thumbs.db
-*.tmp
-*.swp
+# IDEs
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+knowledge_graph.ttl
+knowledge_graph_pending.ttl
+knowledge_graph_rejected.ttl
+cache/
+*.db
+*.sqlite
+
+# Logs
+*.log
+test_*.txt
+
+# Environment
+.env
+.env.local
+
+# Temporary files
+reproduce_issue.py
+test_*.py
+_archive/

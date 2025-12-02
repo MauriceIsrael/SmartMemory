@@ -1,0 +1,18 @@
+# Infers user interests from object interactions (SCOPED to user namespace)
+PREFIX schema: <https://schema.org/>
+PREFIX : <http://semanticmemory.org/user#>
+
+CONSTRUCT {
+    ?person schema:interestOf ?topic .
+}
+WHERE {
+    {
+        ?person schema:creator ?thing .
+        ?thing schema:about ?topic .
+    } UNION {
+        ?person schema:attendee ?event .
+        ?event schema:about ?topic .
+    }
+    FILTER(STRSTARTS(STR(?person), STR(:)))
+    FILTER NOT EXISTS { ?person schema:interestOf ?topic }
+}

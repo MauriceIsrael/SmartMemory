@@ -1,0 +1,2 @@
+# Infère qu'une personne a besoin d'un permis de conduire si elle utilise la voiture comme moyen de transport.
+CONSTRUCT { ?person :requires :DrivingLicense . } WHERE { ?person :usesTransportOption :Car . }

@@ -1,0 +1,4 @@
+# This is a test description.
+PREFIX schema: <https://schema.org/>
+CONSTRUCT { ?person schema:knows ?person2 . }
+WHERE { ?person schema:knows ?person2 . }
