@@ -10,7 +10,9 @@ Demonstrates the core capabilities:
 """
 
 from semantic_memory.knowledge.graph import ProvenanceGraph
+from semantic_memory.inference.rule_engine import RuleEngine, load_rules
 from rdflib import URIRef, Namespace
+import os
 
 # Define namespaces
 USER = Namespace("http://semanticmemory.org/user#")
@@ -23,7 +25,17 @@ def main():
     
     # Initialize knowledge graph
     graph = ProvenanceGraph()
-    print("✓ Knowledge graph initialized\n")
+    
+    # Load default rules
+    # Assuming running from project root
+    rules_dir = "src/rules/defaults"
+    if not os.path.exists(rules_dir):
+        # Fallback if running from examples/
+        rules_dir = "../src/rules/defaults"
+        
+    rules = load_rules([rules_dir])
+    rule_engine = RuleEngine(rules)
+    print(f"✓ Knowledge graph initialized with {len(rules)} default rules\n")
     
     # Step 1: Add facts with provenance
     print("Step 1: Adding facts")
@@ -105,6 +117,71 @@ def main():
     print("  ✓ SPARQL inference rules (automatic deductions)")
     print("  ✓ Human-in-the-loop (approve/reject uncertain facts)")
     print("  ✓ MCP integration (use with Claude, Gemini, etc.)")
+    
+    # Step 3: Conversational Rule Learning
+    print("\nStep 3: Conversational Rule Learning (The 'Magic' Part)")
+    print("-" * 50)
+    print("Scenario: User teaches the system a new business rule.")
+    
+    # 1. User Statement
+    print("\n1. User says: 'Driving a car requires a license'")
+    print("   LLM analyzes this and proposes a SPARQL rule...")
+    
+    # 2. Rule Proposal (Simulated)
+    rule_id = "driving_requires_license"
+    sparql_rule = """
+    PREFIX : <http://semanticmemory.org/user#>
+    CONSTRUCT { ?person :requires :DrivingLicense }
+    WHERE { ?person :usesTransportOption :Car }
+    """
+    print(f"   → Proposed Rule '{rule_id}':")
+    print(f"     IF ?person uses :Car THEN ?person requires :DrivingLicense")
+    
+    # 3. User Approval
+    print("\n2. User approves the rule via approve_rule('driving_requires_license')")
+    from semantic_memory.inference.rule_engine import InferenceRule
+    from pathlib import Path
+    
+    new_rule = InferenceRule(
+        id=rule_id,
+        file_path=Path(f"user_rules/{rule_id}.rq"),
+        sparql_query=sparql_rule,
+        source="user",
+        description="Infers license requirement from car usage"
+    )
+    rule_engine.rules.append(new_rule)
+    print("   ✓ Rule activated and added to engine")
+    
+    # 4. New Fact triggers Rule
+    print("\n3. User says: 'Charlie drives to work'")
+    graph.add_triple_with_provenance(
+        subject=USER.Charlie,
+        predicate=USER.usesTransportOption,
+        obj=USER.Car,
+        source="user",
+        confidence=1.0
+    )
+    print("   ✓ Added fact: Charlie uses Car")
+    
+    # 5. Automatic Inference
+    print("\n4. System automatically infers consequences...")
+    # Use execute_rules instead of run_all_rules
+    count = rule_engine.execute_rules(graph)
+    print(f"   ✓ Inference engine finished (inferred {count} new triples)")
+    
+    # Check if inference happened
+    # We need to query the graph to see the new triple
+    check_query = """
+    PREFIX : <http://semanticmemory.org/user#>
+    ASK { :Charlie :requires :DrivingLicense }
+    """
+    is_inferred = graph.query(check_query).askAnswer
+    
+    if is_inferred:
+        print("   ✨ INFERENCE CONFIRMED: Charlie requires DrivingLicense")
+    else:
+        print("   (No new inferences found in this pass - rule might need re-run)")
+
     print("\nNext steps:")
     print("  • See docs/getting-started.md for MCP setup")
     print("  • Try with Claude Desktop or Gemini")

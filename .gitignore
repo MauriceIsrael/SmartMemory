@@ -50,3 +50,17 @@ test_*.txt
 reproduce_issue.py
 test_*.py
 _archive/
+
+# Tool specific
+.agent/
+.gemini/
+.specify/
+.claude/
+
+# AI Context
+CLAUDE.md
+GEMINI.md
+speckit_prompt.md
+
+# Data
+knowledge_graph.ttl
