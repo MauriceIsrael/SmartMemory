@@ -1,0 +1,2 @@
+# Infers that a father and child know each other.
+CONSTRUCT { ?father foaf:knows ?child . ?child foaf:knows ?father } WHERE { ?child :hasFather ?father }

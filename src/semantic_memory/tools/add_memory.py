@@ -20,6 +20,22 @@ ADD_MEMORY_TOOL = Tool(
     name="add_memory",
     description=(
         "Store a fact in semantic memory using RDF triple notation."
+        "\n\n**CRITICAL - ANTI-HALLUCINATION RULES:**"
+        "\n❌ NEVER suggest example facts and then add them as if user confirmed"
+        "\n❌ NEVER assume user response validates your examples"
+        "\n❌ NEVER invent names, relationships, dates, or any entities"
+        "\n❌ NEVER add facts based on your assumptions or knowledge"
+        "\n✓ ONLY add facts that user EXPLICITLY and UNAMBIGUOUSLY stated"
+        "\n✓ If unsure what user meant, ASK for clarification before adding"
+        "\n✓ If user says 'I don't know', do NOT add anything"
+        "\n\n**Example of INCORRECT behavior (HALLUCINATION):**"
+        "\nUser: 'Who is Alice's father?'"
+        "\nYou: 'I don't know. Can you tell me? Example: :Alice :hasFather :Bob'"
+        "\nUser: 'ok' [or any vague response]"
+        "\nYou: add_memory(':Alice :hasFather :Bob') ← WRONG! User never said this!"
+        "\n\n**Example of CORRECT behavior:**"
+        "\nUser: 'Alice's father is Bob'"
+        "\nYou: add_memory(':Alice :hasFather :Bob') ← CORRECT!"
         "\n\n**What happens when you add a fact:**"
         "\n1. Fact is stored with confidence=1.0 (explicit user fact)"
         "\n2. SPARQL inference rules automatically run in background"
@@ -35,7 +51,7 @@ ADD_MEMORY_TOOL = Tool(
         "\n  add_memory(':User foaf:knows :Alice')"
         "\n  add_memory(':User :isFriendOf :Bob')  # Custom predicate"
         "\n  add_memory(':Charlie schema:worksFor :AcmeCorp')"
-        "\n\n**Note:** Use ':User' for current user, ':' prefix for all user entities."
+       "\n\n**Note:** Use ':User' for current user, ':' prefix for all user entities."
     ),
     inputSchema={
         "type": "object",
@@ -78,7 +94,21 @@ async def add_memory(
     logger.info(f"add_memory called with input: {input_text[:100]}...")
 
     # Extract triples from input
-    if format_type == "triple_notation" or input_text.strip().startswith(":"):
+    # Detect triple notation by checking for common patterns:
+    # - Starts with ':' (e.g., ":Alice foaf:knows :Bob")
+    # - Starts with '<' (e.g., "<http://...> predicate <http://...>")
+    # - Contains ' : ' or ' foaf:' or ' schema:' (explicit predicates)
+    is_triple_notation = (
+        format_type == "triple_notation" 
+        or input_text.strip().startswith(":")
+        or input_text.strip().startswith("<")
+        or " foaf:" in input_text
+        or " schema:" in input_text
+        or " rdf:" in input_text
+        or " :" in input_text  # e.g., "subject :customPredicate object"
+    )
+    
+    if is_triple_notation:
         # Explicit triple notation
         extracted_triple = triple_extractor.parse_triple_notation(input_text)
         if extracted_triple:

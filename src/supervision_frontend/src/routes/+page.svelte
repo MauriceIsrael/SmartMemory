@@ -1,32 +1,59 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { fetchStats, type SystemStats } from '$lib/api';
-	import StatCard from '$lib/components/StatCard.svelte';
+	import { onMount, onDestroy } from "svelte";
+	import { fetchStats, type SystemStats } from "$lib/api";
+	import StatCard from "$lib/components/StatCard.svelte";
 
 	let stats: SystemStats | null = null;
 	let loading = true;
+	let isInitialLoad = true;
 	let error: string | null = null;
+	let refreshInterval: number;
 
-	onMount(async () => {
+	async function loadStats() {
+		// Only show loading spinner on initial load, not on refresh
+		if (isInitialLoad) {
+			loading = true;
+		}
+
 		try {
 			stats = await fetchStats();
+			error = null;
 		} catch (e) {
-			error = e instanceof Error ? e.message : 'Failed to load stats';
+			error = e instanceof Error ? e.message : "Failed to load stats";
 		} finally {
 			loading = false;
+			isInitialLoad = false;
+		}
+	}
+
+	onMount(async () => {
+		await loadStats();
+
+		// Auto-refresh every 5 seconds
+		refreshInterval = window.setInterval(loadStats, 5000);
+	});
+
+	onDestroy(() => {
+		if (refreshInterval) {
+			clearInterval(refreshInterval);
 		}
 	});
 
 	$: inferredPercentage =
 		stats && stats.total_triplets > 0
-			? ((stats.inferred_triplet_count / stats.total_triplets) * 100).toFixed(1)
-			: '0';
+			? (
+					(stats.inferred_triplet_count / stats.total_triplets) *
+					100
+				).toFixed(1)
+			: "0";
 </script>
 
 <div class="dashboard">
 	<header class="page-header">
 		<h1>Dashboard</h1>
-		<p class="page-description">Real-time insights into your SmartMemory knowledge graph</p>
+		<p class="page-description">
+			Real-time insights into your SmartMemory knowledge graph
+		</p>
 	</header>
 
 	{#if loading}
@@ -39,28 +66,36 @@
 			<p class="error-icon">⚠️</p>
 			<h2>Connection Error</h2>
 			<p>{error}</p>
-			<p class="error-hint">Make sure the backend API is running at http://localhost:8000</p>
+			<p class="error-hint">
+				Make sure the backend API is running at http://localhost:8000
+			</p>
 		</div>
 	{:else if stats}
 		<div class="stats-grid">
-			<StatCard
-				title="Total Facts"
-				value={stats.total_triplets.toLocaleString()}
-				icon="📚"
-				subtitle="Triples in knowledge graph"
-			/>
-			<StatCard
-				title="Inferred Facts"
-				value={`${inferredPercentage}%`}
-				icon="🤖"
-				subtitle={`${stats.inferred_triplet_count.toLocaleString()} of ${stats.total_triplets.toLocaleString()}`}
-			/>
-			<StatCard
-				title="Active Rules"
-				value={stats.active_rule_count}
-				icon="✅"
-				subtitle={`${stats.inactive_rule_count} inactive`}
-			/>
+			<a href="/facts" class="stat-link">
+				<StatCard
+					title="Total Facts"
+					value={stats.total_triplets.toLocaleString()}
+					icon="📚"
+					subtitle="Triples in knowledge graph"
+				/>
+			</a>
+			<a href="/facts?origin=inferred" class="stat-link">
+				<StatCard
+					title="Inferred Facts"
+					value={`${inferredPercentage}%`}
+					icon="🤖"
+					subtitle={`${stats.inferred_triplet_count.toLocaleString()} of ${stats.total_triplets.toLocaleString()}`}
+				/>
+			</a>
+			<a href="/rules" class="stat-link">
+				<StatCard
+					title="Active Rules"
+					value={stats.active_rule_count}
+					icon="✅"
+					subtitle={`${stats.inactive_rule_count} inactive`}
+				/>
+			</a>
 		</div>
 
 		<div class="info-card">
@@ -68,16 +103,21 @@
 			<div class="info-grid">
 				<div class="info-item">
 					<span class="info-label">Asserted Facts:</span>
-					<span class="info-value">{stats.asserted_triplet_count.toLocaleString()}</span>
+					<span class="info-value"
+						>{stats.asserted_triplet_count.toLocaleString()}</span
+					>
 				</div>
 				<div class="info-item">
 					<span class="info-label">Inferred Facts:</span>
-					<span class="info-value">{stats.inferred_triplet_count.toLocaleString()}</span>
+					<span class="info-value"
+						>{stats.inferred_triplet_count.toLocaleString()}</span
+					>
 				</div>
 				<div class="info-item">
 					<span class="info-label">Total Rules:</span>
 					<span class="info-value"
-						>{stats.active_rule_count + stats.inactive_rule_count}</span
+						>{stats.active_rule_count +
+							stats.inactive_rule_count}</span
 					>
 				</div>
 			</div>
@@ -118,8 +158,23 @@
 		margin-bottom: 2rem;
 	}
 
+	.stat-link {
+		text-decoration: none;
+		color: inherit;
+		display: block;
+		transition: transform 0.2s ease;
+	}
+
+	.stat-link:hover {
+		transform: translateY(-4px);
+	}
+
 	.info-card {
-		background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+		background: linear-gradient(
+			135deg,
+			rgba(102, 126, 234, 0.05) 0%,
+			rgba(118, 75, 162, 0.05) 100%
+		);
 		border: 1px solid rgba(102, 126, 234, 0.15);
 		border-radius: 12px;
 		padding: 1.5rem;

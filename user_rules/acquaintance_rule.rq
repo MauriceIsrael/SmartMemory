@@ -1,7 +1,0 @@
-# Définit une relation de connaissance comme étant une personne que l'on connaît.
-CONSTRUCT {
-    ?a foaf:knows ?b .
-}
-WHERE {
-    ?a :isAcquaintanceOf ?b .
-}

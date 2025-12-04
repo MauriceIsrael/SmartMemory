@@ -1,0 +1,2 @@
+# Infers maternal grandmother relationship. A person's mother's mother is their maternal grandmother.
+CONSTRUCT { ?grandmother :isGrandmotherOf ?grandchild } WHERE { ?grandchild :hasMother ?parent . ?parent :hasMother ?grandmother }

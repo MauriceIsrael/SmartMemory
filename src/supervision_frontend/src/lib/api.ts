@@ -33,6 +33,7 @@ export interface InferenceRule {
     execution_count: number;
     triples_generated: number;
     validation_error: string | null;
+    source: string;  // 'default' | 'custom' | 'dynamic'
 }
 
 export interface InferenceRunResponse {

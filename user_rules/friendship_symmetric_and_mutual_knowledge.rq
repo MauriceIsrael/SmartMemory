@@ -1,0 +1,2 @@
+# Friendship is symmetric and implies mutual knowledge.
+CONSTRUCT { ?a :isFriendOf ?b . ?b :isFriendOf ?a . ?a foaf:knows ?b . ?b foaf:knows ?a } WHERE { ?a :isFriendOf ?b }

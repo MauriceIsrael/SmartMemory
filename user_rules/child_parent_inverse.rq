@@ -1,0 +1,2 @@
+# If A has child B, then B has parent A.
+CONSTRUCT { ?child :hasParent ?parent . } WHERE { ?parent :hasChild ?child . }

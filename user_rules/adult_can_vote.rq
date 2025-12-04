@@ -1,0 +1,2 @@
+# An adult person can vote.
+CONSTRUCT { ?person :canVote true } WHERE { ?person :isAdult true }

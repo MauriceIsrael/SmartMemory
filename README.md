@@ -42,13 +42,57 @@ python examples/quick_demo.py
 Expected output:
 ```
 🧠 SmartMemory v0.1 - Quick Demo
-✓ Knowledge graph initialized
-✓ Alice knows Bob
-✓ Alice works at Google
+
+✓ Knowledge graph initialized with 5 default rules
+
+Step 1: Adding facts
+--------------------------------------------------
+  ✓ Alice knows Bob
+  ✓ Alice works at Google
+  ✓ Bob works at Google
+
+Triples in graph: 27
+
+Step 2: Querying the graph
+--------------------------------------------------
 Query: Who works at Google?
   ✓ :Alice
   ✓ :Bob
+
+Query: Who does Alice know?
+  ✓ :Bob
+
 ✨ Demo complete!
+
+What SmartMemory adds:
+  ✓ Provenance tracking (who added, when, confidence)
+  ✓ SPARQL inference rules (automatic deductions)
+  ✓ Human-in-the-loop (approve/reject uncertain facts)
+  ✓ MCP integration (use with Claude, Gemini, etc.)
+
+Step 3: Conversational Rule Learning (The 'Magic' Part)
+--------------------------------------------------
+Scenario: User teaches the system a new business rule.
+
+1. User says: 'Driving a car requires a license'
+   LLM analyzes this and proposes a SPARQL rule...
+   → Proposed Rule 'driving_requires_license':
+     IF ?person uses :Car THEN ?person requires :DrivingLicense
+
+2. User approves the rule via approve_rule('driving_requires_license')
+   ✓ Rule activated and added to engine
+
+3. User says: 'Charlie drives to work'
+   ✓ Added fact: Charlie uses Car
+
+4. System automatically infers consequences...
+   ✓ Inference engine finished (inferred 4 new triples)
+   ✨ INFERENCE CONFIRMED: Charlie requires DrivingLicense
+
+Next steps:
+  • See docs/getting-started.md for MCP setup
+  • Try with Claude Desktop or Gemini
+  • Create custom rules in user_rules/
 ```
 
 ### 3. Use with MCP Clients
@@ -83,7 +127,59 @@ Claude: [uses verify_inference]
   ✓ Inference accepted and formalized
 ```
 
-**See [docs/getting-started.md](docs/getting-started.md) for Gemini setup and more examples.**
+**See [docs/getting-started.md](docs/getting-started.md) for setup and more examples.**
+
+### 4. Visualization Dashboard
+
+SmartMemory comes with a built-in dashboard to visualize the knowledge graph and manage the system.
+
+**Quick Start** (one command):
+```bash
+# From the SmartMemory root directory
+./scripts/start_dashboard.sh
+```
+
+This starts both the backend (FastAPI) and frontend (SvelteKit) in parallel. The dashboard will automatically open in your browser at `http://localhost:5173`.
+
+**What you get**:
+- 📊 Real-time knowledge graph statistics
+- 📋 Browse and search facts
+- ⚙️ Manage inference rules
+- 🔄 **Auto-refresh**: Dashboard automatically reloads data to show changes made during LLM conversations
+
+**Manual Setup** (if you prefer separate terminals):
+
+<details>
+<summary>Click to expand manual setup instructions</summary>
+
+**Install supervision dependencies** (first time only):
+```bash
+# From the SmartMemory root directory
+source venv/bin/activate
+pip install fastapi "uvicorn[standard]"
+# Or install via optional dependencies:
+# pip install -e ".[supervision]"
+```
+
+**Backend (FastAPI)**:
+```bash
+cd src/supervision_backend
+# Ensure PYTHONPATH includes project root
+export PYTHONPATH=$PYTHONPATH:$(pwd)/../..
+# Use the venv's uvicorn (not the system one)
+../../venv/bin/uvicorn main:app --reload --port 8000
+```
+
+**Frontend (SvelteKit)**:
+```bash
+cd src/supervision_frontend
+npm install
+npm run dev -- --open
+```
+
+</details>
+
+Access the dashboard at `http://localhost:5173`.
 
 ---
 
@@ -105,7 +201,7 @@ LLM: [automatic inference]
   ✓ Charlie now requires license (inferred by rule)
 ```
 
-Real conversation example from development: [See full scenario](docs/example-scenario.md)
+Real conversation example from development: [See full scenario](docs/realistic-dialog-scenario.md)
 
 ---
 
@@ -135,16 +231,18 @@ Real conversation example from development: [See full scenario](docs/example-sce
   └──────────────┘
 ```
 
-**Tech Stack**: Python 3.11+, RDFLib, OWL-RL, MCP SDK
+**Tech Stack**: Python 3.11+, RDFLib, OWL-RL (optional), MCP SDK, SvelteKit, TypeScript, TailwindCSS
+
+> **Note**: Full ontology loading (FOAF, Schema.org) is **disabled by default** to ensure fast startup times (<2s). You can enable it in `config.py` if you need deep reasoning capabilities, at the cost of slower startup (~5-10s).
 
 ---
 
 ## 📚 Documentation
 
 - **[Getting Started](docs/getting-started.md)**: Installation & first steps
-- **[MCP Tools Reference](docs/mcp-tools.md)**: All 12 available tools
-- **[Custom Rules Guide](docs/custom-rules.md)**: Write SPARQL inference rules
-- **[Architecture Deep Dive](docs/architecture.md)**: Design decisions
+- **[MCP Tools Reference](docs/getting-started.md#tools-overview)**: Available tools
+- **[Custom Rules Guide](docs/CUSTOM_RULES.md)**: Write SPARQL inference rules
+- **[Architecture Deep Dive](docs/architecture-overview.md)**: Design decisions
 
 ---
 

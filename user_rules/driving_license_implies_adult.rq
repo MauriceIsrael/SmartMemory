@@ -1,0 +1,2 @@
+# A person with a driving license is an adult.
+CONSTRUCT { ?person :isAdult true } WHERE { ?person :hasDrivingLicense ?license }

@@ -1,2 +1,0 @@
-# If A is a friend of B, then A knows B and B knows A.
-CONSTRUCT { ?person1 foaf:knows ?person2 . ?person2 foaf:knows ?person1 . } WHERE { ?person1 foaf:friend ?person2 . }

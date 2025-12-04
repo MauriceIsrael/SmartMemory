@@ -22,9 +22,16 @@ class SystemStats(BaseModel):
 
 
 @router.get("/stats", response_model=SystemStats)
-async def get_stats():
+async def get_stats(auto_reload: bool = True):
     """
     Get system statistics.
+    
+    By default, this automatically reloads the graph from disk before
+    returning statistics, ensuring the dashboard always shows current data
+    even when the MCP server has modified the knowledge graph.
+    
+    Args:
+        auto_reload: If True (default), reload graph before returning stats
     
     Returns key metrics about the knowledge graph and rule engine:
     - Total number of triplets in the graph
@@ -32,5 +39,11 @@ async def get_stats():
     - Count of active vs. inactive inference rules
     """
     memory_service = get_memory_service()
+    
+    # Auto-reload to get fresh data from disk
+    if auto_reload:
+        memory_service.reload_graph()
+    
     stats = memory_service.get_system_stats()
     return SystemStats(**stats)
+

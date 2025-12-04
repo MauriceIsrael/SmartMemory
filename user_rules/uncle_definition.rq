@@ -1,0 +1,14 @@
+# An uncle is the brother of a parent.
+# Supports both English and French predicates
+CONSTRUCT { ?uncle :isUncleOf ?child . }
+WHERE {
+  {
+    # English predicates with property path
+    ?child :hasMother|:hasFather ?parent .
+    ?parent :hasBrother ?uncle .
+  } UNION {
+    # French predicates
+    ?child :aPourMère|:aPourPère ?parent .
+    ?parent :aPourFrère ?uncle .
+  }
+}

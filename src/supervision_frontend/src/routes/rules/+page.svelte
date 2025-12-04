@@ -1,31 +1,50 @@
 <script lang="ts">
-	import { onMount } from "svelte";
+	import { onMount, onDestroy } from "svelte";
 	import { fetchRules, toggleRule, type InferenceRule } from "$lib/api";
 	import { getRules } from "$lib/services/AdminService";
 
 	let rules: InferenceRule[] = [];
 	let loading = true;
+	let isInitialLoad = true;
 	let error: string | null = null;
 	let toastMessage = "";
 	let showToast = false;
 	let sourceFilter: "all" | "default" | "dynamic" = "all";
+	let refreshInterval: number;
 
 	async function loadRules() {
-		loading = true;
+		// Only show loading spinner on initial load, not on refresh
+		if (isInitialLoad) {
+			loading = true;
+		}
+
 		error = null;
 		try {
 			// Use AdminService getRules with filtering
 			const filterParam =
 				sourceFilter === "all" ? undefined : sourceFilter;
 			rules = await getRules(filterParam);
+			error = null;
 		} catch (e) {
 			error = e instanceof Error ? e.message : "Failed to load rules";
 		} finally {
 			loading = false;
+			isInitialLoad = false;
 		}
 	}
 
-	onMount(loadRules);
+	onMount(async () => {
+		await loadRules();
+
+		// Auto-refresh every 5 seconds
+		refreshInterval = window.setInterval(loadRules, 5000);
+	});
+
+	onDestroy(() => {
+		if (refreshInterval) {
+			clearInterval(refreshInterval);
+		}
+	});
 
 	async function handleToggle(ruleId: string) {
 		try {

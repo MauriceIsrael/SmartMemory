@@ -56,6 +56,8 @@ graph TB
 python -m semantic_memory.server
 ```
 
+> **Note sur les ontologies** : Par défaut, le chargement des ontologies complètes (FOAF, Schema.org) est désactivé pour optimiser le temps de démarrage. L'inférence repose principalement sur les règles SPARQL.
+
 ---
 
 ## 2. HTTP Backend (Serveur HTTP)

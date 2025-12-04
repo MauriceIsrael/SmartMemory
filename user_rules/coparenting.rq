@@ -1,0 +1,2 @@
+# If A is spouse of B, and A has child C, then B also has child C.
+CONSTRUCT { ?spouse :hasChild ?child . } WHERE { ?parent :hasSpouse ?spouse . ?parent :hasChild ?child . }

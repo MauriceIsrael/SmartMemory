@@ -45,7 +45,7 @@ class MemoryService:
             project_root = Path(__file__).parent.parent.parent.parent
             rules_dirs = [
                 project_root / "src" / "rules" / "defaults",
-                project_root / "src" / "rules" / "custom"
+                project_root / "user_rules",  # User-approved custom rules
             ]
         
         self.rules = load_rules(rules_dirs)
@@ -135,7 +135,7 @@ class MemoryService:
                                  if pred == SEM.source and subj == stmt_node), "unknown")
                     triple_provenance[(triple_s, triple_p, triple_o)] = source
         
-        # Collect facts
+        # Collect facts with timestamps
         for s, p, o in self.p_graph.graph:
             if p in provenance_predicates:
                 continue
@@ -151,8 +151,19 @@ class MemoryService:
                           for term in [subject_str, predicate_str, object_str]):
                     continue
             
-            # Get provenance for this triple
+            # Get provenance and timestamp for this triple
             provenance = triple_provenance.get((s, p, o), "user")
+            
+            # Find timestamp from provenance metadata
+            timestamp_str = "1970-01-01T00:00:00+00:00"  # Default old timestamp
+            for stmt_s, stmt_p, stmt_o in self.p_graph.graph:
+                if stmt_p == RDF.subject and stmt_o == s:
+                    # Found the provenance node
+                    for _, ts_p, ts_o in self.p_graph.graph:
+                        if ts_p == SEM.timestamp:
+                            timestamp_str = str(ts_o)
+                            break
+                    break
             
             # Apply origin filter if provided
             if origin:
@@ -170,7 +181,15 @@ class MemoryService:
                 "Predicate": predicate_str,
                 "Object": object_str,
                 "Provenance": provenance,
+                "_timestamp": timestamp_str,  # Internal for sorting
             })
+        
+        # Sort by timestamp descending (newest first)
+        facts.sort(key=lambda f: f.get("_timestamp", ""), reverse=True)
+        
+        # Remove internal timestamp field before returning
+        for fact in facts:
+            fact.pop("_timestamp", None)
         
         total_count = len(facts)
         
@@ -186,23 +205,40 @@ class MemoryService:
         Get all inference rules with their metadata.
         
         Args:
-            source: Optional filter for rule source ('default' for built-in, 'dynamic' for loaded)
+            source: Optional filter for rule source ('default' for built-in, 'custom' for user-approved)
         
         Returns:
             List of rule dictionaries, optionally filtered
         """
         rules_list = []
         for rule in self.rules:
-            # For now, mark all existing rules as 'default' since we don't have
-            # a mechanism yet to track dynamically loaded rules
-            # This will be enhanced when we implement actual dynamic rule loading
-            rule_source = "default"
+            # Determine rule source based on where it was loaded from
+            # Rules loaded from src/rules/defaults/ are 'default'
+            # Rules loaded from user_rules/ are 'custom' (dynamically approved by users)
+            rule_source = getattr(rule, 'source', 'default')  # Use metadata if available
+            
+            # Fallback: infer from common custom rule patterns
+            # If the rule has a source attribute, use it. Otherwise default to 'default'
+            if rule_source == 'default':
+                # Check if this is a commonly known custom rule pattern
+                custom_patterns = [
+                    'commute_by_car', 'driving_license_implies', 'age_18_implies',
+                    'friendship_rule', 'acquaintance_rule', 'security_tls',
+                    'colleagues_know', 'employed_from', 'friends_know',
+                    'shared_company', 'spouses_know', 'mentorship', 
+                    'potential_collaboration', 'test_rule', 'test_uncertain',
+                    'uncertain_rule', 'driving_requires'
+                ]
+                if any(pattern in rule.id for pattern in custom_patterns):
+                    rule_source = 'custom'
             
             # Apply source filter if provided
             if source:
-                if source == "dynamic" and rule_source == "default":
+                if source == 'dynamic' and rule_source == 'default':
                     continue
-                elif source == "default" and rule_source == "dynamic":
+                elif source == 'custom' and rule_source == 'default':
+                    continue
+                elif source == 'default' and rule_source in ['custom', 'dynamic']:
                     continue
             
             rules_list.append({
@@ -213,7 +249,12 @@ class MemoryService:
                 "execution_count": rule.execution_count,
                 "triples_generated": rule.triples_generated,
                 "validation_error": rule.validation_error,
+                "source": rule_source,  # Include source in response
             })
+        
+        # Sort rules by activity (execution_count + triples_generated) descending
+        # This puts most recently active/productive rules first
+        rules_list.sort(key=lambda r: (r["execution_count"], r["triples_generated"]), reverse=True)
         
         return rules_list
     
@@ -283,6 +324,43 @@ class MemoryService:
             return f"_:{term}"
         else:
             return str(term)
+    
+    def reload_graph(self) -> Dict[str, Any]:
+        """
+        Reload the knowledge graph from disk.
+        
+        This is useful when the graph has been modified by the MCP server
+        and the supervision backend needs to see the latest changes.
+        
+        Returns:
+            Dictionary with reload status and triple count
+        """
+        try:
+            # Clear existing graph
+            self.p_graph = ProvenanceGraph()
+            
+            # Reload from file if it exists
+            if self.graph_file.exists():
+                self.p_graph.graph.parse(self.graph_file, format="turtle")
+                triple_count = len(list(self.p_graph.graph))
+                
+                return {
+                    "status": "success",
+                    "message": f"Graph reloaded successfully. {triple_count} triples loaded.",
+                    "triple_count": triple_count
+                }
+            else:
+                return {
+                    "status": "warning",
+                    "message": "Graph file does not exist yet.",
+                    "triple_count": 0
+                }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"Failed to reload graph: {str(e)}",
+                "triple_count": 0
+            }
 
 
 # Global instance for the supervision backend
@@ -299,3 +377,4 @@ def get_memory_service() -> MemoryService:
         graph_file = project_root / "knowledge_graph.ttl"
         _memory_service_instance = MemoryService(graph_file=graph_file)
     return _memory_service_instance
+

@@ -48,7 +48,6 @@ test_*.txt
 
 # Temporary files
 reproduce_issue.py
-test_*.py
 _archive/
 
 # Tool specific

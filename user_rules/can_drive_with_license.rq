@@ -1,0 +1,2 @@
+# Having a driving license implies being able to drive.
+CONSTRUCT { ?person :canDrive true } WHERE { ?person :hasDrivingLicense ?license }

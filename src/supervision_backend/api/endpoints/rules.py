@@ -22,6 +22,7 @@ class InferenceRule(BaseModel):
     execution_count: int
     triples_generated: int
     validation_error: Optional[str] = None
+    source: str = "default"  # 'default' | 'custom' | 'dynamic'
 
 
 @router.get("/rules", response_model=List[InferenceRule])

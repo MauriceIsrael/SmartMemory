@@ -176,7 +176,7 @@ def main():
     PREFIX : <http://semanticmemory.org/user#>
     ASK { :Charlie :requires :DrivingLicense }
     """
-    is_inferred = graph.query(check_query).askAnswer
+    is_inferred = graph.query(check_query)
     
     if is_inferred:
         print("   ✨ INFERENCE CONFIRMED: Charlie requires DrivingLicense")
