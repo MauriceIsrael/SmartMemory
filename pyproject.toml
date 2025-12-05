@@ -14,7 +14,12 @@ dependencies = [
     "pydantic>=2.0.0",
     "pydantic-settings>=2.0.0",
     "requests>=2.31.0",
+    "PyMuPDF>=1.23.0",  # PDF text extraction
+    "litellm>=1.0.0",   # LLM interaction abstraction
 ]
+
+[project.scripts]
+semantic-memory-server = "smart_memory.server:cli_main"
 
 [project.optional-dependencies]
 dev = [
@@ -52,4 +57,4 @@ target-version = "py311"
 select = ["E", "F", "I", "N", "W", "UP"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/semantic_memory"]
+packages = ["src/smart_memory"]

@@ -4,11 +4,11 @@ Integration tests for verify_inference tool.
 
 import pytest
 import pytest_asyncio
-from semantic_memory.config import SemanticMemoryConfig
-from semantic_memory.knowledge.graph import ProvenanceGraph
-from semantic_memory.tools.verify_inference import verify_inference
-from semantic_memory.tools.add_memory import add_memory
-from semantic_memory.nlp import TripleExtractor
+from smart_memory.config import SemanticMemoryConfig
+from smart_memory.knowledge.graph import ProvenanceGraph
+from smart_memory.tools.verify_inference import verify_inference
+from smart_memory.tools.add_memory import add_memory
+from smart_memory.nlp import TripleExtractor
 
 
 @pytest.fixture
@@ -26,7 +26,7 @@ def temp_config(tmp_path):
 @pytest_asyncio.fixture
 async def graph_with_facts(temp_config, monkeypatch):
     """Graph with some test facts."""
-    monkeypatch.setattr("semantic_memory.config.config", temp_config)
+    monkeypatch.setattr("smart_memory.config.config", temp_config)
     
     graph = ProvenanceGraph()
     extractor = TripleExtractor()
@@ -82,9 +82,9 @@ async def test_verify_nonexistent_fact(graph_with_facts):
 @pytest.mark.asyncio
 async def test_verify_inferred_fact(temp_config, monkeypatch):
     """Test verifying a fact that was inferred by a rule."""
-    monkeypatch.setattr("semantic_memory.config.config", temp_config)
+    monkeypatch.setattr("smart_memory.config.config", temp_config)
     
-    from semantic_memory.inference.rule_engine import RuleEngine
+    from smart_memory.inference.rule_engine import RuleEngine
     import os
     
     graph = ProvenanceGraph()

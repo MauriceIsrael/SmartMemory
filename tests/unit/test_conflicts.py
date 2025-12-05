@@ -1,7 +1,7 @@
 import pytest
 from rdflib import Namespace, Literal, OWL, RDF
-from semantic_memory.knowledge.graph import ProvenanceGraph
-from semantic_memory.knowledge.conflicts import (
+from smart_memory.knowledge.graph import ProvenanceGraph
+from smart_memory.knowledge.conflicts import (
     ContradictoryLiteralDetector,
     DisjointClassDetector,
     FunctionalPropertyDetector,

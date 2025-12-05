@@ -1,12 +1,12 @@
 import pytest
 import asyncio
 from pathlib import Path
-from semantic_memory.server import SemanticMemoryServer
-from semantic_memory.config import SemanticMemoryConfig
+from smart_memory.server import SemanticMemoryServer
+from smart_memory.config import SemanticMemoryConfig
 from rdflib import Namespace, Literal, XSD, RDF
-from semantic_memory.tools.add_memory import add_memory
-from semantic_memory.tools.load_custom_rule import load_custom_rule
-from semantic_memory.tools.verify_inference import verify_inference
+from smart_memory.tools.add_memory import add_memory
+from smart_memory.tools.load_custom_rule import load_custom_rule
+from smart_memory.tools.verify_inference import verify_inference
 
 @pytest.fixture
 def temp_config(tmp_path):
@@ -29,7 +29,7 @@ async def test_user_story_3_integration(temp_config, monkeypatch):
     - The user verifies the triple, and it moves to the main graph.
     - The user rejects another triple, and it moves to the rejected graph.
     """
-    monkeypatch.setattr("semantic_memory.config.config", temp_config)
+    monkeypatch.setattr("smart_memory.config.config", temp_config)
 
     server = SemanticMemoryServer()
     await server.startup() # register_tools is called in startup

@@ -2,8 +2,8 @@ import pytest
 import asyncio
 from pathlib import Path
 import requests_mock
-from semantic_memory.server import SemanticMemoryServer
-from semantic_memory.config import SemanticMemoryConfig
+from smart_memory.server import SemanticMemoryServer
+from smart_memory.config import SemanticMemoryConfig
 
 @pytest.fixture
 def temp_config(tmp_path):
@@ -18,7 +18,7 @@ async def test_user_story_4_integration(temp_config, monkeypatch, requests_mock)
     """
     Integration test for User Story 4: Offline startup.
     """
-    monkeypatch.setattr("semantic_memory.config.config", temp_config)
+    monkeypatch.setattr("smart_memory.config.config", temp_config)
     
     # --- Online phase: populate the cache ---
     temp_config.force_offline = False

@@ -1,2 +1,0 @@
-# Infers paternal grandfather relationship. A person's father's father is their paternal grandfather.
-CONSTRUCT { ?grandfather :isGrandfatherOf ?grandchild } WHERE { ?grandchild :hasFather ?parent . ?parent :hasFather ?grandfather }

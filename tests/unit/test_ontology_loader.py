@@ -3,8 +3,8 @@ import requests
 import requests_mock
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
-from semantic_memory.inference.ontology_loader import fetch_with_cache, OntologyCacheMetadata, OntologyLoader
-from semantic_memory.config import SemanticMemoryConfig
+from smart_memory.inference.ontology_loader import fetch_with_cache, OntologyCacheMetadata, OntologyLoader
+from smart_memory.config import SemanticMemoryConfig
 from rdflib import Graph
 
 @pytest.fixture

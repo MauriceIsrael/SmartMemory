@@ -1,7 +1,7 @@
 import pytest
 import asyncio
 from unittest.mock import AsyncMock, Mock
-from semantic_memory.inference.inference_manager import InferenceManager
+from smart_memory.inference.inference_manager import InferenceManager
 
 @pytest.mark.asyncio
 async def test_inference_manager_debouncing():

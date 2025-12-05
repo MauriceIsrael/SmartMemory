@@ -1,9 +1,9 @@
 import pytest
 import asyncio
-from semantic_memory.server import SemanticMemoryServer
-from semantic_memory.config import SemanticMemoryConfig
-from semantic_memory.tools.add_memory import add_memory
-from semantic_memory.tools.get_graph_stats import get_graph_stats
+from smart_memory.server import SemanticMemoryServer
+from smart_memory.config import SemanticMemoryConfig
+from smart_memory.tools.add_memory import add_memory
+from smart_memory.tools.get_graph_stats import get_graph_stats
 
 @pytest.fixture
 def temp_config(tmp_path):
@@ -21,7 +21,7 @@ async def test_conflict_detection_integration(temp_config, monkeypatch):
     - Verify that the response warns about conflicts.
     - Verify that get_graph_stats reports conflicts.
     """
-    monkeypatch.setattr("semantic_memory.config.config", temp_config)
+    monkeypatch.setattr("smart_memory.config.config", temp_config)
 
     server = SemanticMemoryServer()
     await server.startup()

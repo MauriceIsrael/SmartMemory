@@ -45,9 +45,9 @@ if ! command -v npm &> /dev/null; then
 fi
 
 # Check if frontend dependencies are installed
-if [ ! -d "$PROJECT_ROOT/src/supervision_frontend/node_modules" ]; then
+if [ ! -d "$PROJECT_ROOT/src/dashboard/frontend/node_modules" ]; then
     echo -e "${YELLOW}⚠️  Frontend dependencies not found. Installing...${NC}"
-    cd "$PROJECT_ROOT/src/supervision_frontend"
+    cd "$PROJECT_ROOT/src/dashboard/frontend"
     npm install
     cd "$PROJECT_ROOT"
 fi
@@ -73,7 +73,7 @@ trap cleanup SIGINT SIGTERM EXIT
 
 # Start backend
 echo -e "${BLUE}🚀 Starting Backend (FastAPI on http://127.0.0.1:8000)...${NC}"
-cd "$PROJECT_ROOT/src/supervision_backend"
+cd "$PROJECT_ROOT/src/dashboard/backend"
 "$PROJECT_ROOT/venv/bin/uvicorn" main:app --reload --port 8000 > /tmp/smartmemory_backend.log 2>&1 &
 BACKEND_PID=$!
 echo -e "${GREEN}   Backend PID: $BACKEND_PID${NC}"
@@ -83,7 +83,7 @@ sleep 2
 
 # Start frontend
 echo -e "${BLUE}🚀 Starting Frontend (SvelteKit on http://localhost:5173)...${NC}"
-cd "$PROJECT_ROOT/src/supervision_frontend"
+cd "$PROJECT_ROOT/src/dashboard/frontend"
 npm run dev -- --open > /tmp/smartmemory_frontend.log 2>&1 &
 FRONTEND_PID=$!
 echo -e "${GREEN}   Frontend PID: $FRONTEND_PID${NC}"

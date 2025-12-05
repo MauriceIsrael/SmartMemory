@@ -4,12 +4,12 @@ Separated from strict inference tests to avoid rule conflicts.
 """
 
 import pytest
-from semantic_memory.server import SemanticMemoryServer
-from semantic_memory.config import SemanticMemoryConfig
-from semantic_memory.tools.add_memory import add_memory
-from semantic_memory.tools.load_custom_rule import load_custom_rule
-from semantic_memory.tools.verify_inference import verify_inference
-from semantic_memory.tools.get_graph_stats import get_graph_stats
+from smart_memory.server import SemanticMemoryServer
+from smart_memory.config import SemanticMemoryConfig
+from smart_memory.tools.add_memory import add_memory
+from smart_memory.tools.load_custom_rule import load_custom_rule
+from smart_memory.tools.verify_inference import verify_inference
+from smart_memory.tools.get_graph_stats import get_graph_stats
 from rdflib import Namespace
 
 # Namespaces
@@ -37,7 +37,7 @@ async def test_uncertainty_acceptance_workflow(test_config, monkeypatch):
     3. Verifying the uncertainty is detected
     4. Accepting the inference
     """
-    monkeypatch.setattr("semantic_memory.config.config", test_config)
+    monkeypatch.setattr("smart_memory.config.config", test_config)
     
     server = SemanticMemoryServer()
     await server.startup()
@@ -119,7 +119,7 @@ async def test_uncertainty_rejection_workflow(test_config, monkeypatch):
     2. Triggering it
     3. Rejecting the inference
     """
-    monkeypatch.setattr("semantic_memory.config.config", test_config)
+    monkeypatch.setattr("smart_memory.config.config", test_config)
     
     server = SemanticMemoryServer()
     await server.startup()

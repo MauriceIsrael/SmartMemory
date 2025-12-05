@@ -9,11 +9,11 @@ Verifies that:
 
 import pytest
 import asyncio
-from semantic_memory.server import SemanticMemoryServer
-from semantic_memory.config import SemanticMemoryConfig
-from semantic_memory.tools.add_memory import add_memory
-from semantic_memory.tools.load_custom_rule import load_custom_rule
-from semantic_memory.tools.query_memory import query_memory
+from smart_memory.server import SemanticMemoryServer
+from smart_memory.config import SemanticMemoryConfig
+from smart_memory.tools.add_memory import add_memory
+from smart_memory.tools.load_custom_rule import load_custom_rule
+from smart_memory.tools.query_memory import query_memory
 from rdflib import Namespace
 
 @pytest.fixture
@@ -35,8 +35,8 @@ def temp_config(tmp_path):
 @pytest.mark.asyncio
 async def test_dynamic_rule_loading(temp_config, monkeypatch):
     """Test loading a custom rule and verifying inference."""
-    monkeypatch.setattr("semantic_memory.config.config", temp_config)
-    monkeypatch.setattr("semantic_memory.server.config", temp_config)
+    monkeypatch.setattr("smart_memory.config.config", temp_config)
+    monkeypatch.setattr("smart_memory.server.config", temp_config)
     
     server = SemanticMemoryServer()
     await server.startup()

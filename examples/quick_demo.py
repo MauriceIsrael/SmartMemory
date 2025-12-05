@@ -9,8 +9,8 @@ Demonstrates the core capabilities:
 3. Provenance tracking
 """
 
-from semantic_memory.knowledge.graph import ProvenanceGraph
-from semantic_memory.inference.rule_engine import RuleEngine, load_rules
+from smart_memory.knowledge.graph import ProvenanceGraph
+from smart_memory.inference.rule_engine import RuleEngine, load_rules
 from rdflib import URIRef, Namespace
 import os
 
@@ -140,7 +140,7 @@ def main():
     
     # 3. User Approval
     print("\n2. User approves the rule via approve_rule('driving_requires_license')")
-    from semantic_memory.inference.rule_engine import InferenceRule
+    from smart_memory.inference.rule_engine import InferenceRule
     from pathlib import Path
     
     new_rule = InferenceRule(

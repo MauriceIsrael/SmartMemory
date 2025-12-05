@@ -1,0 +1,7 @@
+{
+  "test_rule_api": {
+    "description": "Test rule via API",
+    "sparql_pattern": "CONSTRUCT {?s ?p ?o} WHERE {?s ?p ?o}",
+    "confidence": 0.8
+  }
+}

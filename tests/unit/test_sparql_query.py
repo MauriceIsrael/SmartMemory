@@ -6,8 +6,8 @@ Tests different SPARQL query types and result formats.
 
 import pytest
 from rdflib import Namespace, Literal as RDFLiteral, Graph
-from semantic_memory.knowledge.graph import ProvenanceGraph
-from semantic_memory.vocabulary import FOAF
+from smart_memory.knowledge.graph import ProvenanceGraph
+from smart_memory.vocabulary import FOAF
 
 USER_NS = Namespace("http://semanticmemory.org/user#")
 

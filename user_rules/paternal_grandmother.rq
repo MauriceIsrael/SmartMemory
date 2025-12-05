@@ -1,2 +1,0 @@
-# Infers paternal grandmother relationship. A person's father's mother is their paternal grandmother.
-CONSTRUCT { ?grandmother :isGrandmotherOf ?grandchild } WHERE { ?grandchild :hasFather ?parent . ?parent :hasMother ?grandmother }

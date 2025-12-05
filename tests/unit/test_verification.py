@@ -1,8 +1,8 @@
 import pytest
 from rdflib import Namespace, Literal, OWL, RDF
-from semantic_memory.knowledge.graph import ProvenanceGraph
-from semantic_memory.knowledge.verification import VerificationRequest
-from semantic_memory.tools.verify_inference import verify_inference
+from smart_memory.knowledge.graph import ProvenanceGraph
+from smart_memory.knowledge.verification import VerificationRequest
+from smart_memory.tools.verify_inference import verify_inference
 
 # Use the same namespace as TripleExtractor
 USER_NS = Namespace("http://semanticmemory.org/user#")

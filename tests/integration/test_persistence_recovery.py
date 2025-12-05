@@ -1,10 +1,10 @@
 import pytest
 import asyncio
 from pathlib import Path
-from semantic_memory.server import SemanticMemoryServer
-from semantic_memory.config import SemanticMemoryConfig
+from smart_memory.server import SemanticMemoryServer
+from smart_memory.config import SemanticMemoryConfig
 from rdflib import Namespace, Literal
-from semantic_memory.tools.add_memory import add_memory
+from smart_memory.tools.add_memory import add_memory
 
 @pytest.fixture
 def temp_config(tmp_path):
@@ -22,7 +22,7 @@ async def test_persistence_recovery_integration(temp_config, monkeypatch):
     - Start a new server.
     - Verify the data is still there.
     """
-    monkeypatch.setattr("semantic_memory.config.config", temp_config)
+    monkeypatch.setattr("smart_memory.config.config", temp_config)
     EX = Namespace("http://example.org/")
 
     # --- First session: add data and shut down ---

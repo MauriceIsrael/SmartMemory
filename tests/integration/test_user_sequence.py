@@ -8,10 +8,10 @@ Integration test for user sequence:
 
 import pytest
 import asyncio
-from semantic_memory.server import SemanticMemoryServer
-from semantic_memory.config import SemanticMemoryConfig
-from semantic_memory.tools.add_memory import add_memory
-from semantic_memory.tools.query_memory import query_memory
+from smart_memory.server import SemanticMemoryServer
+from smart_memory.config import SemanticMemoryConfig
+from smart_memory.tools.add_memory import add_memory
+from smart_memory.tools.query_memory import query_memory
 from rdflib import Namespace
 
 USER_NS = Namespace("http://semanticmemory.org/user#")
@@ -40,8 +40,8 @@ async def test_user_sequence_thales_employees(temp_config, monkeypatch):
     3. Verify foaf:knows symmetry (Gilles knows User)
     4. Query for Daniel's colleagues
     """
-    monkeypatch.setattr("semantic_memory.config.config", temp_config)
-    monkeypatch.setattr("semantic_memory.server.config", temp_config)
+    monkeypatch.setattr("smart_memory.config.config", temp_config)
+    monkeypatch.setattr("smart_memory.server.config", temp_config)
     
     server = SemanticMemoryServer()
     await server.startup()

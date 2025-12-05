@@ -15,9 +15,9 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from semantic_memory.knowledge.graph import ProvenanceGraph
-from semantic_memory.inference.rule_engine import RuleEngine, load_rules
-from semantic_memory.nlp.triple_extractor import TripleExtractor
+from smart_memory.knowledge.graph import ProvenanceGraph
+from smart_memory.inference.rule_engine import RuleEngine, load_rules
+from smart_memory.nlp.triple_extractor import TripleExtractor
 
 def print_section(title: str):
     """Print a formatted section header."""

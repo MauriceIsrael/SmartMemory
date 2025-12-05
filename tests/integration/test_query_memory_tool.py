@@ -6,9 +6,9 @@ These tests reflect how the LLM will actually use the query_memory tool.
 """
 
 import pytest
-from semantic_memory.knowledge.graph import ProvenanceGraph
-from semantic_memory.tools.query_memory import query_memory
-from semantic_memory.vocabulary import FOAF, SCHEMA
+from smart_memory.knowledge.graph import ProvenanceGraph
+from smart_memory.tools.query_memory import query_memory
+from smart_memory.vocabulary import FOAF, SCHEMA
 from rdflib import Namespace, Literal as RDFLiteral
 
 USER_NS = Namespace("http://semanticmemory.org/user#")

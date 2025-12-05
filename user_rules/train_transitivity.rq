@@ -1,2 +1,0 @@
-# Infers transitive train connections.
-CONSTRUCT { ?a :hasTrainConnectionTo ?c } WHERE { ?a :hasTrainConnectionTo ?b . ?b :hasTrainConnectionTo ?c }

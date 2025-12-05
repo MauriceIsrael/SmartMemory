@@ -7,10 +7,10 @@ work correctly based on ontology definitions.
 
 import pytest
 import asyncio
-from semantic_memory.server import SemanticMemoryServer
-from semantic_memory.config import SemanticMemoryConfig
-from semantic_memory.tools.add_memory import add_memory
-from semantic_memory.tools.query_memory import query_memory
+from smart_memory.server import SemanticMemoryServer
+from smart_memory.config import SemanticMemoryConfig
+from smart_memory.tools.add_memory import add_memory
+from smart_memory.tools.query_memory import query_memory
 from rdflib import Namespace
 
 USER_NS = Namespace("http://semanticmemory.org/user#")
@@ -31,8 +31,8 @@ def temp_config(tmp_path):
 @pytest.mark.asyncio
 async def test_core_inference_rules(temp_config, monkeypatch):
     """Test the 4 core generic rules."""
-    monkeypatch.setattr("semantic_memory.config.config", temp_config)
-    monkeypatch.setattr("semantic_memory.server.config", temp_config)
+    monkeypatch.setattr("smart_memory.config.config", temp_config)
+    monkeypatch.setattr("smart_memory.server.config", temp_config)
     
     server = SemanticMemoryServer()
     await server.startup()

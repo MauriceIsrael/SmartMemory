@@ -6,8 +6,8 @@ Provides pre-configured graphs and query templates for testing.
 
 import pytest
 from rdflib import Namespace, Literal as RDFLiteral
-from semantic_memory.knowledge.graph import ProvenanceGraph
-from semantic_memory.vocabulary import FOAF, SCHEMA
+from smart_memory.knowledge.graph import ProvenanceGraph
+from smart_memory.vocabulary import FOAF, SCHEMA
 
 USER_NS = Namespace("http://semanticmemory.org/user#")
 

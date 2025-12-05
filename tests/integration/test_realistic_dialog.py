@@ -11,13 +11,13 @@ This test demonstrates:
 
 import pytest
 import asyncio
-from semantic_memory.server import SemanticMemoryServer
-from semantic_memory.config import SemanticMemoryConfig
-from semantic_memory.tools.add_memory import add_memory
-from semantic_memory.tools.query_memory import query_memory
-from semantic_memory.tools.get_graph_stats import get_graph_stats
-from semantic_memory.tools.load_custom_rule import load_custom_rule
-from semantic_memory.tools.verify_inference import verify_inference
+from smart_memory.server import SemanticMemoryServer
+from smart_memory.config import SemanticMemoryConfig
+from smart_memory.tools.add_memory import add_memory
+from smart_memory.tools.query_memory import query_memory
+from smart_memory.tools.get_graph_stats import get_graph_stats
+from smart_memory.tools.load_custom_rule import load_custom_rule
+from smart_memory.tools.verify_inference import verify_inference
 from rdflib import Namespace
 
 # Namespaces
@@ -47,7 +47,7 @@ async def test_realistic_dialog_with_dual_inference_and_verification(temp_config
     4. User confirms some inferences, rejects others
     5. LLM queries updated memory to answer user questions
     """
-    monkeypatch.setattr("semantic_memory.config.config", temp_config)
+    monkeypatch.setattr("smart_memory.config.config", temp_config)
     
     # Initialize server
     server = SemanticMemoryServer()

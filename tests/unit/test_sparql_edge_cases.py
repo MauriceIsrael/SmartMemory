@@ -6,8 +6,8 @@ Tests unusual inputs, special characters, and boundary conditions.
 
 import pytest
 from rdflib import Namespace, Literal as RDFLiteral
-from semantic_memory.knowledge.graph import ProvenanceGraph
-from semantic_memory.vocabulary import FOAF
+from smart_memory.knowledge.graph import ProvenanceGraph
+from smart_memory.vocabulary import FOAF
 
 USER_NS = Namespace("http://semanticmemory.org/user#")
 

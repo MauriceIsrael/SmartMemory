@@ -1,2 +1,0 @@
-# If A has spouse B, then B has spouse A.
-CONSTRUCT { ?b :hasSpouse ?a . } WHERE { ?a :hasSpouse ?b . }

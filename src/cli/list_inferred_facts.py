@@ -8,8 +8,8 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from semantic_memory.knowledge.graph import ProvenanceGraph
-from semantic_memory.config import config
+from smart_memory.knowledge.graph import ProvenanceGraph
+from smart_memory.config import config
 
 
 def main():

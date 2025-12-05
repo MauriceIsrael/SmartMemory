@@ -7,9 +7,9 @@ preventing SPARQL rules from running in production.
 
 import pytest
 import asyncio
-from semantic_memory.server import SemanticMemoryServer
-from semantic_memory.config import SemanticMemoryConfig
-from semantic_memory.tools.query_memory import query_memory
+from smart_memory.server import SemanticMemoryServer
+from smart_memory.config import SemanticMemoryConfig
+from smart_memory.tools.query_memory import query_memory
 
 @pytest.fixture
 def temp_config(tmp_path):
@@ -28,8 +28,8 @@ async def test_foaf_knows_symmetry_via_mcp(temp_config, monkeypatch):
     Test that foaf:knows symmetry works when called via MCP server 
     (simulating real LLM interaction).
     """
-    monkeypatch.setattr("semantic_memory.config.config", temp_config)
-    monkeypatch.setattr("semantic_memory.server.config", temp_config)
+    monkeypatch.setattr("smart_memory.config.config", temp_config)
+    monkeypatch.setattr("smart_memory.server.config", temp_config)
     
     server = SemanticMemoryServer()
     await server.startup()

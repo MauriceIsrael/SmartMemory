@@ -1,2 +1,0 @@
-# An aunt is the sister of a parent.
-CONSTRUCT { ?aunt :isAuntOf ?child . } WHERE { ?child :hasParent ?parent . ?parent :hasSister ?aunt . }

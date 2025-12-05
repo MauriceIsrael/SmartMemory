@@ -1,0 +1,2 @@
+# A person who goes to work by car is an adult.
+CONSTRUCT { ?person :isAdult true } WHERE { ?person :goesToWorkBy :Car }

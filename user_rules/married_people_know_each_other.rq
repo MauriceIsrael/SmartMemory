@@ -1,2 +1,0 @@
-# Infers that married people know each other, based on the :isWifeOf predicate.
-CONSTRUCT { ?person1 foaf:knows ?person2 . ?person2 foaf:knows ?person1 } WHERE { ?person1 :isWifeOf ?person2 }

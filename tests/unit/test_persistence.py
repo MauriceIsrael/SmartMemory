@@ -1,8 +1,8 @@
 import pytest
 from pathlib import Path
 from rdflib import Namespace, Literal, Graph
-from semantic_memory.knowledge.graph import ProvenanceGraph
-from semantic_memory.knowledge.persistence import TurtlePersistence, SQLitePersistence
+from smart_memory.knowledge.graph import ProvenanceGraph
+from smart_memory.knowledge.persistence import TurtlePersistence, SQLitePersistence
 
 EX = Namespace("http://example.org/")
 

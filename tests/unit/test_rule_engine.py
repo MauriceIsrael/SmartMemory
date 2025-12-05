@@ -1,7 +1,7 @@
 import pytest
 from pathlib import Path
-from semantic_memory.inference.rule_engine import load_rules, RuleEngine, InferenceRule
-from semantic_memory.knowledge.graph import ProvenanceGraph
+from smart_memory.inference.rule_engine import load_rules, RuleEngine, InferenceRule
+from smart_memory.knowledge.graph import ProvenanceGraph
 from rdflib import Namespace, Literal
 
 EX = Namespace("http://example.org/")

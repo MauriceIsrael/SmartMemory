@@ -3,10 +3,11 @@
         "semantic-memory": {
             "command": "/home/momo/Antigravity/SmartMemory/venv/bin/python",
             "args": [
-                "/home/momo/Antigravity/SmartMemory/src/server.py"
+                "-m",
+                "smart_memory"
             ],
             "env": {
-                "PYTHONPATH": "/home/momo/Antigravity/SmartMemory",
+                "PYTHONPATH": "/home/momo/Antigravity/SmartMemory/src",
                 "LOG_FILE": "/home/momo/Antigravity/SmartMemory/mcp_server.log"
             }
         }
