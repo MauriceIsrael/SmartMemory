@@ -13,8 +13,8 @@ SmartMemory uses the LLM as a **semantic interface** to the formal system, creat
 
 ```mermaid
 graph TD
-    User[User Input] --> LLM[LLM (Neural)]
-    LLM -->|1. Extract Facts| KG[Knowledge Graph (Symbolic)]
+    User[User Input] --> LLM[LLM Neural]
+    LLM -->|1. Extract Facts| KG[Knowledge Graph Symbolic]
     LLM -->|2. Propose Rules| RuleEngine[Rule Engine]
     RuleEngine -->|3. Validate| Human[Human Approval]
     Human -->|4. Activate| KG
