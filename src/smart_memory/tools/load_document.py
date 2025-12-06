@@ -57,6 +57,10 @@ LOAD_DOCUMENT_TOOL = Tool(
                 "description": "Whether to automatically extract rules using LLM",
                 "default": True,
             },
+            "prefix": {
+                "type": "string",
+                "description": "Prefix to add to extracted rule IDs (e.g., 'HR_', 'GDPR_')",
+            },
         },
         "oneOf": [
             {"required": ["file_path"]},
@@ -127,7 +131,10 @@ async def load_document(
                 
                 response_text += f"\n✨ **Extracted {num_rules} rules:**\n"
                 for rule in rules:
-                    rule_id = rule.get('rule_id', f"rule_{uuid.uuid4().hex[:8]}")
+                    prefix = arguments.get("prefix", "")
+                    raw_id = rule.get('rule_id', f"rule_{uuid.uuid4().hex[:8]}")
+                    rule_id = f"{prefix}{raw_id}" if prefix else raw_id
+                    
                     # Ensure rule_data has everything needed
                     rule_data = rule.copy()
                     rule_data['source_doc_uri'] = str(doc_uri)

@@ -24,6 +24,7 @@ async def main_async():
     parser.add_argument("--store-content", action="store_true", help="Store full content in graph")
     parser.add_argument("--no-extract", action="store_true", help="Disable rule extraction")
     parser.add_argument("--batch", action="store_true", help="Treat file argument as glob pattern for batch loading")
+    parser.add_argument("--prefix", help="Prefix for extracted rule IDs")
     
     args = parser.parse_args()
     
@@ -68,7 +69,8 @@ async def main_async():
                     "file_path": str(file_path),
                     "title": args.title,
                     "store_content": args.store_content,
-                    "extract_rules": not args.no_extract
+                    "extract_rules": not args.no_extract,
+                    "prefix": args.prefix
                 },
                 graph,
                 rule_engine

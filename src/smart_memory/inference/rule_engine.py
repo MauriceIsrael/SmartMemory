@@ -14,23 +14,36 @@ class InferenceRule:
     file_path: Path
     sparql_query: str
     source: str
+    source: str
     description: str | None = None
     is_active: bool = True
     validation_error: str | None = None
     execution_count: int = 0
     triples_generated: int = 0
+    metadata: dict = field(default_factory=dict)
 
 def load_rules(rules_dirs: List[Path]) -> List[InferenceRule]:
     rules = []
     for rules_dir in rules_dirs:
-        for rule_path in glob.glob(str(rules_dir / "*.rq")):
+        # Support both .rq and .sparql extensions
+        rule_files = glob.glob(str(rules_dir / "*.rq")) + glob.glob(str(rules_dir / "*.sparql"))
+        for rule_path in rule_files:
             path = Path(rule_path)
             with open(path, "r") as f:
                 content = f.read()
-                # Extract description from comment
+                # Extract description from comments
                 description = None
-                if content.strip().startswith("#"):
-                    description = content.strip().split("\n")[0].lstrip("#").strip()
+                metadata = {}
+                
+                for line in content.split("\n"):
+                    line = line.strip()
+                    if line.startswith("# Description:"):
+                         description = line.replace("# Description:", "").strip()
+                    elif line.startswith("# Source Doc:"):
+                         metadata["source_doc"] = line.replace("# Source Doc:", "").strip()
+                    elif line.startswith("#") and not description and not line.startswith("# PREFIX"):
+                         # Fallback to first comment line if no explicit description tag
+                         description = line.lstrip("#").strip()
                 
                 # Auto-prepend common prefixes if not already present
                 if "PREFIX" not in content.upper():
@@ -51,6 +64,7 @@ PREFIX owl: <http://www.w3.org/2002/07/owl#>
                     sparql_query=content,
                     source="default" if "defaults" in str(path) else "custom",
                     description=description,
+                    metadata=metadata
                 )
                 validate_rule(rule)
                 rules.append(rule)

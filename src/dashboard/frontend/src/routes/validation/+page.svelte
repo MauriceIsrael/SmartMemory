@@ -42,7 +42,7 @@
         if (selectedRules.size === rules.length) {
             selectedRules = new Set();
         } else {
-            selectedRules = new Set(rules.map((r) => r.rule_id));
+            selectedRules = new Set(rules.map((r) => r.id));
         }
     }
 
@@ -62,7 +62,7 @@
 
     async function handleBulkReject() {
         if (selectedRules.size === 0) return;
-        if (!confirm(`Reject ${selectedRules.size} rules?`)) return;
+        // No confirmation needed as per user request
 
         processing = true;
         try {
@@ -138,24 +138,25 @@
                             disabled={processing}
                         />
                     </th>
-                    <th>Rule ID</th>
+                    <th class="id-col-header">Rule ID</th>
                     <th>Description & Logic</th>
-                    <th>Confidence</th>
-                    <th>Source Page</th>
+                    <th class="confidence-col-header">Confidence</th>
+                    <th class="source-col-header">Source Page</th>
+                    <th class="actions-col-header">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {#each rules as rule}
-                    <tr class:selected={selectedRules.has(rule.rule_id)}>
+                    <tr class:selected={selectedRules.has(rule.id)}>
                         <td class="checkbox-col">
                             <input
                                 type="checkbox"
-                                checked={selectedRules.has(rule.rule_id)}
-                                on:change={() => toggleSelection(rule.rule_id)}
+                                checked={selectedRules.has(rule.id)}
+                                on:change={() => toggleSelection(rule.id)}
                                 disabled={processing}
                             />
                         </td>
-                        <td class="id-col">{rule.rule_id}</td>
+                        <td class="id-col">{rule.id}</td>
                         <td>
                             <div class="description">{rule.description}</div>
                             <div class="sparql">{rule.sparql_pattern}</div>
@@ -170,6 +171,32 @@
                             </span>
                         </td>
                         <td>{rule.source_page || "-"}</td>
+                        <td class="actions-col">
+                            <button
+                                class="icon-btn approve"
+                                title="Approve"
+                                on:click={() => {
+                                    selectedRules.clear();
+                                    selectedRules.add(rule.id);
+                                    handleBulkApprove();
+                                }}
+                                disabled={processing}
+                            >
+                                ✓
+                            </button>
+                            <button
+                                class="icon-btn reject"
+                                title="Reject"
+                                on:click={() => {
+                                    selectedRules.clear();
+                                    selectedRules.add(rule.id);
+                                    handleBulkReject();
+                                }}
+                                disabled={processing}
+                            >
+                                ✗
+                            </button>
+                        </td>
                     </tr>
                 {/each}
             </tbody>
@@ -248,6 +275,7 @@
         background: rgba(30, 30, 45, 0.5);
         border-radius: 0 0 8px 8px;
         border: 1px solid rgba(255, 255, 255, 0.1);
+        table-layout: fixed;
     }
 
     th,
@@ -265,10 +293,25 @@
         width: 40px;
         text-align: center;
     }
+    .id-col-header {
+        width: 120px;
+    }
+    .confidence-col-header {
+        width: 100px;
+    }
+    .source-col-header {
+        width: 100px;
+    }
+    .actions-col-header {
+        width: 100px;
+    }
+
+    /* Description column takes remaining space by default */
 
     tr.selected {
         background: rgba(59, 130, 246, 0.1);
     }
+    /* Rest of CSS... */
     tr:hover {
         background: rgba(255, 255, 255, 0.02);
     }
@@ -279,6 +322,10 @@
     .id-col {
         font-family: monospace;
         color: #a5b4fc;
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .description {
@@ -317,5 +364,39 @@
         background: rgba(248, 113, 113, 0.1);
         padding: 1rem;
         border-radius: 8px;
+    }
+
+    .icon-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-left: 0.25rem;
+    }
+    .icon-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .icon-btn.approve {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+    }
+    .icon-btn.approve:hover:not(:disabled) {
+        background: rgba(16, 185, 129, 0.2);
+    }
+    .icon-btn.reject {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+    }
+    .icon-btn.reject:hover:not(:disabled) {
+        background: rgba(239, 68, 68, 0.2);
+    }
+    .actions-col {
+        white-space: nowrap;
     }
 </style>

@@ -89,8 +89,13 @@ class SemanticMemoryConfig(BaseSettings):
     )
 
     user_rules_dir: Path = Field(
-        default=Path.cwd() / "user_rules",
+        default=Path(__file__).parent.parent.parent / "user_rules",
         description="Directory for user-defined SPARQL rules",
+    )
+
+    rejected_rules_dir: Path = Field(
+        default=Path(__file__).parent.parent.parent / "rejected_rules",
+        description="Directory for rejected rules (archived)",
     )
 
     # Ontology URLs with fallbacks (for when primary URLs timeout)
@@ -141,6 +146,12 @@ class SemanticMemoryConfig(BaseSettings):
         default="http://semanticmemory.org/user#",
         description="Namespace for user-created entities (referenced with ':' prefix)",
     )
+
+    @property
+    def project_root(self) -> Path:
+        """Root directory of the project."""
+        # Calculate relative to this file: src/smart_memory/config.py -> ../..
+        return Path(__file__).parent.parent.parent
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

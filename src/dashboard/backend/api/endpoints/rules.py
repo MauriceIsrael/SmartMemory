@@ -25,6 +25,17 @@ class InferenceRule(BaseModel):
     source: str = "default"  # 'default' | 'custom' | 'dynamic'
 
 
+
+class PendingRule(BaseModel):
+    """Pending rule model."""
+    id: str
+    description: str
+    sparql_pattern: str
+    confidence: float
+    num_inferences: Optional[int] = None
+    preview: Optional[str] = None
+
+
 @router.get("/rules", response_model=List[InferenceRule])
 async def get_rules(
     source: Optional[str] = Query(
@@ -44,6 +55,38 @@ async def get_rules(
     memory_service = get_memory_service()
     rules = memory_service.get_rules(source=source)
     return [InferenceRule(**rule) for rule in rules]
+
+
+@router.get("/rules/pending", response_model=List[PendingRule])
+async def get_pending_rules(doc_id: Optional[str] = Query(None, description="Filter by Source Document URI or ID")):
+    """Get all rules pending approval."""
+    memory_service = get_memory_service()
+    rules = memory_service.get_pending_rules(doc_id=doc_id)
+    
+    # Map raw dict to PendingRule model
+    # Note: pending rules format in JSON might have different keys than backend model if we aren't careful
+    # JSON has: description, sparql_pattern, confidence, ...
+    return [PendingRule(**rule) for rule in rules]
+
+
+@router.post("/rules/pending/{rule_id}/approve")
+async def approve_pending_rule(rule_id: str):
+    """Approve a pending rule."""
+    memory_service = get_memory_service()
+    success = memory_service.approve_pending_rule(rule_id)
+    if not success:
+        raise HTTPException(status_code=404, detail=f"Pending rule '{rule_id}' not found or failed to approve")
+    return {"status": "approved", "id": rule_id}
+
+
+@router.post("/rules/pending/{rule_id}/reject")
+async def reject_pending_rule(rule_id: str):
+    """Reject a pending rule."""
+    memory_service = get_memory_service()
+    success = memory_service.reject_pending_rule(rule_id)
+    if not success:
+        raise HTTPException(status_code=404, detail=f"Pending rule '{rule_id}' not found")
+    return {"status": "rejected", "id": rule_id}
 
 
 @router.post("/rules/{rule_id}/toggle", response_model=InferenceRule)

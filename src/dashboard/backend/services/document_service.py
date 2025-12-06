@@ -99,6 +99,16 @@ class DocumentService:
             # For now keep it
             pass
 
+    def delete_document(self, doc_id: str) -> bool:
+        """Delete a document by ID."""
+        # Reconstruct URI if it's just the ID
+        if not doc_id.startswith("http"):
+            doc_uri = f"http://semanticmemory.org/document#{doc_id}"
+        else:
+            doc_uri = doc_id
+            
+        return self.memory.delete_document(doc_uri)
+
 _document_service: Optional[DocumentService] = None
 
 def get_document_service() -> DocumentService:

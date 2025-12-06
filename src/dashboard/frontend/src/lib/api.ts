@@ -129,7 +129,7 @@ export interface Document {
 }
 
 export interface PendingRule {
-    rule_id: string;
+    id: string;
     description: string;
     sparql_pattern: string;
     confidence: number;
@@ -184,33 +184,46 @@ export async function fetchPendingRules(docId?: string): Promise<PendingRule[]> 
 /**
  * Bulk approve rules.
  */
-export async function bulkApproveRules(ruleIds: string[]): Promise<any> {
-    const response = await fetch(`${API_BASE_URL}/rules/bulk-approve`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rule_ids: ruleIds })
+/**
+ * Approve a single pending rule.
+ */
+export async function approveRule(ruleId: string): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/rules/pending/${ruleId}/approve`, {
+        method: 'POST'
     });
 
     if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || `Failed to approve rules: ${response.statusText}`);
+        throw new Error(`Failed to approve rule ${ruleId}: ${response.statusText}`);
     }
     return response.json();
 }
 
 /**
- * Bulk reject rules.
+ * Reject a single pending rule.
  */
-export async function bulkRejectRules(ruleIds: string[]): Promise<any> {
-    const response = await fetch(`${API_BASE_URL}/rules/bulk-reject`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rule_ids: ruleIds })
+export async function rejectRule(ruleId: string): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/rules/pending/${ruleId}/reject`, {
+        method: 'POST'
     });
 
     if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || `Failed to reject rules: ${response.statusText}`);
+        throw new Error(`Failed to reject rule ${ruleId}: ${response.statusText}`);
     }
     return response.json();
+}
+
+/**
+ * Bulk approve rules (iterative).
+ */
+export async function bulkApproveRules(ruleIds: string[]): Promise<any> {
+    const promises = ruleIds.map(id => approveRule(id));
+    return Promise.all(promises);
+}
+
+/**
+ * Bulk reject rules (iterative).
+ */
+export async function bulkRejectRules(ruleIds: string[]): Promise<any> {
+    const promises = ruleIds.map(id => rejectRule(id));
+    return Promise.all(promises);
 }

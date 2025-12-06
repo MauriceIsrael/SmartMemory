@@ -38,3 +38,28 @@ async def reload_graph():
         message=result["message"],
         triple_count=result["triple_count"]
     )
+
+from services.engine_service import get_engine_service
+from models.admin import InferenceEngines, InferenceEngineState
+
+
+@router.get("/inference-engines", response_model=InferenceEngines)
+async def get_inference_engines():
+    """Get the state of all inference engines."""
+    engine_service = get_engine_service()
+    return engine_service.get_all_engines()
+
+
+class UpdateEngineRequest(BaseModel):
+    enabled: bool
+
+
+@router.post("/inference-engines/{engine_name}", response_model=InferenceEngineState)
+async def update_inference_engine(engine_name: str, request: UpdateEngineRequest):
+    """Update the state of an inference engine."""
+    engine_service = get_engine_service()
+    try:
+        return engine_service.update_engine(engine_name, request.enabled)
+    except ValueError as e:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail=str(e))

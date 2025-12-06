@@ -15,7 +15,7 @@ import json
 from pathlib import Path
 from smart_memory.config import config
 
-PENDING_RULES_FILE = Path("pending_rules.json")
+PENDING_RULES_FILE = config.project_root / "pending_rules.json"
 
 def _load_pending_rules():
     global _pending_rules
@@ -210,6 +210,7 @@ def clear_pending_rules() -> None:
     """Clear all pending rules (for testing)."""
     global _pending_rules
     _pending_rules = {}
+    _save_pending_rules()
 
 
 __all__ = [

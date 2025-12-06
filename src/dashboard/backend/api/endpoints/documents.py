@@ -24,5 +24,10 @@ async def upload_document(file: UploadFile = File(...)):
 @router.delete("/documents/{doc_id}")
 async def delete_document(doc_id: str):
     """Delete a document."""
-    # TODO: Implement delete in service
-    raise HTTPException(status_code=501, detail="Not implemented yet")
+    service = get_document_service()
+    success = service.delete_document(doc_id)
+    
+    if not success:
+        raise HTTPException(status_code=404, detail=f"Document '{doc_id}' not found or failed to delete")
+    
+    return {"status": "success", "id": doc_id}

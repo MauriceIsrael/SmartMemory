@@ -1,2 +1,0 @@
-# Test rule via API
-CONSTRUCT {?s ?p ?o} WHERE {?s ?p ?o}

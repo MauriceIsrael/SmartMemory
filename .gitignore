@@ -63,3 +63,12 @@ speckit_prompt.md
 
 # Data
 knowledge_graph.ttl
+pending_rules.json
+user_rules/
+rejected_rules/
+
+# Frontend
+src/dashboard/frontend/node_modules/
+src/dashboard/frontend/.svelte-kit/
+src/dashboard/frontend/build/
+src/dashboard/frontend/.env

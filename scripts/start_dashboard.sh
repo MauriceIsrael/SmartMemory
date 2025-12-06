@@ -21,14 +21,17 @@ echo ""
 
 # Check if venv exists
 if [ ! -d "$PROJECT_ROOT/venv" ]; then
-    echo -e "${YELLOW}⚠️  Virtual environment not found. Creating one...${NC}"
-    cd "$PROJECT_ROOT"
-    python3 -m venv venv
-    source venv/bin/activate
-    pip install -e ".[supervision]"
+    echo -e "${RED}Virtual environment not found! Please run 'python3 -m venv venv' first.${NC}"
+    exit 1
 else
     echo -e "${GREEN}✓ Virtual environment found${NC}"
 fi
+
+# Cleanup old processes
+echo -e "${YELLOW}🧹 Cleaning up old processes...${NC}"
+fuser -k 8000/tcp > /dev/null 2>&1 || true
+fuser -k 5173/tcp > /dev/null 2>&1 || true
+sleep 1
 
 # Activate virtual environment
 source "$PROJECT_ROOT/venv/bin/activate"
@@ -72,7 +75,7 @@ cleanup() {
 trap cleanup SIGINT SIGTERM EXIT
 
 # Start backend
-echo -e "${BLUE}🚀 Starting Backend (FastAPI on http://127.0.0.1:8000)...${NC}"
+echo -e "${BLUE}🚀 Starting Backend (FastAPI on http://localhost:8000)...${NC}"
 cd "$PROJECT_ROOT/src/dashboard/backend"
 "$PROJECT_ROOT/venv/bin/uvicorn" main:app --reload --port 8000 > /tmp/smartmemory_backend.log 2>&1 &
 BACKEND_PID=$!
@@ -94,8 +97,8 @@ echo -e "${GREEN}✅ Dashboard is running!${NC}"
 echo -e "${GREEN}=================================================${NC}"
 echo ""
 echo -e "  📊 Dashboard: ${BLUE}http://localhost:5173${NC}"
-echo -e "  🔧 Backend API: ${BLUE}http://127.0.0.1:8000${NC}"
-echo -e "  📋 API Docs: ${BLUE}http://127.0.0.1:8000/docs${NC}"
+echo -e "  🔧 Backend API: ${BLUE}http://localhost:8000${NC}"
+echo -e "  📋 API Docs: ${BLUE}http://localhost:8000/docs${NC}"
 echo ""
 echo -e "  📝 Backend logs: /tmp/smartmemory_backend.log"
 echo -e "  📝 Frontend logs: /tmp/smartmemory_frontend.log"
