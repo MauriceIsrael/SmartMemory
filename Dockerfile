@@ -23,7 +23,7 @@ COPY src/dashboard/backend/requirements.txt .
 # Add project dependencies (from pyproject.toml context - simplifying here for requirements.txt usage)
 # In a real scenario we might install the package itself, but here we run from source
 RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install --no-cache-dir litellm PyMuPDF requests
+# RUN pip install --no-cache-dir litellm PyMuPDF requests - Moved to requirements.txt
 
 # Copy application code
 COPY src /app/src
@@ -34,7 +34,7 @@ COPY pyproject.toml /app/
 COPY --from=frontend-builder /app/build /app/src/dashboard/backend/static
 
 # Set PYTHONPATH
-ENV PYTHONPATH=/app/src:/app
+ENV PYTHONPATH=/app/src:/app:/app/src/dashboard/backend
 
 # Expose port
 EXPOSE 8080

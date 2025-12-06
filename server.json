@@ -1,0 +1,15 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+  "name": "io.github.MauriceIsrael/SmartMemory",
+  "description": "Neuro-symbolic memory for LLMs (POC)",
+  "repository": {
+    "url": "https://github.com/MauriceIsrael/SmartMemory",
+    "source": "github"
+  },
+  "version": "1.0.0",
+  "distribution": {
+    "docker": {
+      "image": "ghcr.io/yourusername/smart-memory:latest"
+    }
+  }
+}

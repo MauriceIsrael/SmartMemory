@@ -51,21 +51,46 @@ class RuleExtractor:
         try:
             from litellm import completion
             import os
+            from pathlib import Path
         except ImportError:
             logger.error("litellm not installed. Please install with: pip install litellm")
             return []
 
-        model = os.getenv("SMART_MEMORY_LLM_MODEL", "gpt-3.5-turbo")
-        api_key = os.getenv("OPENAI_API_KEY") or os.getenv("ANTHROPIC_API_KEY") 
-        ollama_host = os.getenv("OLLAMA_HOST")
+        # Read LLM config from saved file or environment variables
+        from smart_memory.config import config
+        import os
         
-        # Simple check for Ollama or other local models which might not need key
-        if not api_key and "ollama" not in model and "localhost" not in model:
-             logger.warning("No API key found for LLM (OPENAI_API_KEY, etc.). Rule extraction might fail.")
+        config_file = config.project_root / "llm_config.json"
+        
+        # Try to read from file first (for local development)
+        if config_file.exists():
+            try:
+                with open(config_file, 'r') as f:
+                    llm_config = json.load(f)
+                provider = llm_config.get("provider", "openai")
+                model = llm_config.get("model", "gpt-3.5-turbo")
+                api_key = llm_config.get("api_key")
+                base_url = llm_config.get("base_url")
+                temperature = llm_config.get("temperature", 0.7)
+                logger.info(f"Using LLM config from file: {provider}/{model}")
+            except Exception as e:
+                logger.error(f"Error reading LLM config file: {e}")
+                return []
+        else:
+            # Fallback to environment variables (for Docker)
+            provider = os.getenv("LLM_PROVIDER", "ollama")
+            model = os.getenv("LLM_MODEL", "llama3")
+            api_key = os.getenv("LLM_API_KEY")
+            base_url = os.getenv("LLM_BASE_URL", "http://localhost:11434")
+            temperature = float(os.getenv("LLM_TEMPERATURE", "0.7"))
+            
+            if provider != "ollama" and not api_key:
+                logger.error(f"LLM configuration not found. Either configure via dashboard or set environment variables (LLM_PROVIDER, LLM_MODEL, LLM_API_KEY, etc.)")
+                return []
+            
+            logger.info(f"Using LLM config from environment: {provider}/{model}")
 
-        logger.info(f"Extracting rules from '{title}' (page {page}) using model: {model}")
-        if ollama_host:
-             logger.info(f"Using custom Ollama Host: {ollama_host}")
+        logger.info(f"Extracting rules from '{title}' (page {page}) using {provider}/{model}")
 
         # Construct the prompt
         prompt = EXTRACT_RULES_PROMPT.format(
@@ -75,16 +100,20 @@ class RuleExtractor:
         )
 
         try:
-            # Prepare args
+            # Prepare args based on provider
             kwargs = {
-                "model": model,
                 "messages": [{"role": "user", "content": prompt}],
-                "temperature": 0.1,
+                "temperature": temperature,
             }
             
-            # Explicitly pass api_base if OLLAMA_HOST is set and we are using ollama
-            if ollama_host and "ollama" in model:
-                kwargs["api_base"] = ollama_host
+            if provider == "ollama":
+                kwargs["model"] = f"ollama/{model}"
+                if base_url:
+                    kwargs["api_base"] = base_url
+            else:
+                kwargs["model"] = model
+                if api_key:
+                    kwargs["api_key"] = api_key
 
             response = completion(**kwargs)
             

@@ -8,3 +8,9 @@ pytest==7.4.3
 httpx==0.26.0
 mcp>=0.9.0
 sse-starlette==1.8.2
+rdflib-sqlalchemy>=0.5.4
+owlrl>=6.0.2
+SQLAlchemy==1.4.54
+requests>=2.31.0
+PyMuPDF>=1.23.0
+litellm>=1.0.0

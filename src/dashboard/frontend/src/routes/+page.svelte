@@ -66,9 +66,7 @@
 			<p class="error-icon">⚠️</p>
 			<h2>Connection Error</h2>
 			<p>{error}</p>
-			<p class="error-hint">
-				Make sure the backend API is running at http://localhost:8000
-			</p>
+			<p class="error-hint">Make sure the backend API is running</p>
 		</div>
 	{:else if stats}
 		<div class="stats-grid">

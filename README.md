@@ -91,10 +91,28 @@ This mode runs the **Web Dashboard** and **API server**. Ideally suited for:
 You don't need Python installed. Just Docker.
 
 1.  **Run the container**
+    
+    For Ollama (local):
     ```bash
-    docker run -p 8080:8080 -v $(pwd)/brain:/app/data smart-memory
+    docker run -p 8080:8080 \
+      -e LLM_PROVIDER=ollama \
+      -e LLM_MODEL=llama3 \
+      -e LLM_BASE_URL=http://host.docker.internal:11434 \
+      -v $(pwd)/brain:/app/data \
+      smart-memory
     ```
-    *(Note: The `-v` volume is optional but recommended to persist your data)*
+    
+    For OpenAI:
+    ```bash
+    docker run -p 8080:8080 \
+      -e LLM_PROVIDER=openai \
+      -e LLM_MODEL=gpt-4 \
+      -e LLM_API_KEY=your-api-key \
+      -v $(pwd)/brain:/app/data \
+      smart-memory
+    ```
+    
+    *(The `-v` volume persists your knowledge graph and rules)*
 
 2.  **Open the Dashboard**
     Go to `http://localhost:8080`

@@ -4,8 +4,15 @@
 		getInferenceEngines,
 		updateInferenceEngine,
 		type InferenceEngines,
+		getLLMConfig,
+		saveLLMConfig,
+		testLLMConfig,
+		type LLMConfig,
+		type LLMConfigResponse,
+		type LLMTestResult,
 	} from "$lib/services/AdminService";
 	import ToggleSwitch from "$lib/components/ToggleSwitch.svelte";
+	import LLMConfigCard from "$lib/components/LLMConfigCard.svelte";
 	import { onMount } from "svelte";
 
 	let running = false;
@@ -17,9 +24,24 @@
 	let loadingEngines = false;
 	let engineError: string | null = null;
 
-	// Fetch engine states on mount
+	// LLM Configuration state
+	let llmConfigured = false;
+	let llmConfig: LLMConfig = {
+		provider: "ollama",
+		model: "llama3",
+		base_url: "http://localhost:11434",
+		temperature: 0.7,
+	};
+	let loadingLLM = false;
+	let savingLLM = false;
+	let testingLLM = false;
+	let llmError: string | null = null;
+	let llmTestResult: LLMTestResult | null = null;
+
+	// Fetch engine states and LLM config on mount
 	onMount(async () => {
 		await fetchEngineStates();
+		await fetchLLMConfig();
 	});
 
 	async function fetchEngineStates() {
@@ -68,6 +90,53 @@
 			error = e instanceof Error ? e.message : "Failed to run inference";
 		} finally {
 			running = false;
+		}
+	}
+
+	async function fetchLLMConfig() {
+		loadingLLM = true;
+		llmError = null;
+		try {
+			const response = await getLLMConfig();
+			llmConfigured = response.configured;
+			if (response.config) {
+				llmConfig = response.config;
+			}
+		} catch (e) {
+			llmError =
+				e instanceof Error ? e.message : "Failed to load LLM config";
+		} finally {
+			loadingLLM = false;
+		}
+	}
+
+	async function handleSaveLLMConfig() {
+		savingLLM = true;
+		llmError = null;
+		llmTestResult = null;
+		try {
+			await saveLLMConfig(llmConfig);
+			llmConfigured = true;
+			llmError = null;
+		} catch (e) {
+			llmError =
+				e instanceof Error ? e.message : "Failed to save LLM config";
+		} finally {
+			savingLLM = false;
+		}
+	}
+
+	async function handleTestLLMConfig() {
+		testingLLM = true;
+		llmTestResult = null;
+		llmError = null;
+		try {
+			llmTestResult = await testLLMConfig();
+		} catch (e) {
+			llmError =
+				e instanceof Error ? e.message : "Failed to test LLM config";
+		} finally {
+			testingLLM = false;
 		}
 	}
 </script>
@@ -187,20 +256,32 @@
 		{/if}
 	</div>
 
+	<!-- LLM Configuration -->
+	<LLMConfigCard
+		bind:llmConfig
+		bind:llmConfigured
+		bind:savingLLM
+		bind:testingLLM
+		bind:llmError
+		bind:llmTestResult
+		onSave={handleSaveLLMConfig}
+		onTest={handleTestLLMConfig}
+	/>
+
 	<div class="admin-card">
 		<h2>System Information</h2>
 		<div class="info-grid">
 			<div class="info-item">
 				<span class="info-label">Backend API:</span>
-				<span class="info-value">http://localhost:8000</span>
+				<span class="info-value">{window.location.origin}</span>
 			</div>
 			<div class="info-item">
 				<span class="info-label">API Documentation:</span>
 				<span class="info-value">
 					<a
-						href="http://localhost:8000/docs"
+						href="{window.location.origin}/docs"
 						target="_blank"
-						class="link">http://localhost:8000/docs</a
+						class="link">{window.location.origin}/docs</a
 					>
 				</span>
 			</div>

@@ -4,7 +4,7 @@
  * including inference engine management and filtering.
  */
 
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = '/api';
 
 export interface InferenceEngineState {
     enabled: boolean;
@@ -64,12 +64,13 @@ export async function updateInferenceEngine(
  * @param source - Optional filter: 'default' for built-in rules, 'dynamic' for loaded rules
  */
 export async function getRules(source?: 'default' | 'dynamic'): Promise<any[]> {
-    const url = new URL(`${API_BASE_URL}/rules`);
+    let url = `${API_BASE_URL}/rules`;
     if (source) {
-        url.searchParams.append('source', source);
+        const params = new URLSearchParams({ source });
+        url += `?${params.toString()}`;
     }
 
-    const response = await fetch(url.toString(), {
+    const response = await fetch(url, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -88,12 +89,13 @@ export async function getRules(source?: 'default' | 'dynamic'): Promise<any[]> {
  * @param origin - Optional filter: 'explicit' for stated facts, 'inferred' for derived facts
  */
 export async function getFacts(origin?: 'explicit' | 'inferred'): Promise<any[]> {
-    const url = new URL(`${API_BASE_URL}/facts`);
+    let url = `${API_BASE_URL}/facts`;
     if (origin) {
-        url.searchParams.append('origin', origin);
+        const params = new URLSearchParams({ origin });
+        url += `?${params.toString()}`;
     }
 
-    const response = await fetch(url.toString(), {
+    const response = await fetch(url, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -106,3 +108,80 @@ export async function getFacts(origin?: 'explicit' | 'inferred'): Promise<any[]>
 
     return await response.json();
 }
+
+/**
+ * LLM Configuration interfaces
+ */
+export interface LLMConfig {
+    provider: string;  // 'openai' | 'anthropic' | 'google' | 'ollama'
+    api_key?: string;
+    model: string;
+    base_url?: string;
+    temperature?: number;
+}
+
+export interface LLMConfigResponse {
+    configured: boolean;
+    config: LLMConfig | null;
+}
+
+export interface LLMTestResult {
+    success: boolean;
+    message?: string;
+    error?: string;
+    response?: string;
+}
+
+/**
+ * Get current LLM configuration
+ */
+export async function getLLMConfig(): Promise<LLMConfigResponse> {
+    const response = await fetch(`${API_BASE_URL}/llm-config`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch LLM config: ${response.statusText}`);
+    }
+
+    return await response.json();
+}
+
+/**
+ * Save LLM configuration
+ */
+export async function saveLLMConfig(config: LLMConfig): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/llm-config`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(config),
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to save LLM config: ${response.statusText}`);
+    }
+}
+
+/**
+ * Test LLM configuration
+ */
+export async function testLLMConfig(): Promise<LLMTestResult> {
+    const response = await fetch(`${API_BASE_URL}/llm-config/test`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to test LLM config: ${response.statusText}`);
+    }
+
+    return await response.json();
+}
+

@@ -3,7 +3,7 @@
  * Provides functions to interact with the backend endpoints.
  */
 
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = '/api';
 
 export interface SystemStats {
     total_triplets: number;
