@@ -13,6 +13,16 @@
 
 ---
 
+## 🚀 Quick Start
+
+**New user?** → [5-Minute Quick Start Guide](QUICKSTART.md)
+
+**Having issues?** → [Troubleshooting Guide](TROUBLESHOOTING.md)
+
+**Need to configure?** → [Configuration Reference](CONFIGURATION.md)
+
+---
+
 ## 🎯 What is SmartMemory?
 
 SmartMemory enables your favorite LLM (Claude, Gemini, etc.) to remember facts, learn business rules, and deduce new information.
@@ -116,6 +126,29 @@ You don't need Python installed. Just Docker.
 
 2.  **Open the Dashboard**
     Go to `http://localhost:8080`
+
+### LLM Configuration
+
+SmartMemory uses an LLM to extract business rules from documents. Configure it in two ways:
+
+**Option 1: Via Dashboard** (Local Development)
+1. Go to Admin page
+2. Select your provider (Ollama, OpenAI, Anthropic, Google)
+3. Enter your configuration (API key or Ollama URL)
+4. Test connection
+5. Save
+
+**Option 2: Via Environment Variables** (Docker)
+
+Already shown above! Pass `-e LLM_PROVIDER=...` when starting Docker.
+
+**Supported Providers**:
+- **Ollama** (local, free): `llama3`, `qwen2.5-coder`, `mistral`
+- **OpenAI**: `gpt-4`, `gpt-3.5-turbo`
+- **Anthropic**: `claude-3-5-sonnet`
+- **Google**: `gemini-1.5-pro`
+
+→ [Full Configuration Guide](CONFIGURATION.md)
 
 ### Advanced Deployment
 

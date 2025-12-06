@@ -29,24 +29,24 @@ This guide explains how to deploy the SmartMemory MCP Server and Dashboard as a 
 
 2.  **Configure Project**:
     ```bash
-    gcloud config set project YOUR_PROJECT_ID
+    gcloud config set project neurosymbolicmemory
     ```
 
 3.  **Build and Push the Image** (using Cloud Build):
     ```bash
-    gcloud builds submit --tag gcr.io/YOUR_PROJECT_ID/smart-memory
+    gcloud builds submit --tag gcr.io/neurosymbolicmemory/smart-memory
     ```
 
 4.  **Deploy to Cloud Run**:
     ```bash
     gcloud run deploy smart-memory \
-      --image gcr.io/YOUR_PROJECT_ID/smart-memory \
+      --image gcr.io/neurosymbolicmemory/smart-memory \
       --platform managed \
       --region us-central1 \
       --allow-unauthenticated
     ```
 
-    *Replace `YOUR_PROJECT_ID` with your actual GCP Project ID.*
+    *Replace `YOUR_PROJECT_ID` with your actual GCP Project ID: neurosymbolicmemory *
 
 ## GitHub Actions (CI/CD)
 
