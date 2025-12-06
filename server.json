@@ -6,10 +6,10 @@
     "url": "https://github.com/MauriceIsrael/SmartMemory",
     "source": "github"
   },
-  "version": "1.0.0",
+  "version": "1.0.1",
   "distribution": {
     "docker": {
-      "image": "ghcr.io/yourusername/smart-memory:latest"
+      "image": "ghcr.io/mauriceisrael/smart-memory:latest"
     }
   }
 }

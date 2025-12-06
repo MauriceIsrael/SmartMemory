@@ -81,7 +81,7 @@ Restart your client and you're done! ✅
 
 1.  **Clone & Install**
     ```bash
-    git clone https://github.com/yourusername/SmartMemory
+    git clone https://github.com/MauriceIsrael/SmartMemory
     cd SmartMemory
     python3 -m venv venv
     source venv/bin/activate

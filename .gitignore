@@ -72,3 +72,6 @@ src/dashboard/frontend/node_modules/
 src/dashboard/frontend/.svelte-kit/
 src/dashboard/frontend/build/
 src/dashboard/frontend/.env
+LINKEDIN_POST.md
+.mcpregistry_registry_token
+.mcpregistry_github_token
