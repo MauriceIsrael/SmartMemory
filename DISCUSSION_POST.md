@@ -93,14 +93,14 @@ We'd love input from the neuro-symbolic AI community on:
 
 ## Try It Out
 
-**From MCP Registry** (Easiest):
+**Via Docker** (Easiest - no installation needed):
 ```json
-// Add to your Claude Desktop config
+// Add to your Claude Desktop or Cline config
 {
   "mcpServers": {
     "smart-memory": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-smart-memory"]
+      "command": "docker",
+      "args": ["run", "--rm", "-i", "ghcr.io/mauriceisrael/smart-memory:latest"]
     }
   }
 }
@@ -108,10 +108,9 @@ We'd love input from the neuro-symbolic AI community on:
 
 **From Source** (For Development):
 ```bash
-git clone https://github.com/yourusername/SmartMemory
+git clone https://github.com/MauriceIsrael/SmartMemory
 cd SmartMemory
 ./scripts/start_dashboard.sh
-# Or use Docker for one-liner deployment
 ```
 
 See [QUICKSTART.md](../QUICKSTART.md) for details.

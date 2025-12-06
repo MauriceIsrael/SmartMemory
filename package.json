@@ -1,0 +1,42 @@
+{
+    "name": "@modelcontextprotocol/server-smart-memory",
+    "version": "1.0.1",
+    "description": "Give your LLM structured memory - Transform conversations into verified knowledge graphs",
+    "keywords": [
+        "mcp",
+        "llm",
+        "knowledge-graph",
+        "neuro-symbolic",
+        "ai",
+        "rdf",
+        "sparql"
+    ],
+    "homepage": "https://github.com/MauriceIsrael/SmartMemory",
+    "bugs": {
+        "url": "https://github.com/MauriceIsrael/SmartMemory/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/MauriceIsrael/SmartMemory.git"
+    },
+    "license": "MIT",
+    "author": "Maurice Israel",
+    "bin": {
+        "smart-memory-server": "./bin/server.js"
+    },
+    "files": [
+        "bin",
+        "src",
+        "README.md",
+        "LICENSE"
+    ],
+    "scripts": {
+        "test": "echo \"No tests yet\""
+    },
+    "dependencies": {
+        "node-pty": "^1.0.0"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    }
+}

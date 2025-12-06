@@ -6,9 +6,9 @@ Get SmartMemory running in 5 minutes! Choose your mode below.
 
 **For**: Chat with Claude Desktop or similar MCP clients
 
-### Option 1: Install from Registry (Recommended)
+### Option 1: Install via Docker (Recommended)
 
-**SmartMemory is available on the [MCP Registry](https://registry.modelcontextprotocol.io)**!
+**No Python needed!** Just Docker.
 
 **For Claude Desktop**, edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
@@ -16,14 +16,16 @@ Get SmartMemory running in 5 minutes! Choose your mode below.
 {
   "mcpServers": {
     "smart-memory": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-smart-memory"]
+      "command": "docker",
+      "args": ["run", "--rm", "-i", "ghcr.io/mauriceisrael/smart-memory:latest"]
     }
   }
 }
 ```
 
-Restart Claude Desktop and you're done! ✅
+**For Gemini (Cline)**, edit `~/.cline/mcp_settings.json` with the same configuration.
+
+Restart your client and you're done! ✅
 
 ---
 

@@ -28,6 +28,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY src /app/src
 COPY pyproject.toml /app/
+COPY docker-entrypoint.sh /app/
 
 # Copy built frontend assets to backend static folder
 # We rename 'build' to 'static' to match our backend logic
@@ -36,8 +37,11 @@ COPY --from=frontend-builder /app/build /app/src/dashboard/backend/static
 # Set PYTHONPATH
 ENV PYTHONPATH=/app/src:/app:/app/src/dashboard/backend
 
-# Expose port
+# Expose port (for dashboard mode)
 EXPOSE 8080
 
-# Run the application
-CMD ["uvicorn", "src.dashboard.backend.main:app", "--host", "0.0.0.0", "--port", "8080"]
+# Use entrypoint script
+# Default: MCP mode (stdin/stdout)
+# For dashboard: docker run smart-memory dashboard
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
+CMD []

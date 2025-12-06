@@ -47,11 +47,11 @@ You can use it in **two main ways**:
 
 This mode gives your LLM "long-term memory" and logical deduction capabilities.
 
-### Option A: Install from MCP Registry (Recommended) 🚀
+### Option A: Install via Docker (Recommended) 🐳
 
-**Best for**: Everyone! Easiest setup.
+**Best for**: Everyone! No Python installation required.
 
-**SmartMemory is now available on the [Model Context Protocol Registry](https://registry.modelcontextprotocol.io)**!
+**The SmartMemory Docker image is available on GitHub Container Registry**.
 
 Simply add to your MCP client configuration:
 
@@ -60,14 +60,24 @@ Simply add to your MCP client configuration:
 {
   "mcpServers": {
     "smart-memory": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-smart-memory"]
+      "command": "docker",
+      "args": ["run", "--rm", "-i", "ghcr.io/mauriceisrael/smart-memory:latest"]
     }
   }
 }
 ```
 
-**For Gemini/Cline**, see [GEMINI.md](GEMINI.md)
+**For Gemini (Cline)**, edit `~/.cline/mcp_settings.json`:
+```json
+{
+  "mcpServers": {
+    "smart-memory": {
+      "command": "docker",
+      "args": ["run", "--rm", "-i", "ghcr.io/mauriceisrael/smart-memory:latest"]
+    }
+  }
+}
+```
 
 Restart your client and you're done! ✅
 
@@ -123,14 +133,16 @@ You don't need Python installed. Just Docker.
 
 1.  **Run the container**
     
+    **For Dashboard mode** (web interface):
+    
     For Ollama (local):
     ```bash
     docker run -p 8080:8080 \
       -e LLM_PROVIDER=ollama \
       -e LLM_MODEL=llama3 \
-      -e LLM_BASE_URL=http://host.docker.internal:11434 \
+      -e LLM_BASE_URL=http://172.17.0.1:11434 \
       -v $(pwd)/brain:/app/data \
-      smart-memory
+      ghcr.io/mauriceisrael/smart-memory:latest dashboard
     ```
     
     For OpenAI:
@@ -140,8 +152,10 @@ You don't need Python installed. Just Docker.
       -e LLM_MODEL=gpt-4 \
       -e LLM_API_KEY=your-api-key \
       -v $(pwd)/brain:/app/data \
-      smart-memory
+      ghcr.io/mauriceisrael/smart-memory:latest dashboard
     ```
+    
+    *(Note: Add `dashboard` at the end to start web server. Without it, starts MCP mode)*
     
     *(The `-v` volume persists your knowledge graph and rules)*
 
