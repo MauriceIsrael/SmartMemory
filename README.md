@@ -45,16 +45,37 @@ You can use it in **two main ways**:
 
 ## 💬 Mode 1: Conversational Setup (MCP)
 
-This mode gives your LLM "long-term memory" and logical deduction capabilities. You have two options:
+This mode gives your LLM "long-term memory" and logical deduction capabilities.
 
-### Option A: Hosted Server (Coming Soon) ☁️
-*   **Best for**: Users who want zero setup.
-*   **How**: You simply configure your MCP client to point to our hosted URL.
-*   *Status*: 🚧 Under development. We will provide a public URL soon.
+### Option A: Install from MCP Registry (Recommended) 🚀
+
+**Best for**: Everyone! Easiest setup.
+
+**SmartMemory is now available on the [Model Context Protocol Registry](https://registry.modelcontextprotocol.io)**!
+
+Simply add to your MCP client configuration:
+
+**For Claude Desktop**, edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
+```json
+{
+  "mcpServers": {
+    "smart-memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-smart-memory"]
+    }
+  }
+}
+```
+
+**For Gemini/Cline**, see [GEMINI.md](GEMINI.md)
+
+Restart your client and you're done! ✅
+
+---
 
 ### Option B: Local Server (Private) 🔒
-*   **Best for**: Developers & Privacy-conscious users.
-*   **How**: You run the server on your own machine. Data never leaves your computer.
+
+**Best for**: Developers & Privacy-conscious users who want to run from source.
 
 #### Installation Steps (Local)
 

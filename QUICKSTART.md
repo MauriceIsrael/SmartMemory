@@ -6,7 +6,28 @@ Get SmartMemory running in 5 minutes! Choose your mode below.
 
 **For**: Chat with Claude Desktop or similar MCP clients
 
-### Install
+### Option 1: Install from Registry (Recommended)
+
+**SmartMemory is available on the [MCP Registry](https://registry.modelcontextprotocol.io)**!
+
+**For Claude Desktop**, edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "smart-memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-smart-memory"]
+    }
+  }
+}
+```
+
+Restart Claude Desktop and you're done! ✅
+
+---
+
+### Option 2: Install from Source (For Developers)
 
 ```bash
 # Clone and install
@@ -17,7 +38,7 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -e .
 ```
 
-### Configure Your MCP Client
+**Configure Claude Desktop** with local path:
 
 **For Claude Desktop**, edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
