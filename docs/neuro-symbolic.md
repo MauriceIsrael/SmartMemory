@@ -4,7 +4,7 @@
 
 ## The Problem
 
-- **LLMs (Neural)** are creative and flexible but prone to hallucinations and lack "truth". They cannot guarantee that $A \implies B$.
+- **LLMs (Neural)** are creative and flexible but prone to hallucinations and lack "truth". They cannot guarantee logical implications.
 - **Knowledge Graphs (Symbolic)** are precise and verifiable but rigid and hard to populate. They require strict schemas and formal query languages (SPARQL).
 
 ## The Solution: Hybrid Architecture

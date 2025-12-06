@@ -21,6 +21,8 @@
 
 **Need to configure?** → [Configuration Reference](CONFIGURATION.md)
 
+**Want to understand how it works?** → [Neuro-Symbolic Architecture](docs/neuro-symbolic.md) | [Technical Architecture](docs/architecture-overview.md)
+
 ---
 
 ## 🎯 What is SmartMemory?

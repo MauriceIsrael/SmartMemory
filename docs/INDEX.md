@@ -1,160 +1,94 @@
-# SmartMemory Documentation Index
+# SmartMemory Documentation
 
-Complete guide to SmartMemory documentation.
+Welcome to SmartMemory documentation! This index will help you find what you need.
 
-## For New Users
+## 📚 Getting Started
 
-### Start Here 👈
+### For New Users
 
-1. **[README.md](../README.md)** - Project overview, features, and basic setup
-2. **[Quick Start Guide](quick-start.md)** - Step-by-step tutorial (15 minutes)
-3. **[MCP Client Setup](mcp-client-setup.md)** - Configure Claude, Continue.dev, Cline, etc.
+1. **[README](../README.md)** - Start here! Project overview and setup
+2. **[Quick Start Guide](../QUICKSTART.md)** - Get running in 5 minutes
+3. **[Configuration Guide](../CONFIGURATION.md)** - Complete configuration reference
+4. **[Troubleshooting](../TROUBLESHOOTING.md)** - Common issues and solutions
 
-## User Guides
+### Understanding SmartMemory
+
+- **[Neuro-Symbolic Architecture](neuro-symbolic.md)** - How SmartMemory combines LLMs with knowledge graphs
+- **[Technical Architecture](architecture-overview.md)** - System components and data flow
+
+## 🔧 User Guides
 
 ### Basic Usage
 
-- **[Quick Start Guide](quick-start.md)**
-  - Installation steps
-  - First-time setup
-  - Basic operations tutorial
-  - Common use cases
-  - Troubleshooting basics
-
-- **[Realistic Dialog Scenario](realistic-dialog-scenario.md)**
-  - Example conversation with full context
-  - Dual-level inference demonstration
-  - Verification workflow walkthrough
-  - Provenance tracking explained
-
-### Configuration
-
-- **[MCP Client Setup](mcp-client-setup.md)**
-  - Claude Desktop (macOS, Linux, Windows)
-  - Continue.dev (VS Code)
-  - Cline (VS Code)
-  - Zed Editor
-  - Custom MCP clients
-  - Environment variables reference
-  - Complete troubleshooting guide
+- **[Quick Start](quick-start.md)** - Detailed tutorial with examples
+- **[MCP Client Setup](mcp-client-setup.md)** - Configure Claude Desktop, Cline, etc.
+- **[Realistic Dialog Scenario](realistic-dialog-scenario.md)** - Full conversation example
 
 ### Advanced Topics
 
-- **[Custom Rules Guide](../user_rules/README.md)**
-  - SPARQL CONSTRUCT syntax
-  - Rule examples (5 patterns)
-  - Best practices
-  - Debugging rules
+- **[Custom Rules Guide](CUSTOM_RULES.md)** - Write your own SPARQL inference rules
+- **[CLI Commands](CLI_COMMANDS.md)** - Command-line interface reference
+- **[Using Prompts](using-prompts.md)** - Built-in prompt templates
+- **[Error Handling](error-handling.md)** - Error scenarios and recovery
 
-- **[Error Handling](error-handling.md)**
-  - Common error scenarios
-  - Network failures
-  - Persistence errors
-  - SPARQL query errors
-  - Recovery strategies
+## 👨‍💻 Developer Resources
 
-## Developer Resources
+### Contributing
 
-### Getting Started
+- **[CONTRIBUTING](../CONTRIBUTING.md)** - Development setup and guidelines
 
-- **[CONTRIBUTING.md](../CONTRIBUTING.md)**
-  - Development setup
-  - Running tests
-  - Code style (black, ruff, mypy)
-  - Pull request process
+### Testing
 
-### Technical Specifications
+- **[Testing MCP Tools](testing-mcp-tools.md)** - How to test tools
+- **[Test Results](test-results.md)** - Latest test reports
 
-Located in [`specs/003-semantic-memory-server/`](../specs/003-semantic-memory-server/):
+### Logging
 
-1. **[spec.md](../specs/003-semantic-memory-server/spec.md)**
-   - 5 user stories
-   - Acceptance criteria
-   - Success metrics
+- **[Logging Guide](LOGGING_GUIDE.md)** - Configure logging
+- **[Logging Reference](logging.md)** - Log levels and formats
 
-2. **[plan.md](../specs/003-semantic-memory-server/plan.md)**
-   - Architecture overview
-   - Technology stack
-   - Project structure
-   - Testing strategy
-
-3. **[research.md](../specs/003-semantic-memory-server/research.md)**
-   - Design decisions
-   - Alternative approaches
-   - Trade-offs
-
-4. **[data-model.md](../specs/003-semantic-memory-server/data-model.md)**
-   - RDF schema
-   - Ontology mappings
-   - Namespace definitions
-   - Provenance model
-
-5. **[tasks.md](../specs/003-semantic-memory-server/tasks.md)**
-   - 96 implementation tasks
-   - All marked complete
-   - Grouped by phase
-
-## Quick Reference
+## 🎯 Quick Reference
 
 ### I want to...
 
-**...get started quickly** → [Quick Start Guide](quick-start.md)
+| Goal | Document |
+|------|----------|
+| Get started quickly | [Quick Start Guide](../QUICKSTART.md) |
+| Understand the concept | [Neuro-Symbolic Architecture](neuro-symbolic.md) |
+| Configure Docker | [Configuration § Docker](../CONFIGURATION.md#docker-networking) |
+| Configure Claude Desktop | [MCP Client Setup](mcp-client-setup.md) |
+| See a real example | [Realistic Dialog Scenario](realistic-dialog-scenario.md) |
+| Create custom rules | [Custom Rules Guide](CUSTOM_RULES.md) |
+| Troubleshoot errors | [Troubleshooting Guide](../TROUBLESHOOTING.md) |
+| Understand architecture | [Technical Architecture](architecture-overview.md) |
+| Contribute code | [CONTRIBUTING](../CONTRIBUTING.md) |
 
-**...configure Claude Desktop** → [MCP Client Setup § Claude Desktop](mcp-client-setup.md#claude-desktop)
+## 📖 Documentation Structure
 
-**...configure Continue.dev** → [MCP Client Setup § Continue.dev](mcp-client-setup.md#continuedev-vs-code)
+```
+SmartMemory/
+├── README.md                    # Main project documentation
+├── QUICKSTART.md               # 5-minute setup guide
+├── CONFIGURATION.md            # Complete config reference
+├── TROUBLESHOOTING.md          # Problem solving
+├── CONTRIBUTING.md             # Development guide
+└── docs/
+    ├── INDEX.md                # This file
+    ├── neuro-symbolic.md       # Concept explanation
+    ├── architecture-overview.md # Technical architecture
+    ├── quick-start.md          # Detailed tutorial
+    ├── mcp-client-setup.md     # Client configuration
+    ├── CUSTOM_RULES.md         # Rule writing guide
+    └── ...                     # Additional guides
+```
 
-**...see a real example** → [Realistic Dialog Scenario](realistic-dialog-scenario.md)
+## 🆕 What's New
 
-**...create custom rules** → [Custom Rules Guide](../user_rules/README.md)
-
-**...understand the architecture** → [README.md § Architecture](../README.md#architecture)
-
-**...troubleshoot errors** → [MCP Client Setup § Troubleshooting](mcp-client-setup.md#troubleshooting)
-
-**...understand inference** → [README.md § Dual-Level Inference](../README.md#how-it-works-dual-level-inference)
-
-**...contribute code** → [CONTRIBUTING.md](../CONTRIBUTING.md)
-
-**...understand provenance** → [README.md § Provenance Tracking](../README.md#provenance-tracking)
-
-### By Tool
-
-- **add_memory**: [README § Example 1](../README.md#example-1-basic-memory-storage), [Quick Start § Storing](quick-start.md#a-storing-information)
-- **query_memory**: [README § Example 2](../README.md#example-2-querying-knowledge), [Quick Start § Querying](quick-start.md#b-querying-information)
-- **verify_inference**: [README § Example 3](../README.md#example-3-verification-workflow), [Dialog Scenario](realistic-dialog-scenario.md#3-verification-request)
-- **load_custom_rule**: [README § Example 4](../README.md#example-4-custom-rules), [Custom Rules Guide](../user_rules/README.md)
-- **list_rules**: [Quick Start § Viewing Stats](quick-start.md#c-viewing-statistics)
-- **get_graph_stats**: [Quick Start § Viewing Stats](quick-start.md#c-viewing-statistics)
-- **search_entity**: [Quick Start § Simple Search](quick-start.md#b-querying-information)
-
-## Documentation Roadmap
-
-### ✅ Complete
-
-- Installation and setup guides
-- MCP client configuration for all major clients
-- Usage examples and tutorials
-- Custom rule writing guide
-- Error handling and troubleshooting
-- Technical specifications
-
-### 🚧 Planned
-
-- Video tutorials
-- Graph visualization how-to
-- Migration guides (from other knowledge bases)
-- API reference (auto-generated from code)
-- Performance optimization guide
-- Production deployment best practices
-
-## Contributing to Docs
-
-See [CONTRIBUTING.md § Documentation](../CONTRIBUTING.md) for:
-- Documentation style guide
-- How to add examples
-- How to update specs
+- **Docker Support**: One-line installation via Docker
+- **Dashboard Mode**: Web interface for supervision
+- **Document Upload**: Extract rules from PDFs
+- **13 MCP Tools**: Complete toolkit for LLM integration
 
 ---
 
-**Last Updated**: 2025-11-25
+**Last Updated**: 2025-12-06

@@ -1,21 +1,21 @@
-# Architecture SmartMemory
+# SmartMemory Architecture
 
-## Vue d'ensemble des services
+## Overview
 
-SmartMemory est composé de **3 modules principaux** qui fonctionnent de manière complémentaire :
+SmartMemory consists of **2 main deployment modes** that work complementarily:
 
 ```mermaid
 graph TB
     LLM[LLM Client<br/>Claude/Gemini]
-    MCP[MCP Server<br/>server.py<br/>Python]
-    HTTP[HTTP Backend<br/>FastAPI<br/>Python]
+    MCP[MCP Server<br/>smart_memory.server<br/>Python]
+    HTTP[Dashboard Backend<br/>FastAPI<br/>Python]
     WEB[Web Frontend<br/>SvelteKit<br/>TypeScript]
     KG[(Knowledge Graph<br/>knowledge_graph.ttl)]
     
-    LLM <-->|MCP Protocol<br/>stdio| MCP
-    WEB <-->|HTTP REST<br/>:8000| HTTP
-    MCP -->|rdflib| KG
-    HTTP -->|rdflib| KG
+    LLM <--> |MCP Protocol<br/>stdio| MCP
+    WEB <--> |HTTP REST<br/>:8000| HTTP
+    MCP --> |rdflib| KG
+    HTTP --> |rdflib| KG
     
     style MCP fill:#3776ab,color:#fff
     style HTTP fill:#009688,color:#fff
@@ -25,44 +25,48 @@ graph TB
 
 ---
 
-## 1. MCP Server (Serveur MCP)
+## 1. MCP Server (Conversational Mode)
 
-**Fichier principal** : [`src/server.py`](file:///home/momo/Antigravity/SmartMemory/src/server.py)
+**Main file**: `src/smart_memory/server.py`
 
-### Rôle
-- Interface directe entre le **LLM** (Claude, Gemini, etc.) et le graphe de connaissances
-- Expose des **outils MCP** (7 au total) que le LLM peut appeler
-- Gère l'**inférence à deux niveaux** (OWL-RL + règles SPARQL)
-- Fonctionne via le **Model Context Protocol (MCP)**
+### Role
+- Direct interface between **LLM** (Claude, Gemini, etc.) and the knowledge graph
+- Exposes **MCP tools** (13 total) that the LLM can call
+- Manages **dual-level inference** (OWL-RL + SPARQL rules)
+- Works via the **Model Context Protocol (MCP)**
 
 ### Communication
-- **Protocole** : MCP via `stdio` (standard input/output)
-- **Client** : LLM configuré dans `claude_desktop_config.json` ou équivalent
-- **Transport** : Pas de HTTP, communication directe par pipes/stdin/stdout
+- **Protocol**: MCP via `stdio` (standard input/output)
+- **Client**: LLM configured in MCP client settings
+- **Transport**: No HTTP, direct communication via pipes/stdin/stdout
 
-### Outils exposés au LLM
-1. `add_fact()` - Ajouter un fait au graphe
-2. `query_memory()` - Exécuter des requêtes SPARQL
-3. `search_entity()` - Recherche full-text d'entités
-4. `verify_inference()` - Confirmer/rejeter des inférences
-5. `load_custom_rule()` - Charger une règle d'inférence personnalisée
-6. `list_rules()` - Lister les règles actives
-7. `get_graph_stats()` - Statistiques du graphe
+### Tools Exposed to LLM
+1. `add_memory()` - Add a fact to the graph
+2. `query_memory()` - Execute SPARQL queries
+3. `search_entity()` - Full-text entity search
+4. `verify_inference()` - Confirm/reject inferences
+5. `load_custom_rule()` - Load custom inference rule
+6. `list_rules()` - List active rules
+7. `get_graph_stats()` - Graph statistics
+8. `approve_rule()` - Approve pending rule
+9. `reject_rule()` - Reject pending rule
+10. `get_pending_rules()` - Get rules awaiting approval
+11. `get_pending_verifications()` - Get facts awaiting verification
+12. `suggest_rule()` - Suggest a new rule
+13. `load_document()` - Extract rules from PDF
 
-### Démarrage
+### Startup
 ```bash
-# Démarré automatiquement par le client MCP (Claude Desktop)
-# Ou manuellement pour tests :
-python -m semantic_memory.server
+# Started automatically by MCP client (Claude Desktop, Cline, etc.)
+# Or manually for testing:
+python -m smart_memory.server
 ```
 
-> **Note sur les ontologies** : Par défaut, le chargement des ontologies complètes (FOAF, Schema.org) est désactivé pour optimiser le temps de démarrage. L'inférence repose principalement sur les règles SPARQL.
+> **Note on ontologies**: By default, loading complete ontologies (FOAF, Schema.org) is disabled to optimize startup time. Inference relies primarily on SPARQL rules.
 
 ---
 
-## 2. HTTP Backend (Serveur HTTP)
-
-**Fichier principal** : [`src/supervision_backend/main.py`](file:///home/momo/Antigravity/SmartMemory/src/supervision_backend/main.py)
+## 2. Dashboard Mode (Supervision)
 
 ### Rôle
 - API REST pour le **dashboard de supervision**

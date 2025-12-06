@@ -37,6 +37,7 @@ knowledge_graph_rejected.ttl
 cache/
 *.db
 *.sqlite
+Other docs and walkthrough/
 
 # Logs
 *.log
