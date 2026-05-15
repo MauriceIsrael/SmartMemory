@@ -9,7 +9,8 @@ from typing import Any
 from mcp.types import Tool, TextContent
 
 from smart_memory.logging_config import get_logger
-from smart_memory.nlp import TripleExtractor
+from smart_memory.tools.forget_memory import forget_memory
+from smart_memory.nlp.triple_extractor import TripleExtractor
 from smart_memory.config import config
 
 logger = get_logger(__name__)
@@ -98,15 +99,21 @@ async def add_memory(
     # - Starts with ':' (e.g., ":Alice foaf:knows :Bob")
     # - Starts with '<' (e.g., "<http://...> predicate <http://...>")
     # - Contains ' : ' or ' foaf:' or ' schema:' (explicit predicates)
+    # Heuristic: is it triple notation?
+    # Must have 3 parts if we detect triple-like characters
+    input_parts = input_text.strip().split()
     is_triple_notation = (
         format_type == "triple_notation" 
-        or input_text.strip().startswith(":")
-        or input_text.strip().startswith("<")
-        or " foaf:" in input_text
-        or " schema:" in input_text
-        or " rdf:" in input_text
-        or " :" in input_text  # e.g., "subject :customPredicate object"
+        or (len(input_parts) == 3 and (
+            input_text.strip().startswith(":")
+            or input_text.strip().startswith("<")
+            or " foaf:" in input_text
+            or " schema:" in input_text
+            or " rdf:" in input_text
+            or " :" in input_text
+        ))
     )
+
     
     if is_triple_notation:
         # Explicit triple notation
@@ -180,15 +187,16 @@ async def add_memory(
             if inferred_count > 0:
                 # Query the most recently added triples (provenance = sparql-rule)
                 inferred_triples_query = """
+                PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                 PREFIX sem: <http://semanticmemory.org/vocab#>
                 SELECT ?s ?p ?o WHERE {
-                    ?stmt sem:subject ?s ;
-                          sem:predicate ?p ;
-                          sem:object ?o ;
+                    ?stmt a rdf:Statement ;
+                          rdf:subject ?s ;
+                          rdf:predicate ?p ;
+                          rdf:object ?o ;
                           sem:source ?source .
-                    FILTER(?source = <sparql-rule>)
+                    FILTER(?source = "sparql-rule")
                 }
-                ORDER BY DESC(?stmt)
                 LIMIT 10
                 """
                 try:
@@ -211,19 +219,33 @@ async def add_memory(
     else:
         logger.warning("InferenceManager not provided, skipping background inference trigger")
 
-    # Save graph to persistence
+    # Check for conflicts after adding
+    from smart_memory.knowledge.conflicts import ContradictoryLiteralDetector
+    conflict_detector = ContradictoryLiteralDetector()
+    conflicts = conflict_detector.detect_conflicts(graph)
+    
+    conflict_warning = ""
+    if conflicts:
+        conflict_warning = f"\n\n⚠️ **Found {len(conflicts)} potential conflicts!**"
+        for conflict in conflicts[:3]: # Show max 3
+            conflict_warning += f"\n  • Conflicting fact detected for type '{conflict.type}'"
+
+    # Save graph to persistence using the configured backend
+    from smart_memory.knowledge.persistence import get_persistence_backend
     try:
-        graph.save_to_file(config.persistence_path)
-        logger.debug(f"Saved graph to {config.persistence_path}")
+        persistence = get_persistence_backend()
+        persistence.save(graph)
+        logger.debug(f"Saved graph using {type(persistence).__name__}")
     except Exception as e:
         logger.error(f"Failed to save graph: {e}", exc_info=True)
 
     return [
         TextContent(
             type="text",
-            text=f"Added {added_count} triples to memory.{inferred_facts_text}"
+            text=f"Added {added_count} triples to memory.{inferred_facts_text}{conflict_warning}"
         )
     ]
 
 
 __all__ = ["ADD_MEMORY_TOOL", "add_memory"]
+

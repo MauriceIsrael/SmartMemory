@@ -16,12 +16,19 @@ graph TD
     User[User Input] --> LLM[LLM Neural]
     LLM -->|1. Extract Facts| KG[Knowledge Graph Symbolic]
     LLM -->|2. Propose Rules| RuleEngine[Rule Engine]
-    RuleEngine -->|3. Validate| Human[Human Approval]
-    Human -->|4. Activate| KG
-    KG -->|5. Infer New Facts| KG
-    KG -->|6. Provenance| LLM
-    LLM -->|7. Explain| User
+    
+    subgraph "Background Meditation (Asynchronous)"
+        KG -->|3. Trigger| IM[Inference Manager]
+        IM -->|4. Debounce & Run| RuleEngine
+        RuleEngine -->|5. Infer| KG
+    end
+    
+    RuleEngine -->|6. Uncertain?| Human[Human Approval]
+    Human -->|7. Verify| KG
+    KG -->|8. Provenance| LLM
+    LLM -->|9. Explain| User
 ```
+
 
 ### 1. Neural Extraction, Symbolic Storage
 The LLM converts natural language ("Alice works at Google") into formal RDF triples (`:Alice schema:worksFor :Google`).

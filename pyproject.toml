@@ -36,6 +36,9 @@ supervision = [
     "fastapi>=0.100.0",
     "uvicorn[standard]>=0.23.0",
 ]
+oxigraph = [
+    "pyoxigraph>=0.3.0",
+]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

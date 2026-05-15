@@ -41,6 +41,7 @@ class ProvenanceGraph:
         self.graph = Graph(identifier=identifier)
         self.pending_verifications_graph = Graph()
         self.rejected_verifications_graph = Graph()
+        self._triple_count: int = 0  # O(1) counter for non-provenance triples
         self._bind_namespaces()
         self._bind_namespaces(graph=self.pending_verifications_graph)
         self._bind_namespaces(graph=self.rejected_verifications_graph)
@@ -73,6 +74,71 @@ class ProvenanceGraph:
         graph.add((statement_node, SEM.sourceRule, RDFLiteral(verification_request.source_rule)))
         graph.add((statement_node, SEM.confidence, RDFLiteral(verification_request.confidence, datatype=XSD.decimal)))
 
+    def accept_verification(self, triple: tuple) -> bool:
+        """
+        Accept a pending verification and move it to the main graph.
+        
+        Args:
+            triple: Tuple of (subject, predicate, object) as URIRefs/Literals
+            
+        Returns:
+            bool: True if found and moved, False otherwise
+        """
+        s, p, o = triple
+        found = False
+        # Look for the statement in the pending graph
+        for stmt in self.pending_verifications_graph.subjects(RDF.subject, s):
+            if (stmt, RDF.predicate, p) in self.pending_verifications_graph and \
+               (stmt, RDF.object, o) in self.pending_verifications_graph:
+                found = True
+                # Extract metadata
+                confidence_val = self.pending_verifications_graph.value(stmt, SEM.confidence)
+                confidence = float(confidence_val) if confidence_val else 1.0
+                rule = self.pending_verifications_graph.value(stmt, SEM.sourceRule)
+                
+                # Add to main graph with provenance
+                self.add_triple_with_provenance(
+                    s, p, o,
+                    source="user-verified",
+                    confidence=confidence,
+                    source_rule=str(rule) if rule else None
+                )
+                
+                # Remove from pending graph
+                self.pending_verifications_graph.remove((stmt, None, None))
+                break
+        return found
+
+    def reject_verification(self, triple: tuple) -> bool:
+        """
+        Reject a pending verification and move it to the rejected graph.
+        
+        Args:
+            triple: Tuple of (subject, predicate, object)
+            
+        Returns:
+            bool: True if found and moved, False otherwise
+        """
+        s, p, o = triple
+        found = False
+        for stmt in self.pending_verifications_graph.subjects(RDF.subject, s):
+            if (stmt, RDF.predicate, p) in self.pending_verifications_graph and \
+               (stmt, RDF.object, o) in self.pending_verifications_graph:
+                found = True
+                # Move everything related to this statement to the rejected graph
+                for p_attr, o_attr in self.pending_verifications_graph.predicate_objects(stmt):
+                    self.rejected_verifications_graph.add((stmt, p_attr, o_attr))
+                
+                # ALSO add the original triple to the rejected graph for easy lookup/testing
+                self.rejected_verifications_graph.add((s, p, o))
+                
+                # Remove from pending graph
+                self.pending_verifications_graph.remove((stmt, None, None))
+                break
+        return found
+
+
+
 
     def add_triple_with_provenance(
         self,
@@ -99,10 +165,12 @@ class ProvenanceGraph:
         if not config.enable_provenance_tracking:
             # Fast path: just add the triple without metadata
             self.graph.add((subject, predicate, obj))
+            self._triple_count += 1
             return
 
         # Add the main triple
         self.graph.add((subject, predicate, obj))
+        self._triple_count += 1
 
         # Create a reification node for provenance
         # Using blank node to avoid polluting the main namespace
@@ -146,6 +214,7 @@ class ProvenanceGraph:
             obj: Object of the triple
         """
         self.graph.add((subject, predicate, obj))
+        self._triple_count += 1
 
     def query(self, sparql: str) -> Any:
         """
@@ -225,12 +294,20 @@ class ProvenanceGraph:
         # Load pending verifications graph
         pending_path = path.with_stem(f"{path.stem}_pending")
         if pending_path.exists():
+            format = "turtle" if path.suffix == ".ttl" else "xml"
             self.pending_verifications_graph.parse(str(pending_path), format=format)
         
         # Load rejected verifications graph
         rejected_path = path.with_stem(f"{path.stem}_rejected")
         if rejected_path.exists():
             self.rejected_verifications_graph.parse(str(rejected_path), format=format)
+
+        # Recompute the O(1) counter once after loading (only time we do the O(n) scan)
+        provenance_predicates = set(get_provenance_predicates())
+        provenance_predicates.update([RDF.type, RDF.subject, RDF.predicate, RDF.object])
+        self._triple_count = sum(
+            1 for _, p, _ in self.graph if p not in provenance_predicates
+        )
 
     def save_to_file(self, path: Path) -> None:
         """
@@ -253,17 +330,8 @@ class ProvenanceGraph:
         self.rejected_verifications_graph.serialize(destination=str(rejected_path), format=format)
 
     def get_triple_count(self) -> int:
-        """Return the number of triples in the graph (excluding provenance)."""
-        # Count non-provenance triples
-        provenance_predicates = set(get_provenance_predicates())
-        provenance_predicates.update([RDF.type, RDF.subject, RDF.predicate, RDF.object])
-
-        count = 0
-        for s, p, o in self.graph:
-            if p not in provenance_predicates:
-                count += 1
-
-        return count
+        """Return the number of triples in the graph (excluding provenance). O(1)."""
+        return self._triple_count
 
     def get_provenance_stats(self) -> dict[str, int]:
         """

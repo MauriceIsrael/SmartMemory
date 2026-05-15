@@ -14,7 +14,7 @@ Welcome to SmartMemory documentation! This index will help you find what you nee
 ### Understanding SmartMemory
 
 - **[Neuro-Symbolic Architecture](neuro-symbolic.md)** - How SmartMemory combines LLMs with knowledge graphs
-- **[Technical Architecture](architecture-overview.md)** - System components and data flow
+- **[Technical Architecture](architecture.md)** - Detailed system components and data flow
 
 ## 🔧 User Guides
 
@@ -60,7 +60,7 @@ Welcome to SmartMemory documentation! This index will help you find what you nee
 | See a real example | [Realistic Dialog Scenario](realistic-dialog-scenario.md) |
 | Create custom rules | [Custom Rules Guide](CUSTOM_RULES.md) |
 | Troubleshoot errors | [Troubleshooting Guide](../TROUBLESHOOTING.md) |
-| Understand architecture | [Technical Architecture](architecture-overview.md) |
+| Understand architecture | [Technical Architecture](architecture.md) |
 | Contribute code | [CONTRIBUTING](../CONTRIBUTING.md) |
 
 ## 📖 Documentation Structure
@@ -75,7 +75,7 @@ SmartMemory/
 └── docs/
     ├── INDEX.md                # This file
     ├── neuro-symbolic.md       # Concept explanation
-    ├── architecture-overview.md # Technical architecture
+    ├── architecture.md          # Detailed technical architecture
     ├── quick-start.md          # Detailed tutorial
     ├── mcp-client-setup.md     # Client configuration
     ├── CUSTOM_RULES.md         # Rule writing guide
@@ -91,4 +91,4 @@ SmartMemory/
 
 ---
 
-**Last Updated**: 2025-12-06
+**Last Updated**: 2026-05-15

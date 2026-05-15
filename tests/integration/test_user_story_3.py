@@ -29,26 +29,28 @@ async def test_user_story_3_integration(temp_config, monkeypatch):
     - The user verifies the triple, and it moves to the main graph.
     - The user rejects another triple, and it moves to the rejected graph.
     """
+    # Patch the global config object so all modules use the temp config
     monkeypatch.setattr("smart_memory.config.config", temp_config)
+    monkeypatch.setattr("smart_memory.server.config", temp_config)
+    monkeypatch.setattr("smart_memory.knowledge.persistence.config", temp_config)
 
     server = SemanticMemoryServer()
-    await server.startup() # register_tools is called in startup
+    await server.startup()
 
     EX = Namespace("http://example.org/")
+    USER_NS = Namespace("http://semanticmemory.org/user#")
     SCHEMA = Namespace("https://schema.org/")
-    SEM = Namespace("http://semanticmemory.org/sem#")
+    SEM = Namespace("http://semanticmemory.org/vocab#")
 
     # 1. Load a custom rule that generates an uncertain inference
     rule_id = "uncertain_rule"
-    # This rule states that if someone lives in a city, they *might* be a citizen of the country.
-    # The sem:uncertain predicate is used to mark the inference as uncertain.
     rule_content = f"""
         PREFIX schema: <{SCHEMA}>
         PREFIX ex: <{EX}>
         PREFIX sem: <{SEM}>
         CONSTRUCT {{ 
             ?person ex:isCitizenOf ?country .
-            ?person sem:uncertainPredicate ex:isCitizenOf . # Marks the predicate as uncertain
+            ?person sem:uncertainPredicate ex:isCitizenOf .
         }}
         WHERE {{
             ?person schema:homeLocation ?city .
@@ -62,17 +64,22 @@ async def test_user_story_3_integration(temp_config, monkeypatch):
 
     # 2. Add facts
     await add_memory(
-        {"input": f":Paris schema:containedInPlace <{EX}France> .", "format": "triple_notation"},
-        server.graph, server.reasoner, server.triple_extractor, server.rule_engine
+        {"input": f":Paris <https://schema.org/containedInPlace> <{EX}France> .", "format": "triple_notation"},
+        server.graph, server.reasoner, server.triple_extractor, server.rule_engine,
+        inference_manager=server.inference_manager
     )
     await add_memory(
-        {"input": f":John schema:homeLocation <{EX}Paris> .", "format": "triple_notation"},
-        server.graph, server.reasoner, server.triple_extractor, server.rule_engine
+        {"input": f":John <https://schema.org/homeLocation> :Paris .", "format": "triple_notation"},
+        server.graph, server.reasoner, server.triple_extractor, server.rule_engine,
+        inference_manager=server.inference_manager
     )
     
+    # Wait for inference
+    await asyncio.wait_for(server.inference_manager.wait_until_idle(), timeout=5.0)
+    
     # 3. Check that the uncertain triple is in the pending graph
-    # We need to check for the reified statement, not just the triple
-    pending_triple = (EX.John, EX.isCitizenOf, EX.France)
+    # Note: :John maps to USER_NS.John, :Paris to USER_NS.Paris
+    pending_triple = (USER_NS.John, EX.isCitizenOf, EX.France)
     
     stmt_found = False
     for stmt in server.graph.pending_verifications_graph.subjects(RDF.type, RDF.Statement):
@@ -96,10 +103,15 @@ async def test_user_story_3_integration(temp_config, monkeypatch):
 
     # 6. Test rejection
     await add_memory(
-        {"input": f":Jane schema:homeLocation <{EX}Paris> .", "format": "triple_notation"},
-        server.graph, server.reasoner, server.triple_extractor, server.rule_engine
+        {"input": f":Jane <https://schema.org/homeLocation> :Paris .", "format": "triple_notation"},
+        server.graph, server.reasoner, server.triple_extractor, server.rule_engine,
+        inference_manager=server.inference_manager
     )
-    rejected_triple = (EX.Jane, EX.isCitizenOf, EX.France)
+    
+    # Wait for inference
+    await asyncio.wait_for(server.inference_manager.wait_until_idle(), timeout=5.0)
+
+    rejected_triple = (USER_NS.Jane, EX.isCitizenOf, EX.France)
     await verify_inference(
         {"triple": f":Jane <{EX}isCitizenOf> <{EX}France>", "action": "reject"},
         server.graph
@@ -109,3 +121,4 @@ async def test_user_story_3_integration(temp_config, monkeypatch):
     assert rejected_triple in server.graph.rejected_verifications_graph
 
     await server.shutdown()
+

@@ -27,24 +27,53 @@ def test_turtle_persistence(tmp_path, populated_graph):
 
 def test_sqlite_persistence(tmp_path):
     """Test SQLite persistence backend"""
+    # SQLitePersistence needs to be instantiated to use its internal logic
+    from smart_memory.knowledge.persistence import SQLitePersistence
     db_file = tmp_path / "test.db"
-    identifier = "test_graph"
     
-    # Create and save
-    g_to_save = Graph(store="SQLAlchemy", identifier=identifier)
-    g_to_save.open(f"sqlite:///{db_file}", create=True)
+    # Check if rdflib-sqlalchemy is available
+    try:
+        persistence = SQLitePersistence(db_file)
+    except ImportError:
+        pytest.skip("rdflib-sqlalchemy not installed")
     
-    # Add some triples
-    g_to_save.add((EX.subject, EX.predicate, EX.object))
-    g_to_save.commit()
-    g_to_save.close()
+    g = ProvenanceGraph()
+    g.add_triple_with_provenance(EX.s1, EX.p1, EX.o1, source="user")
     
-    # Load in new graph with same identifier
-    g_loaded = Graph(store="SQLAlchemy", identifier=identifier)
-    g_loaded.open(f"sqlite:///{db_file}", create=False)
+    # Save (no-op for SQLite as it auto-commits)
+    persistence.save(g)
     
-    assert len(g_loaded) == 1
-    assert (EX.subject, EX.predicate, EX.object) in g_loaded
+    # Load into new graph
+    new_graph = ProvenanceGraph()
+    persistence.load(new_graph)
     
-    g_loaded.close()
+    assert (EX.s1, EX.p1, EX.o1) in new_graph.graph
+    assert new_graph.get_triple_count() == 1
+
+def test_oxigraph_persistence(tmp_path):
+    """Test Oxigraph persistence backend"""
+    from smart_memory.knowledge.persistence import OxigraphPersistence
+    db_dir = tmp_path / "oxigraph_db"
+    
+    try:
+        persistence = OxigraphPersistence(db_dir)
+    except ImportError:
+        pytest.skip("pyoxigraph not installed")
+        
+    g = ProvenanceGraph()
+    g.add_triple_with_provenance(EX.s1, EX.p1, EX.o1, source="user")
+    g.add_triple_with_provenance(EX.s2, EX.p2, Literal("test", lang="en"), source="user")
+    
+    # Save
+    persistence.save(g)
+    
+    # Load into new graph
+    new_graph = ProvenanceGraph()
+    persistence.load(new_graph)
+    
+    assert len(new_graph.graph) == len(g.graph)
+    assert (EX.s1, EX.p1, EX.o1) in new_graph.graph
+    assert (EX.s2, EX.p2, Literal("test", lang="en")) in new_graph.graph
+    assert new_graph.get_triple_count() == 2
+
 

@@ -1,47 +1,48 @@
-# Build Stage for Frontend
+# Stage 1: Build Frontend
 FROM node:22-alpine AS frontend-builder
-
 WORKDIR /app
 COPY src/dashboard/frontend/package.json src/dashboard/frontend/package-lock.json ./
 RUN npm ci
-
 COPY src/dashboard/frontend .
 RUN npm run build
 
-# Final Stage
-FROM python:3.11-slim
-
+# Stage 2: Build Python Dependencies
+FROM python:3.11-slim AS python-builder
 WORKDIR /app
-
-# Install system dependencies if needed (e.g. for pdf processing)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
+COPY pyproject.toml .
+# Install dependencies into a specific directory to copy later
+RUN pip install --user --no-cache-dir .[oxigraph,supervision]
 
-# Copy backend requirements and install
-COPY src/dashboard/backend/requirements.txt .
-# Add project dependencies (from pyproject.toml context - simplifying here for requirements.txt usage)
-# In a real scenario we might install the package itself, but here we run from source
-RUN pip install --no-cache-dir -r requirements.txt
-# RUN pip install --no-cache-dir litellm PyMuPDF requests - Moved to requirements.txt
+# Stage 3: Final Image
+FROM python:3.11-slim
+WORKDIR /app
+
+# Only copy what's needed from builder stages
+COPY --from=python-builder /root/.local /root/.local
+COPY --from=frontend-builder /app/build /app/src/dashboard/backend/static
 
 # Copy application code
 COPY src /app/src
 COPY pyproject.toml /app/
 COPY docker-entrypoint.sh /app/
+RUN chmod +x /app/docker-entrypoint.sh
 
-# Copy built frontend assets to backend static folder
-# We rename 'build' to 'static' to match our backend logic
-COPY --from=frontend-builder /app/build /app/src/dashboard/backend/static
+# Set environment variables
+ENV PATH=/root/.local/bin:$PATH
+ENV PYTHONPATH=/app/src:/app
+ENV SEMMEM_PERSISTENCE_BACKEND=turtle
+ENV SEMMEM_PERSISTENCE_PATH=/app/data/knowledge_graph.ttl
 
-# Set PYTHONPATH
-ENV PYTHONPATH=/app/src:/app:/app/src/dashboard/backend
+# Create data directory
+RUN mkdir -p /app/data
 
 # Expose port (for dashboard mode)
 EXPOSE 8080
 
 # Use entrypoint script
-# Default: MCP mode (stdin/stdout)
-# For dashboard: docker run smart-memory dashboard
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
 CMD []
+

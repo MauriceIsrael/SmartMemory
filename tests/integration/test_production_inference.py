@@ -38,13 +38,11 @@ async def test_foaf_knows_symmetry_via_mcp(temp_config, monkeypatch):
     server.register_tools()
     
     # Get the actual handler function
-    # We need to find it in the server's registered handlers
-    handler = None
-    for callback in server.server._request_handlers.get("tools/call", []):
-        handler = callback
-        break
+    # We now expose it explicitly on the server instance for testing
+    handler = getattr(server, "_handle_call_tool", None)
     
     assert handler is not None, "Tool handler not registered"
+
     
     # 1. Add "User knows Annie" via MCP tool call
     print("\n=== Step 1: Add 'User knows Annie' ===")

@@ -55,10 +55,20 @@ VERIFY_INFERENCE_TOOL = Tool(
                 "type": "string",
                 "description": "Object of the triple (e.g., ':AcmeCorp', ':Bob')",
             },
+            "action": {
+                "type": "string",
+                "description": "Action for pending verification: 'accept' or 'reject' (optional)",
+                "enum": ["accept", "reject"]
+            },
+            "triple": {
+                "type": "string",
+                "description": "Full triple string as seen in pending verifications list (optional fallback)",
+            }
         },
-        "required": ["subject", "predicate", "object"],
+        # We'll make them optional to support both lookup and action
     },
 )
+
 
 
 async def verify_inference(
@@ -75,9 +85,51 @@ async def verify_inference(
     Returns:
         List of TextContent with verification result
     """
-    subject = arguments["subject"]
-    predicate = arguments["predicate"]
-    obj = arguments["object"]
+    action = arguments.get("action")
+    subject = arguments.get("subject")
+    predicate = arguments.get("predicate")
+    obj = arguments.get("object")
+    triple_str = arguments.get("triple")
+
+    # If triple string is provided but no parts, try to split it
+    if triple_str and not (subject and predicate and obj):
+        parts = triple_str.strip().split()
+        if len(parts) >= 3:
+            subject, predicate, obj = parts[0], parts[1], parts[2]
+
+    if not (subject and predicate and obj):
+        return [TextContent(type="text", text="Error: subject, predicate, and object (or a 'triple' string) are required.")]
+
+    logger.info(f"verify_inference called for: {subject} {predicate} {obj} (action: {action})")
+
+    # Handle action (accept/reject) if specified
+    if action:
+        # Resolve to URIRefs using TripleExtractor (or simple mapping for now)
+        from smart_memory.nlp import TripleExtractor
+        extractor = TripleExtractor()
+        extracted = extractor.parse_triple_notation(f"{subject} {predicate} {obj}")
+        
+        if not extracted:
+            return [TextContent(type="text", text=f"Could not parse triple: {subject} {predicate} {obj}")]
+            
+        triple_tuple = (extracted.subject, extracted.predicate, extracted.object)
+        
+        if action == "accept":
+            # Move from pending to main graph
+            success = graph.accept_verification(triple_tuple)
+            if success:
+                return [TextContent(type="text", text=f"✓ Inference accepted and stored permanently: {subject} {predicate} {obj}")]
+            else:
+                return [TextContent(type="text", text=f"Fact not found in pending verifications: {subject} {predicate} {obj}")]
+        elif action == "reject":
+            # Move from pending to rejected list
+            success = graph.reject_verification(triple_tuple)
+            if success:
+                return [TextContent(type="text", text=f"✗ Inference rejected and archived: {subject} {predicate} {obj}")]
+            else:
+                return [TextContent(type="text", text=f"Fact not found in pending verifications: {subject} {predicate} {obj}")]
+
+    # Fallback to provenance lookup (original code)
 
     logger.info(f"verify_inference called for: {subject} {predicate} {obj}")
 

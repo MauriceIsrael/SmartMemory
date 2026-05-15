@@ -48,6 +48,10 @@ async def test_realistic_dialog_with_dual_inference_and_verification(temp_config
     5. LLM queries updated memory to answer user questions
     """
     monkeypatch.setattr("smart_memory.config.config", temp_config)
+    monkeypatch.setattr("smart_memory.server.config", temp_config)
+    monkeypatch.setattr("smart_memory.knowledge.persistence.config", temp_config)
+
+
     
     # Initialize server
     server = SemanticMemoryServer()

@@ -1,0 +1,25 @@
+# Generic Symmetry Rule
+# Infers symmetric relationships based on owl:SymmetricProperty definition
+# Version: 1.0
+# Author: SmartMemory Core
+# Date: 2026-05-15
+
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX : <http://semanticmemory.org/user#>
+
+CONSTRUCT {
+    ?y ?p ?x .
+}
+WHERE {
+    # Find properties defined as Symmetric
+    ?p a owl:SymmetricProperty .
+    
+    # Find triples using this property
+    ?x ?p ?y .
+    
+    # CRITICAL: Only infer for user entities (prevents ontology explosion)
+    FILTER(STRSTARTS(STR(?x), STR(:)) && STRSTARTS(STR(?y), STR(:)))
+    
+    # Avoid duplicates
+    FILTER NOT EXISTS { ?y ?p ?x }
+}

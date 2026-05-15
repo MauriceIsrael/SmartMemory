@@ -17,21 +17,28 @@
 
 **New user?** → [5-Minute Quick Start Guide](QUICKSTART.md)
 
+**Advanced user?** → [🧪 Advanced Demo Procedure (Inédit)](docs/demonstration_procedure.md)
+
 **Having issues?** → [Troubleshooting Guide](TROUBLESHOOTING.md)
 
 **Need to configure?** → [Configuration Reference](CONFIGURATION.md)
 
-**Want to understand how it works?** → [Neuro-Symbolic Architecture](docs/neuro-symbolic.md) | [Technical Architecture](docs/architecture-overview.md)
+**Want to understand how it works?** → [Architecture Technique & Schémas](docs/architecture.md) | [Principes Neuro-Symboliques](docs/neuro-symbolic.md)
 
 **Looking for specific docs?** → [📚 Documentation Index](docs/INDEX.md)
 
 ---
 
-## 🎯 What is SmartMemory?
+## 🚀 Capacités Avancées
 
-SmartMemory enables your favorite LLM (Claude, Gemini, etc.) to remember facts, learn business rules, and deduce new information.
+SmartMemory transforme votre assistant IA en un expert métier capable de :
+*   **Raisonnement Asynchrone** : Les déductions s'exécutent en arrière-plan (InferenceManager) sans ralentir la conversation.
+*   **Gestion de l'Incertitude** : Détection des faits ambigus avec workflow de validation humaine ("Human-in-the-loop").
+*   **Extraction NLP Intelligente** : Support des phrases complexes, des coréférences et de la notation Turtle directe.
+*   **Provenance & Audit** : Chaque fait stocké conserve la trace de son origine (UUID, source, timestamp).
+*   **Moteur de Règles Dynamique** : Capacité d'apprendre et d'appliquer de nouvelles règles SPARQL à la volée.
 
-You can use it in **two main ways**:
+
 
 ### 1. 💬 Conversational Mode (The "Brain")
 *   **For**: Individuals using LLM clients (Claude Desktop, etc.).

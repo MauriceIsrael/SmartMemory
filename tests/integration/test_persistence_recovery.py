@@ -41,8 +41,11 @@ async def test_persistence_recovery_integration(temp_config, monkeypatch):
     await server2.startup() # register_tools is called in startup
 
     # Verify that the data from the first session is present
-    query = f"ASK {{ <{EX}person1> <{EX}likes> <{EX}pizza> . }}"
+    # Important: TripleExtractor maps ":" to USER_NS, not example.org
+    USER_NS = Namespace("http://semanticmemory.org/user#")
+    query = f"ASK {{ <{USER_NS}person1> <ex:likes> <{USER_NS}pizza> . }}"
     is_present = bool(server2.graph.graph.query(query))
     assert is_present, "Data from previous session should be loaded on startup"
+
 
     await server2.shutdown()

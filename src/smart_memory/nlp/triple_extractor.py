@@ -13,7 +13,7 @@ from rdflib import URIRef, Literal as RDFLiteral, Namespace, BNode
 from rdflib.namespace import RDF, RDFS, OWL
 
 from smart_memory.logging_config import get_logger
-from smart_memory.vocabulary import FOAF, SCHEMA
+from smart_memory.vocabulary import FOAF, SCHEMA, SEM
 
 logger = get_logger(__name__)
 
@@ -67,13 +67,14 @@ class TripleExtractor:
             # Work relationships (English)
             {
                 "name": "works_at",
-                "regex": r"(\w+)\s+(?:works at|works for|is employed by)\s+(.+)",
+                "regex": r"(\w+)\s+(?:works at|works for|is employed by)\s+([\w\s]+?)(?=\s+and|\s+with|\s+since|\.|$)",
                 "handler": self._handle_works_at,
             },
+
             # Work relationships (French)
             {
                 "name": "works_at_fr",
-                "regex": r"(\w+)\s+(?:travaille chez|travaille à|bosse chez|bosse à|est employé par|est employée par)\s+(.+)",
+                "regex": r"(\w+)\s+(?:travaille chez|travaille à|bosse chez|bosse à|est employé par|est employée par)\s+([\w\s]+?)(?=\s+et|\s+avec|\s+depuis|\.|$)",
                 "handler": self._handle_works_at,
             },
             # Social relationships
@@ -91,13 +92,13 @@ class TripleExtractor:
             # Location
             {
                 "name": "located_in",
-                "regex": r"(\w+)\s+(?:is in|is located in|is contained in|est à|est en|se trouve à|se trouve en)\s+(.+)",
+                "regex": r"(\w+)\s+(?:is in|is located in|is contained in|est à|est en|se trouve à|se trouve en)\s+([\w\s]+?)(?=\s+and|\s+in|\.|$)",
                 "handler": self._handle_located_in,
             },
             # Events
             {
                 "name": "attended_event",
-                "regex": r"(\w+)\s+(?:attended|went to|participated in|a assisté à|est allé à|est allée à|a participé à)\s+(.+)",
+                "regex": r"(\w+)\s+(?:attended|went to|participated in|a assisté à|est allé à|est allée à|a participé à)\s+([\w\s]+?)(?=\s+and|\s+with|\.|$)",
                 "handler": self._handle_attended,
             },
             # Creation
@@ -109,7 +110,7 @@ class TripleExtractor:
             # Topics
             {
                 "name": "about_topic",
-                "regex": r"(.+?)\s+(?:is about|covers|discusses|parle de|traite de|concerne)\s+(.+)",
+                "regex": r"([\w\s]+?)\s+(?:is about|covers|discusses|parle de|traite de|concerne)\s+([\w\s]+?)(?=\s+and|\s+in|\.|$)",
                 "handler": self._handle_about,
             },
         ]
@@ -338,33 +339,71 @@ class TripleExtractor:
         logger.debug(f"Extracting triples from: {text}")
 
         triples = []
+        
+        # Split text into potential fact segments (by conjunctions or punctuation)
+        segments = re.split(r'\s+(?:and|et|&)\s+|\.\s*|,\s*', text)
+        
+        last_subject = None
 
-        # Try each pattern
-        for pattern_info in self.patterns:
-            pattern = pattern_info["regex"]
-            handler = pattern_info["handler"]
+        for segment in segments:
+            segment = segment.strip()
+            if not segment:
+                continue
+                
+            matched_in_segment = False
+            for pattern_info in self.patterns:
+                pattern = pattern_info["regex"]
+                handler = pattern_info["handler"]
 
-            # Case-insensitive matching
-            matches = re.finditer(pattern, text, re.IGNORECASE)
+                # Case-insensitive matching
+                matches = list(re.finditer(pattern, segment, re.IGNORECASE))
 
-            for match in matches:
-                try:
-                    extracted = handler(match)
-                    triples.extend(extracted)
-                    logger.debug(
-                        f"Pattern '{pattern_info['name']}' matched, "
-                        f"extracted {len(extracted)} triples"
-                    )
-                except Exception as e:
-                    logger.warning(f"Failed to handle match for pattern {pattern}: {e}")
+                for match in matches:
+                    try:
+                        extracted = handler(match)
+                        triples.extend(extracted)
+                        matched_in_segment = True
+                        
+                        # Remember the last subject for potential coreference (simple heuristic)
+                        if extracted:
+                            last_subject = extracted[0].subject
+                            
+                        logger.debug(
+                            f"Pattern '{pattern_info['name']}' matched in segment, "
+                            f"extracted {len(extracted)} triples"
+                        )
+                    except Exception as e:
+                        logger.warning(f"Failed to handle match for pattern {pattern}: {e}")
+            
+            # Simple coreference: if "knows Bob" didn't match because of missing subject, 
+            # try to prepend the last subject
+            if not matched_in_segment and last_subject and segment.lower().startswith(("knows", "connaît", "connait", "works at", "travaille")):
+                # Try again with prepended subject
+                # We use a simple name if possible
+                subj_name = str(last_subject).split("#")[-1].split("/")[-1]
+                augmented_segment = f"{subj_name} {segment}"
+                
+                for pattern_info in self.patterns:
+                    pattern = pattern_info["regex"]
+                    handler = pattern_info["handler"]
+                    match = re.search(pattern, augmented_segment, re.IGNORECASE)
+                    if match:
+                        try:
+                            extracted = handler(match)
+                            triples.extend(extracted)
+                            logger.debug(f"Coreference successful: '{augmented_segment}'")
+                            break
+                        except:
+                            pass
 
-        # If no patterns matched, try to extract a simple triple
+        # If no patterns matched at all, try fallback
         if not triples:
             logger.debug("No patterns matched, attempting fallback extraction")
             triples = self._fallback_extraction(text)
 
         logger.info(f"Extracted {len(triples)} triples from text")
         return triples
+
 
     def _fallback_extraction(self, text: str) -> list[ExtractedTriple]:
         """
@@ -395,11 +434,16 @@ class TripleExtractor:
             ExtractedTriple or None if parsing fails
         """
         # Simple parser for Turtle-like notation
-        parts = notation.strip().split()
+        notation = notation.strip()
+        if notation.endswith("."):
+            notation = notation[:-1].strip()
+            
+        parts = notation.split()
 
         if len(parts) != 3:
-            logger.warning(f"Invalid triple notation: {notation}")
+            logger.warning(f"Invalid triple notation (expected 3 parts, got {len(parts)}): {notation}")
             return None
+
 
         try:
             # Parse subject
@@ -428,7 +472,9 @@ class TripleExtractor:
                     "rdf": RDF,
                     "rdfs": RDFS,
                     "owl": OWL,
+                    "sem": SEM,
                 }
+
                 
                 if prefix in namespace_map:
                     predicate = namespace_map[prefix][local]

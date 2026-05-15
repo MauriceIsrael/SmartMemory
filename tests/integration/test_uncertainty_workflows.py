@@ -25,8 +25,10 @@ def test_config(tmp_path):
         log_level="INFO",
         force_offline=True,
         auto_accept_threshold=0.85,
-        enable_owl_reasoning=False  # Disable slow OWL-RL reasoning for these tests
+        enable_owl_reasoning=False,  # Disable slow OWL-RL reasoning for these tests
+        debounce_seconds=0.1        # Faster inference for tests
     )
+
 
 @pytest.mark.asyncio
 async def test_uncertainty_acceptance_workflow(test_config, monkeypatch):
@@ -38,15 +40,17 @@ async def test_uncertainty_acceptance_workflow(test_config, monkeypatch):
     4. Accepting the inference
     """
     monkeypatch.setattr("smart_memory.config.config", test_config)
+    monkeypatch.setattr("smart_memory.server.config", test_config)
+    monkeypatch.setattr("smart_memory.knowledge.persistence.config", test_config)
     
     server = SemanticMemoryServer()
     await server.startup()
     
     # Disable conflicting default rules
-    # 'coworkers_inference' generates the same triples as our test rule but strictly
     for rule in server.rule_engine.rules:
         if rule.id == "coworkers_inference":
             rule.is_active = False
+
             
     print("\n" + "="*70)
     print("UNCERTAINTY WORKFLOW: Acceptance")
@@ -80,21 +84,29 @@ async def test_uncertainty_acceptance_workflow(test_config, monkeypatch):
     
     # 2. Trigger rule
     await add_memory(
-        {"input": "Alice works at TechCorp"},
-        server.graph, server.reasoner, server.triple_extractor, server.rule_engine
+        {"input": ":Alice <https://schema.org/worksFor> :TechCorp .", "format": "triple_notation"},
+        server.graph, server.reasoner, server.triple_extractor, server.rule_engine,
+        inference_manager=server.inference_manager
     )
     result = await add_memory(
-        {"input": "Bob works at TechCorp"},
-        server.graph, server.reasoner, server.triple_extractor, server.rule_engine
+        {"input": ":Bob <https://schema.org/worksFor> :TechCorp .", "format": "triple_notation"},
+        server.graph, server.reasoner, server.triple_extractor, server.rule_engine,
+        inference_manager=server.inference_manager
     )
     
-    print("Add Memory Result:", result[0].text)
+    # Wait for background inference to trigger and complete
+    import asyncio
+    await asyncio.wait_for(server.inference_manager.wait_until_idle(), timeout=5.0)
     
-    # 3. Verify detection
+    # Verify detection
     pending_count = len(server.graph.pending_verifications_graph)
-    assert pending_count > 0, "Should have pending verifications"
+    assert pending_count > 0, "Should have pending collaboration verifications"
+
+    print("Add Memory Result:", result[0].text)
+
     
     # 4. Accept inference
+
     print("Accepting inference...")
     verify_result = await verify_inference(
         {
@@ -120,6 +132,8 @@ async def test_uncertainty_rejection_workflow(test_config, monkeypatch):
     3. Rejecting the inference
     """
     monkeypatch.setattr("smart_memory.config.config", test_config)
+    monkeypatch.setattr("smart_memory.server.config", test_config)
+    monkeypatch.setattr("smart_memory.knowledge.persistence.config", test_config)
     
     server = SemanticMemoryServer()
     await server.startup()
@@ -155,14 +169,23 @@ async def test_uncertainty_rejection_workflow(test_config, monkeypatch):
     
     # 2. Trigger rule
     await add_memory(
-        {"input": ":PythonCourse schema:instructor :Bob .", "format": "triple_notation"},
-        server.graph, server.reasoner, server.triple_extractor, server.rule_engine
+        {"input": ":PythonCourse <https://schema.org/instructor> :Bob .", "format": "triple_notation"},
+        server.graph, server.reasoner, server.triple_extractor, server.rule_engine,
+        inference_manager=server.inference_manager
     )
     await add_memory(
-        {"input": ":PythonCourse schema:attendee :Alice .", "format": "triple_notation"},
-        server.graph, server.reasoner, server.triple_extractor, server.rule_engine
+        {"input": ":PythonCourse <https://schema.org/attendee> :Alice .", "format": "triple_notation"},
+        server.graph, server.reasoner, server.triple_extractor, server.rule_engine,
+        inference_manager=server.inference_manager
     )
     
+    # Wait for background inference
+    import asyncio
+    await asyncio.wait_for(server.inference_manager.wait_until_idle(), timeout=5.0)
+    
+    # Verify we have a pending verification
+    assert len(server.graph.pending_verifications_graph) > 0, "Should have pending mentorship verification"
+
     # 3. Reject inference
     print("Rejecting inference...")
     verify_result = await verify_inference(
@@ -172,6 +195,7 @@ async def test_uncertainty_rejection_workflow(test_config, monkeypatch):
         },
         server.graph
     )
+
     print("Verification Result:", verify_result[0].text)
     
     # Verify NOT in main graph

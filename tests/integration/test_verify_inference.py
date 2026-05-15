@@ -29,18 +29,19 @@ async def graph_with_facts(temp_config, monkeypatch):
     monkeypatch.setattr("smart_memory.config.config", temp_config)
     
     graph = ProvenanceGraph()
-    extractor = TripleExtractor()
+    from rdflib import URIRef
     
     # Add explicit fact
     graph.add_triple_with_provenance(
-        subject="http://semanticmemory.org/user#User",
-        predicate="http://xmlns.com/foaf/0.1/knows",
-        obj="http://semanticmemory.org/user#Daniel",
+        subject=URIRef("http://semanticmemory.org/user#User"),
+        predicate=URIRef("http://xmlns.com/foaf/0.1/knows"),
+        obj=URIRef("http://semanticmemory.org/user#Daniel"),
         source="user",
         confidence=1.0,
     )
     
     return graph
+
 
 
 @pytest.mark.asyncio
@@ -91,12 +92,16 @@ async def test_verify_inferred_fact(temp_config, monkeypatch):
     extractor = TripleExtractor()
     
     # Initialize rule engine with default rules
+    from smart_memory.inference.rule_engine import load_rules
+    from pathlib import Path
+    
     rules_dir = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
         "src", "rules", "defaults"
     )
-    rule_engine = RuleEngine(graph)
-    await rule_engine.load_rules_from_directory(rules_dir)
+    rules = load_rules([Path(rules_dir)])
+    rule_engine = RuleEngine(rules)
+
     
     # Add fact that will trigger inference
     await add_memory(
@@ -109,7 +114,8 @@ async def test_verify_inferred_fact(temp_config, monkeypatch):
     )
     
     # Execute rules to infer symmetry
-    await rule_engine.execute_all_rules()
+    rule_engine.execute_rules(graph)
+
     
     # Verify the inferred fact
     result = await verify_inference(

@@ -133,7 +133,8 @@ class SemanticMemoryServer:
 
         # Initialize Inference Manager for async background reasoning
         from smart_memory.inference.inference_manager import InferenceManager
-        self.inference_manager = InferenceManager(debounce_seconds=1.0)
+        self.inference_manager = InferenceManager(debounce_seconds=config.debounce_seconds)
+
         
         # Register reasoning callbacks
         # 1. OWL-RL (if enabled)
@@ -196,18 +197,14 @@ class SemanticMemoryServer:
         """
         Register MCP tools with the server.
 
-        Tools to register:
-        - add_memory: Add natural language or RDF triples
-        - query_memory: Execute SPARQL queries
-        - search_entity: Full-text search for entities
-        - verify_inference: Confirm/reject uncertain inferences
-        - load_custom_rule: Load user-defined SPARQL rules
-        - list_rules: List all active rules
-        - get_graph_stats: Get knowledge graph statistics
+        Uses a registry pattern: each tool maps to its handler with pre-injected
+        dependencies via functools.partial. Adding a new tool requires only 2 lines
+        in the registry — no modification to the dispatcher.
         """
         logger.info("Registering MCP tools...")
+        import functools
 
-        # Import tools
+        # Import tool definitions and handlers
         from smart_memory.tools.add_memory import ADD_MEMORY_TOOL, add_memory
         from smart_memory.tools.query_memory import QUERY_MEMORY_TOOL, query_memory
         from smart_memory.tools.search_entity import SEARCH_ENTITY_TOOL, search_entity
@@ -222,68 +219,53 @@ class SemanticMemoryServer:
         )
         from smart_memory.tools.get_graph_stats import GET_GRAPH_STATS_TOOL, get_graph_stats
         from smart_memory.tools.load_document import LOAD_DOCUMENT_TOOL, load_document
+        from smart_memory.tools.forget_memory import FORGET_MEMORY_TOOL, forget_memory
+
+        # Registry: tool_name -> (definition, async_handler_with_injected_deps)
+        # Each handler is a coroutine function accepting (arguments: dict) as sole arg.
+        registry = {
+            "add_memory": (ADD_MEMORY_TOOL, functools.partial(
+                add_memory,
+                graph=self.graph,
+                reasoner=self.reasoner,
+                triple_extractor=self.triple_extractor,
+                rule_engine=self.rule_engine,
+                inference_manager=self.inference_manager,
+            )),
+            "query_memory": (QUERY_MEMORY_TOOL, functools.partial(query_memory, graph=self.graph)),
+            "search_entity": (SEARCH_ENTITY_TOOL, functools.partial(search_entity, graph=self.graph)),
+            "list_rules": (LIST_RULES_TOOL, functools.partial(list_rules, rule_engine=self.rule_engine)),
+            "load_custom_rule": (LOAD_CUSTOM_RULE_TOOL, functools.partial(load_custom_rule, rule_engine=self.rule_engine, graph=self.graph)),
+            "verify_inference": (VERIFY_INFERENCE_TOOL, functools.partial(verify_inference, graph=self.graph)),
+            "suggest_rule": (SUGGEST_RULE_TOOL, functools.partial(suggest_rule, graph=self.graph, rule_engine=self.rule_engine)),
+            "get_pending_verifications": (GET_PENDING_VERIFICATIONS_TOOL, functools.partial(get_pending_verifications, graph=self.graph)),
+            "get_pending_rules": (GET_PENDING_RULES_TOOL, get_pending_rules),
+            "approve_rule": (APPROVE_RULE_TOOL, functools.partial(approve_rule, rule_engine=self.rule_engine, graph=self.graph)),
+            "reject_rule": (REJECT_RULE_TOOL, reject_rule),
+            "get_graph_stats": (GET_GRAPH_STATS_TOOL, functools.partial(get_graph_stats, graph=self.graph, rule_engine=self.rule_engine)),
+            "load_document": (LOAD_DOCUMENT_TOOL, functools.partial(load_document, graph=self.graph, rule_engine=self.rule_engine)),
+            "forget_memory": (FORGET_MEMORY_TOOL, functools.partial(forget_memory, graph=self.graph, triple_extractor=self.triple_extractor)),
+        }
 
         @self.server.call_tool()
         async def handle_call_tool(name: str, arguments: dict) -> list:
-            """Handle tool calls."""
+            """Dispatch tool calls via registry."""
             logger.info(f"Tool called: {name}")
-
-            if name == "add_memory":
-                return await add_memory(
-                    arguments,
-                    self.graph,
-                    self.reasoner,
-                    self.triple_extractor,
-                    self.rule_engine,
-                    inference_manager=self.inference_manager,  # CRITICAL FIX
-                )
-            elif name == "query_memory":
-                return await query_memory(arguments, self.graph)
-            elif name == "search_entity":
-                return await search_entity(arguments, self.graph)
-            elif name == "list_rules":
-                return await list_rules(arguments, self.rule_engine)
-            elif name == "load_custom_rule":
-                return await load_custom_rule(arguments, self.rule_engine, self.graph)
-            elif name == "verify_inference":
-                return await verify_inference(arguments, self.graph)
-            elif name == "suggest_rule":
-                return await suggest_rule(arguments, self.graph, self.rule_engine)
-            elif name == "get_pending_verifications":
-                return await get_pending_verifications(arguments, self.graph)
-            elif name == "get_pending_rules":
-                return await get_pending_rules(arguments)
-            elif name == "approve_rule":
-                return await approve_rule(arguments, self.rule_engine, self.graph)
-            elif name == "reject_rule":
-                return await reject_rule(arguments)
-            elif name == "get_graph_stats":
-                return await get_graph_stats(arguments, self.graph, self.rule_engine)
-            elif name == "load_document":
-                return await load_document(arguments, self.graph, self.rule_engine)
-            else:
+            entry = registry.get(name)
+            if entry is None:
                 raise ValueError(f"Unknown tool: {name}")
+            _, handler = entry
+            return await handler(arguments)
 
         @self.server.list_tools()
         async def handle_list_tools() -> list:
-            """List available tools."""
-            return [
-                ADD_MEMORY_TOOL,
-                QUERY_MEMORY_TOOL,
-                SEARCH_ENTITY_TOOL,
-                LIST_RULES_TOOL,
-                LOAD_CUSTOM_RULE_TOOL,
-                VERIFY_INFERENCE_TOOL,
-                SUGGEST_RULE_TOOL,
-                GET_PENDING_VERIFICATIONS_TOOL,
-                GET_PENDING_RULES_TOOL,
-                APPROVE_RULE_TOOL,
-                REJECT_RULE_TOOL,
-                GET_GRAPH_STATS_TOOL,
-                LOAD_DOCUMENT_TOOL,
-            ]
+            """List available tools from the registry."""
+            return [definition for definition, _ in registry.values()]
 
-        logger.info("MCP tools registered.")
+        self._handle_call_tool = handle_call_tool
+        logger.info(f"MCP tools registered ({len(registry)} tools).")
+
+
 
         # Register prompts
         @self.server.list_prompts()

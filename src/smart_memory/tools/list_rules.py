@@ -30,23 +30,33 @@ async def list_rules(
     """
     source_filter = arguments.get("source", "all")
     
-    rules_info = []
+    response_lines = [f"Available SPARQL Inference Rules (Filter: {source_filter}):\n"]
+    
     for rule in rule_engine.rules:
         if source_filter != "all" and rule.source != source_filter:
             continue
             
-        rules_info.append(
-            {
-                "id": rule.id,
-                "source": rule.source,
-                "description": rule.description,
-                "is_active": rule.is_active,
-                "validation_error": rule.validation_error,
-                "execution_count": rule.execution_count,
-                "triples_generated": rule.triples_generated,
-            }
-        )
+        status = "✅ Active" if rule.is_active else "❌ Inactive"
+        response_lines.append(f"• {rule.id} [{status}]")
+        response_lines.append(f"  Source: {rule.source}")
+        if rule.version:
+            response_lines.append(f"  Version: {rule.version}")
+        if rule.author:
+            response_lines.append(f"  Author: {rule.author}")
+        if rule.date:
+            response_lines.append(f"  Date: {rule.date}")
+        if rule.description:
+            response_lines.append(f"  Description: {rule.description}")
+        
+        response_lines.append(f"  Execution count: {rule.execution_count}")
+        response_lines.append(f"  Triples generated: {rule.triples_generated}")
+        
+        if rule.validation_error:
+            response_lines.append(f"  ⚠️ Error: {rule.validation_error}")
+        
+        response_lines.append("")  # Blank line between rules
 
-    return [TextContent(type="text", text=str(rules_info))]
+    return [TextContent(type="text", text="\n".join(response_lines))]
+
 
 __all__ = ["LIST_RULES_TOOL", "list_rules"]

@@ -99,9 +99,10 @@ class RuleEngine:
         from smart_memory.logging_config import get_logger
         logger = get_logger(__name__)
         
-        inferred_graph = Graph()
+        all_new_triples = {} # triple -> rule_id
         for iteration in range(max_depth):
             newly_inferred_triples = 0
+            iteration_triples = {} # triple -> rule_id for THIS iteration
             for rule in self.rules:
                 if not rule.is_active:
                     continue
@@ -131,7 +132,7 @@ class RuleEngine:
                     logger.debug(f"Rule '{rule.id}' found {len(uncertain_preds)} uncertainty markers")
 
                     for triple in actual_triples:
-                        if triple not in p_graph.graph and triple not in inferred_graph:
+                        if triple not in p_graph.graph and triple not in iteration_triples:
                             
                             # Check for uncertainty
                             # The rule might generate: `?s sem:uncertainPredicate ?p`
@@ -152,25 +153,34 @@ class RuleEngine:
                                 p_graph.add_pending_verification(verification_request)
                                 logger.debug(f"Added uncertain triple for verification: {triple}")
                             else:
-                                inferred_graph.add(triple)
-                                newly_inferred_triples += 1
-                                rule.triples_generated += 1
-                                logger.debug(f"Inferred new triple: {triple}")
+                                if triple not in iteration_triples and triple not in all_new_triples:
+                                    iteration_triples[triple] = rule.id
+                                    newly_inferred_triples += 1
+                                    rule.triples_generated += 1
+                                    logger.debug(f"Found new triple: {triple} (rule: {rule.id})")
                 
                 except Exception as e:
                     logger.error(f"Error executing rule '{rule.id}': {e}", exc_info=True)
+
+            # Add iteration triples to p_graph and all_new_triples
+            for triple, rule_id in iteration_triples.items():
+                p_graph.add_triple_with_provenance(
+                    triple[0], triple[1], triple[2], 
+                    source="sparql-rule", 
+                    source_rule=rule_id
+                )
+                all_new_triples[triple] = rule_id
 
             logger.info(f"Iteration {iteration + 1}: Inferred {newly_inferred_triples} new triples")
             if newly_inferred_triples == 0:
                 break
         
-        # Add all inferred triples to the provenance graph
-        total_inferred = len(inferred_graph)
-        for triple in inferred_graph:
-            # Note: rule.id might refer to the last rule, we should track this better
-            p_graph.add_triple_with_provenance(triple[0], triple[1], triple[2], source="sparql-rule")
+        # The triples were added during iterations
+        total_inferred = len(all_new_triples)
         
         logger.info(f"Rule engine finished: {total_inferred} total triples inferred")
         return total_inferred
+
+
 
 

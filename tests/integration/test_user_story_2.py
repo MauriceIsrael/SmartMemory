@@ -35,11 +35,14 @@ async def test_user_story_2_integration(temp_config, monkeypatch):
     """
     # Patch the global config object so all modules use the temp config
     monkeypatch.setattr("smart_memory.config.config", temp_config)
+    monkeypatch.setattr("smart_memory.server.config", temp_config)
+    monkeypatch.setattr("smart_memory.knowledge.persistence.config", temp_config)
 
     server = SemanticMemoryServer()
-    await server.startup() # register_tools is called in startup
+    await server.startup()
 
     EX = Namespace("http://example.org/")
+    USER_NS = Namespace("http://semanticmemory.org/user#")
     SCHEMA = Namespace("https://schema.org/")
 
     # 1. Load a custom rule
@@ -59,16 +62,22 @@ async def test_user_story_2_integration(temp_config, monkeypatch):
 
     # 2. Add facts
     await add_memory(
-        {"input": f":Alice schema:worksFor <{EX}HappyCompany> .", "format": "triple_notation"},
-        server.graph, server.reasoner, server.triple_extractor, server.rule_engine
+        {"input": f":Alice <https://schema.org/worksFor> <{EX}HappyCompany> .", "format": "triple_notation"},
+        server.graph, server.reasoner, server.triple_extractor, server.rule_engine,
+        inference_manager=server.inference_manager
     )
+    
+    # Wait for inference
+    await asyncio.wait_for(server.inference_manager.wait_until_idle(), timeout=5.0)
 
     # 3. Query for the inferred fact directly on the graph
+    # Note: :Alice maps to USER_NS.Alice
     sparql_query = f"""
         PREFIX ex: <{EX}>
-        ASK WHERE {{ <{EX}Alice> ex:isHappy true . }}
+        ASK WHERE {{ <{USER_NS}Alice> ex:isHappy true . }}
     """
     is_happy = bool(server.graph.graph.query(sparql_query))
     assert is_happy, "The custom rule should have inferred that Alice is happy."
 
     await server.shutdown()
+

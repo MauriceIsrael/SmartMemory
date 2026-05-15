@@ -1,0 +1,24 @@
+# Generic Hierarchy Rule (SubClass)
+# Infers type inheritance based on rdfs:subClassOf
+# Version: 1.0
+# Author: SmartMemory Core
+# Date: 2026-05-15
+
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX : <http://semanticmemory.org/user#>
+
+CONSTRUCT {
+    ?x a ?parent .
+}
+WHERE {
+    # Find subclass definitions
+    ?child rdfs:subClassOf ?parent .
+    
+    # Find instances of child class
+    ?x a ?child .
+    FILTER(STRSTARTS(STR(?x), STR(:)))
+    
+    # Avoid duplicates
+    FILTER NOT EXISTS { ?x a ?parent }
+}

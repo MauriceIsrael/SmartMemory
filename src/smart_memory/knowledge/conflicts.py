@@ -2,10 +2,13 @@ from abc import ABC, abstractmethod
 from typing import List
 from smart_memory.knowledge.graph import ProvenanceGraph
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, UTC
 from smart_memory.vocabulary import OWL
+from smart_memory.logging_config import get_logger
 from rdflib import Literal
 from rdflib.namespace import RDF
+
+logger = get_logger(__name__)
 
 class Conflict:
     def __init__(self, type: str, triples: List, provenance: List, detected_at: str, resolved: bool = False):
@@ -33,12 +36,12 @@ class ContradictoryLiteralDetector(ConflictDetector):
         HAVING (COUNT(DISTINCT ?object) > 1) # Ensure distinct objects
         """
         results = graph.query(query)
-        print(f"DEBUG: ContradictoryLiteralDetector query results: {list(results)}")
+        logger.debug(f"ContradictoryLiteralDetector query results: {results}")
         
         conflicts = []
         for row in results:
             objects = set(row["objects"].split("||")) # Use set to handle distinct objects
-            print(f"DEBUG: ContradictoryLiteralDetector row objects: {objects}")
+            logger.debug(f"ContradictoryLiteralDetector row objects: {objects}")
             
             # Re-fetch the actual triples from the graph for precise representation
             conflicting_triples = []
@@ -55,7 +58,7 @@ class ContradictoryLiteralDetector(ConflictDetector):
                 type="contradictory_literal",
                 triples=conflicting_triples,
                 provenance=[], # Add provenance information
-                detected_at=datetime.utcnow().isoformat(),
+                detected_at=datetime.now(UTC).isoformat(),
             )
             conflicts.append(conflict)
         return conflicts
@@ -81,7 +84,7 @@ class DisjointClassDetector(ConflictDetector):
                     (row["subject"], RDF.type, row["class2"]),
                 ],
                 provenance=[], # Add provenance information
-                detected_at=datetime.utcnow().isoformat(),
+                detected_at=datetime.now(UTC).isoformat(),
             )
             conflicts.append(conflict)
         return conflicts
@@ -111,7 +114,7 @@ class FunctionalPropertyDetector(ConflictDetector):
                     type="functional_property",
                     triples=conflicting_triples,
                     provenance=[], # Add provenance information
-                    detected_at=datetime.utcnow().isoformat(),
+                    detected_at=datetime.now(UTC).isoformat(),
                 )
                 conflicts.append(conflict)
         return conflicts

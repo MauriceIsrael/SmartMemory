@@ -37,6 +37,8 @@ async def test_dynamic_rule_loading(temp_config, monkeypatch):
     """Test loading a custom rule and verifying inference."""
     monkeypatch.setattr("smart_memory.config.config", temp_config)
     monkeypatch.setattr("smart_memory.server.config", temp_config)
+    monkeypatch.setattr("smart_memory.knowledge.persistence.config", temp_config)
+
     
     server = SemanticMemoryServer()
     await server.startup()

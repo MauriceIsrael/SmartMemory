@@ -82,6 +82,13 @@ class SemanticMemoryConfig(BaseSettings):
         le=1.0,
     )
 
+    debounce_seconds: float = Field(
+        default=2.0,
+        description="Time to wait after last trigger before running background inference pass",
+        ge=0.0,
+    )
+
+
     # Rule loading configuration
     default_rules_dir: Path = Field(
         default=Path(__file__).parent.parent / "rules" / "defaults",
