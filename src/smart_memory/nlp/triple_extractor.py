@@ -446,48 +446,34 @@ class TripleExtractor:
 
 
         try:
-            # Parse subject
-            if parts[0].startswith(":"):
-                subject = self._make_uri(parts[0][1:])
-            elif parts[0].startswith("<") and parts[0].endswith(">"):
-                # Full URI in angle brackets
-                subject = URIRef(parts[0][1:-1])
-            else:
-                subject = URIRef(parts[0])
-
-            # Parse predicate
-            if parts[1].startswith(":"):
-                predicate = self._make_uri(parts[1][1:])
-            elif parts[1].startswith("<") and parts[1].endswith(">"):
-                # Full URI in angle brackets
-                predicate = URIRef(parts[1][1:-1])
-            elif ":" in parts[1]:
-                # Handle any prefix:property format
-                prefix, local = parts[1].split(":", 1)
-                
-                # Map common prefixes to their namespaces
-                namespace_map = {
-                    "foaf": FOAF,
-                    "schema": SCHEMA,
-                    "rdf": RDF,
-                    "rdfs": RDFS,
-                    "owl": OWL,
-                    "sem": SEM,
-                }
-
-                
-                if prefix in namespace_map:
-                    predicate = namespace_map[prefix][local]
-                elif prefix == "":
-                    # User namespace (e.g., ":property")
-                    predicate = self._make_uri(local)
+            def resolve_uri(term: str) -> URIRef:
+                if term.startswith(":"):
+                    return self._make_uri(term[1:])
+                elif term.startswith("<") and term.endswith(">"):
+                    return URIRef(term[1:-1])
+                elif ":" in term:
+                    prefix, local = term.split(":", 1)
+                    namespace_map = {
+                        "foaf": FOAF,
+                        "schema": SCHEMA,
+                        "rdf": RDF,
+                        "rdfs": RDFS,
+                        "owl": OWL,
+                        "sem": SEM,
+                    }
+                    if prefix in namespace_map:
+                        return namespace_map[prefix][local]
+                    elif prefix == "":
+                        return self._make_uri(local)
+                    else:
+                        logger.warning(f"Unknown prefix '{prefix}', using as-is in URI")
+                        return URIRef(f"{prefix}:{local}")
                 else:
-                    # Unknown prefix - construct URI directly
-                    # This allows custom predicates like "custom:myProperty"
-                    logger.warning(f"Unknown prefix '{prefix}', using as-is in URI")
-                    predicate = URIRef(f"{prefix}:{local}")
-            else:
-                predicate = self._make_uri(parts[1])
+                    return URIRef(term)
+
+            # Parse subject and predicate
+            subject = resolve_uri(parts[0])
+            predicate = resolve_uri(parts[1])
 
             # Parse object
             if parts[2].startswith('"'):
@@ -501,13 +487,8 @@ class TripleExtractor:
                 obj = RDFLiteral(int(parts[2]))
             elif re.match(r"^-?\d+\.\d+$", parts[2]):
                 obj = RDFLiteral(float(parts[2]))
-            elif parts[2].startswith(":"):
-                obj = self._make_uri(parts[2][1:])
-            elif parts[2].startswith("<") and parts[2].endswith(">"):
-                # Full URI in angle brackets
-                obj = URIRef(parts[2][1:-1])
             else:
-                obj = URIRef(parts[2])
+                obj = resolve_uri(parts[2])
 
             return ExtractedTriple(
                 subject=subject,

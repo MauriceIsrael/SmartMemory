@@ -66,8 +66,9 @@ class MemoryService:
         # Count total triplets (excluding provenance metadata)
         total_triplets = len([
             (s, p, o) for s, p, o in self.p_graph.graph
-            if p not in {RDF.type, RDF.subject, RDF.predicate, RDF.object, 
+            if p not in {RDF.subject, RDF.predicate, RDF.object, 
                         SEM.source, SEM.timestamp, SEM.confidence, SEM.sourceRule, SEM.uncertain}
+            and not (p == RDF.type and o == RDF.Statement)
         ])
         
         # Count inferred vs asserted triplets
@@ -116,7 +117,7 @@ class MemoryService:
         # Collect all non-provenance triples
         facts = []
         provenance_predicates = {
-            RDF.type, RDF.subject, RDF.predicate, RDF.object,
+            RDF.subject, RDF.predicate, RDF.object,
             SEM.source, SEM.timestamp, SEM.confidence, SEM.sourceRule, SEM.uncertain
         }
         
@@ -141,7 +142,7 @@ class MemoryService:
         
         # Collect facts with timestamps
         for s, p, o in self.p_graph.graph:
-            if p in provenance_predicates:
+            if p in provenance_predicates or (p == RDF.type and o == RDF.Statement):
                 continue
             
             subject_str = self._format_term(s)

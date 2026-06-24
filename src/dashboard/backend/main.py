@@ -46,7 +46,7 @@ sessions = {}
 
 # --- Frontend Configuration ---
 # Check if the directory exists to avoid errors during development if frontend isn't built
-frontend_dist = os.path.join(os.path.dirname(__file__), "static")
+frontend_dist = os.path.join(os.path.dirname(__file__), "..", "frontend", "build")
 frontend_built = os.path.exists(frontend_dist)
 
 # --- Startup/Shutdown ---

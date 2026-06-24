@@ -1,9 +1,5 @@
-# Generic Transitivity Rule
+# Generic Transitivity Rule (SCOPED to user namespace)
 # Infers transitive relationships based on owl:TransitiveProperty definition
-# Version: 1.0
-# Author: SmartMemory Core
-# Date: 2026-05-15
-
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX : <http://semanticmemory.org/user#>
 
@@ -14,7 +10,7 @@ WHERE {
     # Find properties defined as Transitive
     ?p a owl:TransitiveProperty .
     
-    # Find chain: x -> y -> z
+    # Find chain: x -> y -> z IN USER NAMESPACE ONLY
     ?x ?p ?y .
     ?y ?p ?z .
     

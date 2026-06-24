@@ -11,7 +11,7 @@ sys.path.append(os.getcwd())
 sys.path.append(os.path.join(os.getcwd(), "src/dashboard/backend"))
 
 from src.dashboard.backend.main import app
-from src.smart_memory.tools.pending_rules import clear_pending_rules, _pending_rules
+from smart_memory.tools.pending_rules import clear_pending_rules, _pending_rules
 
 client = TestClient(app)
 
@@ -57,7 +57,7 @@ def test_pending_rules_api():
     assert response.status_code == 200
     rules = response.json()
     assert len(rules) == 1
-    assert rules[0]["rule_id"] == "test_rule_api"
+    assert rules[0]["id"] == "test_rule_api"
     
     # 4. Bulk approve (failure scenario - bad SPARQL for clean test, or success)
     # Using simple SPARQL that might fail logic if not correct, but tool handles it.

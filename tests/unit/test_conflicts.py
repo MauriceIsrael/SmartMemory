@@ -7,7 +7,7 @@ from smart_memory.knowledge.conflicts import (
     FunctionalPropertyDetector,
 )
 
-EX = Namespace("http://example.org/")
+EX = Namespace("http://semanticmemory.org/user#")
 SCHEMA = Namespace("https://schema.org/")
 
 @pytest.fixture

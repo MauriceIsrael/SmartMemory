@@ -1,9 +1,5 @@
-# Generic Inverse Rule
+# Generic Inverse Rule (SCOPED to user namespace)
 # Infers inverse relationships based on owl:inverseOf definition
-# Version: 1.0
-# Author: SmartMemory Core
-# Date: 2026-05-15
-
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX : <http://semanticmemory.org/user#>
 
@@ -15,7 +11,7 @@ WHERE {
     # Find inverse property definitions
     ?p1 owl:inverseOf ?p2 .
     
-    # Match either direction
+    # Match either direction IN USER NAMESPACE ONLY
     {
         ?x ?p1 ?y .
         FILTER(STRSTARTS(STR(?x), STR(:)) && STRSTARTS(STR(?y), STR(:)))

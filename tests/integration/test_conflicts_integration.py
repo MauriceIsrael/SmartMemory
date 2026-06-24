@@ -10,7 +10,9 @@ def temp_config(tmp_path):
     return SemanticMemoryConfig(
         persistence_path=tmp_path / "knowledge_graph.ttl",
         log_level="DEBUG",
-        force_offline=True
+        force_offline=True,
+        load_ontologies=False,
+        enable_owl_reasoning=False
     )
 
 @pytest.mark.asyncio

@@ -45,18 +45,18 @@ class SemanticMemoryConfig(BaseSettings):
     )
 
     persistence_path: Path = Field(
-        default=Path.cwd() / "knowledge_graph.ttl",
+        default=Path(__file__).parent.parent.parent / "knowledge_graph.ttl",
         description="Path to persistence file (format depends on backend)",
     )
 
     # Reasoning configuration
     enable_owl_reasoning: bool = Field(
-        default=False,
+        default=True,
         description="Enable OWL-RL reasoning (can be slow on large ontologies, set to false for faster startup)",
     )
     
     load_ontologies: bool = Field(
-        default=False,
+        default=True,
         description="Load full ontologies (Schema.org, FOAF, SKOS). Required for core_* rules in _optional/. Adds ~17k triples and 5-10s startup time.",
     )
 

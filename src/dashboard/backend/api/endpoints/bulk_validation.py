@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 # Import persistence logic directly or via service wrapper
 # We reuse the tool logic which handles persistence
-from smart_memory.tools.pending_rules import _pending_rules, _load_pending_rules, _save_pending_rules, approve_rule, reject_rule
+from smart_memory.tools import pending_rules
 from smart_memory.inference.rule_engine import RuleEngine, load_rules
 from smart_memory.knowledge.graph import ProvenanceGraph
 from services.memory_service import get_memory_service
@@ -21,11 +21,11 @@ class BulkActionRequest(BaseModel):
 @router.get("/rules/pending")
 async def get_pending_rules_api(doc_id: Optional[str] = None):
     """Get pending rules."""
-    _load_pending_rules()
+    pending_rules._load_pending_rules()
     
     # Convert dict to list
     rules_list = []
-    for rule_id, data in _pending_rules.items():
+    for rule_id, data in pending_rules._pending_rules.items():
         # Filter by document if requested
         if doc_id:
             source_uri = data.get("source_doc_uri", "")
@@ -41,7 +41,7 @@ async def get_pending_rules_api(doc_id: Optional[str] = None):
 @router.post("/rules/bulk-approve")
 async def bulk_approve(request: BulkActionRequest):
     """Approve multiple rules."""
-    _load_pending_rules()
+    pending_rules._load_pending_rules()
     memory = get_memory_service()
     
     results = {
@@ -54,7 +54,7 @@ async def bulk_approve(request: BulkActionRequest):
         # tool needs arguments dict
         
         # Or simpler: replicate logic here using memory service
-        if rule_id not in _pending_rules:
+        if rule_id not in pending_rules._pending_rules:
             results["failed"].append({"rule_id": rule_id, "reason": "Not found"})
             continue
             
@@ -62,7 +62,7 @@ async def bulk_approve(request: BulkActionRequest):
              # Call approve tool implementation directly? 
              # It returns [TextContent].
              # Better to use Tool implementation logic:
-             rule_data = _pending_rules[rule_id]
+             rule_data = pending_rules._pending_rules[rule_id]
              from smart_memory.tools.load_custom_rule import load_custom_rule
              
              await load_custom_rule(
@@ -75,18 +75,18 @@ async def bulk_approve(request: BulkActionRequest):
                 memory.p_graph,
             )
              
-             del _pending_rules[rule_id]
+             del pending_rules._pending_rules[rule_id]
              results["approved"].append(rule_id)
         except Exception as e:
             results["failed"].append({"rule_id": rule_id, "reason": str(e)})
             
-    _save_pending_rules()
+    pending_rules._save_pending_rules()
     return results
 
 @router.post("/rules/bulk-reject")
 async def bulk_reject(request: BulkActionRequest):
     """Reject multiple rules."""
-    _load_pending_rules()
+    pending_rules._load_pending_rules()
     
     results = {
         "rejected": [],
@@ -94,11 +94,11 @@ async def bulk_reject(request: BulkActionRequest):
     }
     
     for rule_id in request.rule_ids:
-        if rule_id in _pending_rules:
-            del _pending_rules[rule_id]
+        if rule_id in pending_rules._pending_rules:
+            del pending_rules._pending_rules[rule_id]
             results["rejected"].append(rule_id)
         else:
             results["failed"].append({"rule_id": rule_id, "reason": "Not found"})
             
-    _save_pending_rules()
+    pending_rules._save_pending_rules()
     return results

@@ -24,6 +24,7 @@ async def test_user_story_4_integration(temp_config, monkeypatch, requests_mock)
     monkeypatch.setattr("smart_memory.config.config", temp_config)
     monkeypatch.setattr("smart_memory.server.config", temp_config)
     monkeypatch.setattr("smart_memory.knowledge.persistence.config", temp_config)
+    monkeypatch.setattr("smart_memory.inference.ontology_loader.config", temp_config)
     
     # --- Online phase: populate the cache ---
     temp_config.force_offline = False

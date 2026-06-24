@@ -93,7 +93,7 @@ async def search_entity(
         # Get entity type if available
         OPTIONAL {{ ?entity a ?type }}
         
-        {f'FILTER(?type = {entity_type})' if entity_type else ''}
+        {f'FILTER(CONTAINS(LCASE(STR(?type)), "{entity_type.lower()}"))' if entity_type else ''}
     }}
     LIMIT {limit}
     """

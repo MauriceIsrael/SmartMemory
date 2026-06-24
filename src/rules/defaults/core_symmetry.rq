@@ -1,9 +1,5 @@
-# Generic Symmetry Rule
+# Generic Symmetry Rule (SCOPED to user namespace)
 # Infers symmetric relationships based on owl:SymmetricProperty definition
-# Version: 1.0
-# Author: SmartMemory Core
-# Date: 2026-05-15
-
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX : <http://semanticmemory.org/user#>
 
@@ -14,7 +10,7 @@ WHERE {
     # Find properties defined as Symmetric
     ?p a owl:SymmetricProperty .
     
-    # Find triples using this property
+    # Find triples using this property IN USER NAMESPACE ONLY
     ?x ?p ?y .
     
     # CRITICAL: Only infer for user entities (prevents ontology explosion)

@@ -17,7 +17,9 @@ def temp_config(tmp_path):
     return SemanticMemoryConfig(
         user_rules_dir=user_rules_dir,
         persistence_path=persistence_path,
-        log_level="DEBUG"
+        log_level="DEBUG",
+        load_ontologies=False,
+        enable_owl_reasoning=False
     )
 
 @pytest.mark.asyncio

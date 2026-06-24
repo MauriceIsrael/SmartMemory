@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { fetchFacts, type Fact } from "$lib/api";
-	import { getFacts } from "$lib/services/AdminService";
 
 	let facts: Fact[] = [];
 	let totalItems = 0;

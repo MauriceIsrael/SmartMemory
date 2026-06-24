@@ -26,12 +26,14 @@ class ConflictDetector(ABC):
 
 class ContradictoryLiteralDetector(ConflictDetector):
     def detect_conflicts(self, graph: ProvenanceGraph) -> List[Conflict]:
-        query = """
+        from smart_memory.config import config
+        query = f"""
         SELECT ?subject ?predicate (GROUP_CONCAT(?object; separator="||") AS ?objects)
-        WHERE {
+        WHERE {{
             ?subject ?predicate ?object .
             FILTER(isLiteral(?object))
-        }
+            FILTER(STRSTARTS(STR(?subject), "{config.user_namespace}"))
+        }}
         GROUP BY ?subject ?predicate
         HAVING (COUNT(DISTINCT ?object) > 1) # Ensure distinct objects
         """
@@ -65,12 +67,14 @@ class ContradictoryLiteralDetector(ConflictDetector):
 
 class DisjointClassDetector(ConflictDetector):
     def detect_conflicts(self, graph: ProvenanceGraph) -> List[Conflict]:
+        from smart_memory.config import config
         query = f"""
         SELECT ?subject ?class1 ?class2
         WHERE {{
             ?class1 <{OWL.disjointWith}> ?class2 .
             ?subject a ?class1 .
             ?subject a ?class2 .
+            FILTER(STRSTARTS(STR(?subject), "{config.user_namespace}"))
         }}
         """
         results = graph.query(query)
@@ -91,11 +95,13 @@ class DisjointClassDetector(ConflictDetector):
 
 class FunctionalPropertyDetector(ConflictDetector):
     def detect_conflicts(self, graph: ProvenanceGraph) -> List[Conflict]:
+        from smart_memory.config import config
         query = f"""
         SELECT ?subject ?predicate (GROUP_CONCAT(?object; separator="||") AS ?objects)
         WHERE {{
             ?predicate a <{OWL.FunctionalProperty}> .
             ?subject ?predicate ?object .
+            FILTER(STRSTARTS(STR(?subject), "{config.user_namespace}"))
         }}
         GROUP BY ?subject ?predicate
         HAVING (COUNT(?object) > 1)
